@@ -223,13 +223,11 @@ cluster can use vector indexes. This was the biggest project risk going in
 (a multi-tenant free cluster refusing `SET CLUSTER SETTING` would have sunk
 the whole retrieval design).
 
-❌ **Must smoke-test on day one, before anything else is built:**
-1. `SHOW CLUSTER SETTING feature.vector_index.enabled;` on a real free cluster.
-2. If `false`, confirm `SET CLUSTER SETTING ... = true` is permitted on Basic.
-3. Create a table with a vector index and `EXPLAIN` a similarity query to prove
-   the index is used.
-
-This is exactly SPEC M1's exit criterion. Do not write retrieval code first.
+✅ **RESOLVED 2026-07-29 against a live free Basic cluster** (v26.2.1, AWS
+us-east-1) — see §1.10. `feature.vector_index.enabled` is **already `true`**.
+The Cluster Settings reference is correct and the Vector Indexes page's "you
+must enable it" is preview-era text that should be ignored. No `SET CLUSTER
+SETTING` is required, so the question of whether Basic permits it never arises.
 
 ### 1.9 Other stated limitations ✅
 
@@ -248,6 +246,69 @@ insert ~60–100 cases with embeddings. Two of these bite:
 - `IMPORT INTO` is off the table, so seeding must go through INSERTs.
 - Prefer creating the vector index **before** loading data, rather than adding
   it to an already-populated table.
+
+### 1.10 Verified against a live cluster ✅
+
+Everything above in §1 was read from documentation. This section is what a real
+cluster actually did. Reproduce with `node --env-file=.env scripts/db-check.mjs`.
+
+**Cluster:** `irops-memory`, Basic plan, AWS us-east-1, **CockroachDB CCL
+v26.2.1** (built 2026/05/21).
+
+| Question | Answer |
+| --- | --- |
+| Does a free Basic cluster do vector indexing? | **Yes.** No upgrade, no flag, no support ticket. |
+| `feature.vector_index.enabled` default | **`true`** — the Vector Indexes page is stale (§1.8) |
+| `VECTOR INDEX name (prefix, embedding opclass)` | **Parses and works.** The composition I inferred from two separate doc examples is valid; `001_init.sql` was correct as written. |
+| Vector index on a **nullable** column | **Works**, and `INSERT ... VALUES (NULL)` is accepted — so `resolutions.embedding` stays nullable and the graceful-degradation design survives (§5.3 of the DDL). |
+| Is the hybrid query index-accelerated? | **Yes** — see the plan below. |
+
+**The query plan, which is the whole ballgame:**
+
+```
+• vector search
+    table: case_embeddings@idx_case_embeddings_status_vec
+    target count: 5
+    prefix spans: [/'resolved' - /'resolved']
+```
+
+`prefix spans: [/'resolved' - /'resolved']` is the line that matters. The
+structured filter is **pushed into the vector index as a span**, not applied as
+a post-filter over an approximate-nearest-neighbour result set. That is exactly
+the hybrid structured + semantic retrieval SPEC §5.1 asks for, and it is the
+single strongest technical claim this project can make. It is now demonstrated
+rather than hoped for.
+
+**M1 exit criterion — met.** Four synthetic summaries embedded, stored, and
+queried with a fifth unseen phrasing ("Flight delayed roughly three hours by
+storms, dozens of passengers missing connections"):
+
+```
+weather-heavy    distance 0.6518   <- correctly nearest
+crew-shortage    distance 0.8333
+unrelated        distance 1.0000
+```
+
+An `open` case deliberately planted in the table did **not** appear in
+`resolved`-only results, so the filter genuinely holds.
+
+Dimension enforcement confirmed too: inserting `'[1,2,3]'` into a `VECTOR(1024)`
+column is rejected with *"expected 1024 dimensions, not 3"*.
+
+⚠️ **One thing to NOT act on.** The optimizer attaches this recommendation to
+the plan:
+
+> `CREATE INDEX ON defaultdb.public.case_embeddings (case_status) STORING (summary_text, embedding);`
+
+**Ignore it.** The tables are empty, so the optimizer has no statistics; that
+index would serve the `case_status` filter with an ordinary scan and defeat the
+vector search entirely. Revisit only with real data and a measured comparison —
+and be suspicious even then.
+
+**On Preview vs GA:** still no official GA statement found (§1.8). But the
+feature is enabled by default on a managed free-tier cluster, which is not how
+Cockroach Labs treats preview features. Describe it in the README as working and
+enabled by default; do not claim "GA" as though it were documented.
 
 ---
 
@@ -713,18 +774,21 @@ qualifying one.
 
 Ordered by how badly a wrong assumption would hurt.
 
-1. ❌ Does a **free Basic cluster** actually create and use vector indexes?
-   (§1.8) — blocks the entire retrieval design. Smoke-test first, before
-   anything else.
-2. ❌ Is `feature.vector_index.enabled` already `true`, or must it be set?
-   (§1.8) — docs contradict each other.
+1. ~~Does a **free Basic cluster** actually create and use vector indexes?~~
+   ✅ **RESOLVED 2026-07-29 — yes**, and the hybrid filter is a genuine index
+   prefix span, not a post-filter (§1.10). The project's biggest risk is gone.
+2. ~~Is `feature.vector_index.enabled` already `true`?~~ ✅ **RESOLVED — it is
+   `true` by default.** The Vector Indexes page is stale (§1.8, §1.10).
 3. ❌ Can a **free Basic org create a service-account API key** for the MCP
    server? (§2.5) — decides SPEC §7 option (a) vs (b).
 4. ❌ Exact MCP transport and auth header format. (§2.5) — do not assume Bearer.
 5. ❌ Bedrock model access enabled for `amazon.titan-embed-text-v2:0` in the
    chosen region. (§4.6)
-6. ⚠️ Vector indexing's GA-vs-Preview status. (§1.8) — if still Preview, say so
-   plainly in the README rather than overclaiming. Judges will know.
+6. ⚠️ Vector indexing's GA-vs-Preview status. (§1.8, §1.10) — no official GA
+   statement found, but it ships enabled by default on managed free-tier
+   clusters. README should say "works, enabled by default", not "GA".
+9. ~~Whether `VECTOR INDEX (prefix, embedding opclass)` parses, and whether a
+   vector index tolerates NULLs.~~ ✅ **RESOLVED — both work** (§1.10).
 7. ~~Bedrock model-access approval time.~~ **Resolved 2026-07-29** — AWS
    auto-enables serverless models since Oct 2025; there is nothing to request
    (§6.6). What remains unverified is the *Service Quota* for InvokeModel RPM on

@@ -194,7 +194,7 @@ Three views, unstyled-but-clean:
 
 **CockroachDB tools (need ≥2; we target 3–4 for scoring):**
 
-- [ ] **Distributed Vector Indexing** — core retrieval path. Load-bearing.
+- [x] **Distributed Vector Indexing** — core retrieval path. Load-bearing. **Working end-to-end on a free Basic cluster (v26.2.1) as of 2026-07-29.** The `EXPLAIN` shows `vector search ... prefix spans: [/'resolved' - /'resolved']`, i.e. the structured filter is pushed into the vector index rather than post-filtering an ANN result set. Reproduce: `node --env-file=.env scripts/db-check.mjs`.
 - [ ] **Managed MCP Server** — read-only analyst path. Must be able to answer "what did the agent actually do with it?" Options, in order of preference: (a) a runtime read-only query path where an agent answers ops questions over the memory layer via MCP, (b) documented dev-time use with Claude Code for schema design and query profiling. (a) scores better; verify feasibility early, fall back to (b) if auth makes runtime use impractical, and be honest about which in the README.
 - [ ] **Agent Skills Repo** — pull in relevant skills (schema design, query performance, observability) and document which ones were used and what they changed. Cheap to do, direct evidence of tool engagement.
 - [ ] **ccloud CLI** — provision the cluster and script it. Commit the provisioning script.
@@ -222,12 +222,12 @@ Three views, unstyled-but-clean:
 
 Assume ~2–3 hours per weekday evening, more at weekends. Deadline Aug 18.
 
-**M1 — Foundations (target: 2 evenings)**
-- CockroachDB Cloud free cluster provisioned via ccloud CLI; script committed
-- Bedrock model access confirmed in region
-- Repo scaffolded, license in place, `.env.example`, gitignore
-- Schema applied; vector index working end-to-end in a smoke test
-- **Exit criterion:** a script embeds two strings, stores them, and retrieves the nearer one correctly.
+**M1 — Foundations (target: 2 evenings)** — ✅ **COMPLETE 2026-07-29**
+- [x] CockroachDB Cloud free cluster provisioned via ccloud CLI; script committed (`scripts/provision-cluster.ps1`)
+- [x] Bedrock model access confirmed in region — nothing to request; AWS auto-enables serverless models since Oct 2025
+- [x] Repo scaffolded, license in place, `.env.example`, gitignore
+- [x] Schema applied; vector index working end-to-end in a smoke test
+- [x] **Exit criterion MET** — `scripts/db-check.mjs` embeds four summaries, stores them, and correctly returns the weather case (0.6518) ahead of the crew case (0.8333) and unrelated text (1.0000) for an unseen query phrasing. An `open` case planted as a control did not leak into `resolved`-only results.
 
 **M2 — Synthetic data (1 evening)**
 - Generator producing ~60–100 realistic-but-fake historical cases with resolutions and outcomes, across a mix of causes/severities
@@ -357,3 +357,24 @@ _Append dated entries below. Format: date — what was done — what's blocked �
   **Also confirmed, from the console:** Titan Embeddings **G1** (`amazon.titan-embed-text-v1`) outputs **1536** dimensions — previously secondary-sourced, now quoted from the model page. Closes a ⚠️ in NOTES §4.4. Worth flagging because `amazon.titan-embed-text-v1` and `amazon.titan-embed-text-v2:0` sit next to each other in the catalog and produce different-width vectors; picking the wrong one fails every insert against `VECTOR(1024)`.
 
   **Revised critical path** — the long pole is now **CockroachDB**, because open questions 1, 2 and 7 (does a free Basic cluster actually do vector indexing) remain unanswered and the entire retrieval design rests on them. Order: install Node → CockroachDB account + cluster + vector smoke test → IAM keys + Bedrock smoke test.
+
+- 2026-07-29 (session 2, M1 complete) — **M1 done. Every vector-indexing unknown resolved against a live cluster. The core technical bet works.**
+
+  Cluster `irops-memory` provisioned via ccloud on AWS us-east-1, **CockroachDB v26.2.1**, Basic plan. Schema applied. Full results in NOTES.md §1.10.
+
+  **The five things that were unknown this morning, now answered:**
+  - A free Basic cluster **does** vector indexing. No upgrade, no flag, no ticket. This was the project's biggest risk and it is gone.
+  - `feature.vector_index.enabled` is **`true` by default**. The Cluster Settings reference was right; the Vector Indexes page's "you must enable it" is preview-era text. Docs conflict resolved empirically.
+  - `VECTOR INDEX name (prefix, embedding opclass)` **parses and works** — the composition I inferred from two separate doc examples was valid, so `001_init.sql` needed no changes.
+  - A vector index **tolerates NULLs**, so `resolutions.embedding` stays nullable and recording a resolution can never fail because Bedrock was down.
+  - The hybrid query is genuinely **index-accelerated**: `vector search ... prefix spans: [/'resolved' - /'resolved']`. The structured filter is a span inside the vector index, not a post-filter over ANN results. That is the strongest technical claim this project has, and it is now demonstrated rather than asserted.
+
+  **Exit criterion met.** Four synthetic summaries embedded and stored; an unseen query phrasing returned the weather case (0.6518) ahead of the crew case (0.8333) and unrelated text (1.0000). A planted `open` case did not leak into `resolved`-only results.
+
+  **Trap recorded, not taken.** The optimizer recommends `CREATE INDEX ON case_embeddings (case_status) STORING (summary_text, embedding)`. On empty tables it has no statistics, and that index would defeat vector search entirely. Ignored deliberately; noted in NOTES.md §1.10 so nobody applies it later on autopilot.
+
+  **Also fixed this session:** the provisioning script died on its own success — PowerShell 5.1 wraps native stderr in an ErrorRecord when redirected with `2>&1`, and ccloud writes progress text to stderr. Removed the redirect.
+
+  **New artifacts:** `scripts/db-check.mjs` (answers every doc-unanswerable question against a real cluster), `scripts/migrate.mjs` (forward-only runner with checksums, refuses to run a migration edited after it was applied), `scripts/verify-schema.mjs` (asserts the applied schema matches intent, and that retrieval has not silently regressed to a full scan).
+
+  **Blocked / next** — nothing blocks M2. Remaining unknowns are all AWS- or MCP-side and none gate the data work: service accounts on Basic (decides §7 MCP option a vs b), MCP transport/auth format, Bedrock IAM keys and quota. **Next: M2 — synthetic data generator, ~60–100 fake historical cases with resolutions and outcomes, then backfill embeddings.** The M2 exit criterion is that semantic search over seeded data returns intuitively sensible precedents; if it does not, fix `summary_text` generation before building anything else.
