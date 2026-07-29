@@ -1,0 +1,27 @@
+{
+  "name": "irops-disruption-memory-agent",
+  "version": "0.1.0",
+  "private": true,
+  "description": "An operational-memory agent for airline irregular-operations desks, backed by CockroachDB as a single system of record for both vectors and transactional state.",
+  "license": "MIT",
+  "author": "Orest Mucaj",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\""
+  },
+  "dependencies": {
+    "@aws-sdk/client-bedrock-runtime": "^3.0.0",
+    "pg": "^8.11.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/pg": "^8.11.0",
+    "typescript": "^5.0.0"
+  }
+}
