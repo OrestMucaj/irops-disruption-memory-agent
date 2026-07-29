@@ -316,8 +316,7 @@ _Append dated entries below. Format: date — what was done — what's blocked �
   6. Vector indexing's GA-vs-Preview status. Shipped in v25.2 as Preview; no GA statement found. If still Preview, say so in the README rather than overclaiming.
   7. Two DDL statements are flagged inline in `001_init.sql` as most-likely-to-fail: the prefix-plus-opclass composition (the docs only ever show those two features separately), and whether a vector index tolerates NULL embeddings.
 
-  **Caveat on the TypeScript**
-  Node.js is not installed on this machine, so `npm install` and `tsc --noEmit` have never run. The code is written to the strict tsconfig and reviewed by hand, but **it has not been compiled**. Install Node and run `npm install && npm run typecheck` before building on it — expect to fix small things.
+  **Caveat on the TypeScript** — ~~never compiled~~ **resolved 2026-07-29.** Node v24.18.0 installed; `npm install` (46 packages), `tsc --noEmit` and `tsc` all pass with **zero errors**, no source changes needed. Runtime behaviour spot-checked too: fake embeddings are 1024-dim, deterministic, unit-length, and rank a similar disruption summary at cos 0.67 against 0.00 for unrelated text — so local retrieval is developable offline, which was the point of not using a plain digest. Empty input still yields a unit vector (zero-vector guard works). Bedrock stubs reject with `ProviderNotConfiguredError`; config defaults to `fake` and reports multiple problems in one throw. Minor: `@types/node` is pinned `^22` against a v24 runtime — harmless, worth aligning when something else touches `package.json`.
 
   **Dependencies added, with reasons (per §10)** — all declared, none imported yet: `pg` (§3, write path), `@aws-sdk/client-bedrock-runtime` (§3, Bedrock), `zod` (§5.2, validate agent JSON). Dev: `typescript`, `@types/node`, `@types/pg`.
 
