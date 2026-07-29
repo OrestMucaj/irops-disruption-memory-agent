@@ -92,23 +92,44 @@ Write-Host "Using ccloud: $ccloud"
 
 # --- Auth check -------------------------------------------------------------
 # Any authenticated call will do; `cluster list` is read-only.
+#
+# Do NOT redirect native stderr with 2>&1 here. Windows PowerShell 5.1 wraps
+# each stderr line from a native executable in an ErrorRecord
+# (NativeCommandError); combined with $ErrorActionPreference='Stop' that becomes
+# a *terminating* error even when the process exits 0. ccloud writes progress
+# text ("Retrieving clusters: succeeded") to stderr, so redirecting made this
+# blow up on the happy path. Let stderr go to the console and judge success by
+# $LASTEXITCODE alone.
 Write-Host "`nChecking authentication..."
-$existingRaw = & $ccloud cluster list --output json 2>&1
-if ($LASTEXITCODE -ne 0) {
-    if ("$existingRaw" -match 'not logged in') {
-        throw "Not logged in. Run 'ccloud auth login' first, then re-run this script."
-    }
-    throw "ccloud cluster list failed: $existingRaw"
+
+$prevEap = $ErrorActionPreference
+$ErrorActionPreference = 'Continue'
+$existingRaw = & $ccloud cluster list --output json
+$listExit = $LASTEXITCODE
+$ErrorActionPreference = $prevEap
+
+if ($listExit -ne 0) {
+    throw "'ccloud cluster list' failed (exit $listExit). If it reported 'not logged in', run 'ccloud auth login' and re-run this script."
 }
 
 # --- Idempotency ------------------------------------------------------------
-$existing = $null
-try { $existing = "$existingRaw" | ConvertFrom-Json } catch { $existing = $null }
-
-$match = $null
-if ($null -ne $existing -and $null -ne $existing.clusters) {
-    $match = $existing.clusters | Where-Object { $_.name -eq $ClusterName }
+# Parse defensively: tolerate both a bare array and a { clusters: [...] }
+# envelope, and treat unparseable output as "unknown" rather than "none" -- a
+# bad parse must not cause a duplicate cluster to be created.
+$clusters = @()
+$parsed = $null
+try {
+    $parsed = ($existingRaw | Out-String) | ConvertFrom-Json
+} catch {
+    throw "Could not parse 'ccloud cluster list --output json' output. Refusing to continue, because a failed parse here could create a duplicate cluster. Run the command by hand to see what it returned."
 }
+
+if ($null -ne $parsed) {
+    if ($null -ne $parsed.clusters) { $clusters = @($parsed.clusters) }
+    else { $clusters = @($parsed) }
+}
+
+$match = $clusters | Where-Object { $_.name -eq $ClusterName }
 
 if ($null -ne $match) {
     Write-Host "`nCluster '$ClusterName' already exists. Nothing to do." -ForegroundColor Green
