@@ -43,6 +43,16 @@
     Optional storage cap in GiB. 0 (default) means inherit the account default.
     Same reasoning as above: hitting it blocks writes.
 
+.NOTES
+    Windows blocks unsigned scripts by default (execution policy 'Restricted').
+    If you get "running scripts is disabled on this system", invoke it as:
+
+        powershell -ExecutionPolicy Bypass -File ".\scripts\provision-cluster.ps1"
+
+    That bypasses the policy for one invocation only and changes nothing on the
+    machine. Prefer it over `Set-ExecutionPolicy`, which is a persistent
+    security-setting change and is not needed to run this.
+
 .EXAMPLE
     .\scripts\provision-cluster.ps1
     Creates 'irops-memory' as a Basic cluster on AWS us-east-1.
