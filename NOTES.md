@@ -482,9 +482,13 @@ that is inference. If we ever use Cohere, resolve this by calling
 | Titan Embeddings G1 Text | `amazon.titan-embed-text-v1` | 1536 (fixed) | 1536 |
 | Cohere Embed v4 | `cohere.embed-v4` **or** `cohere.embed-v4:0` ⚠️ | 256, 512, 1024, 1536 | 1536 |
 
-⚠️ Titan G1's 1536 is stated in secondary sources rather than the model page I
-read; I did not find it quoted on the primary page. Immaterial — we are not
-using G1.
+✅ Titan G1's 1536 was initially secondary-sourced; since confirmed from the
+model's own page in the Bedrock console: "The new Titan Embeddings G1 – Text
+v1.2 can intake up to 8k tokens and outputs a vector of 1536". Immaterial to us
+— we are using V2 at 1024 — but worth noting because `amazon.titan-embed-text-v1`
+and `amazon.titan-embed-text-v2:0` are one character apart in the console and
+produce vectors of **different widths**. Picking the wrong one means every
+insert fails against `VECTOR(1024)`.
 
 ### 4.5 Throttling note ✅
 
@@ -653,27 +657,50 @@ The architecture chosen before this ruling already sidesteps the problem. Say so
 explicitly in the README: it reads as a production-readiness decision, which is
 a judging criterion, not merely as budgeting.
 
-### 6.6 The real risk is quota approval, not money ❌
+### 6.6 Model access — resolved, and it is a non-issue ✅
 
-From the same forum thread, and consistent with §4.6:
+**Superseded 2026-07-29 (same day).** This section previously treated Bedrock
+model-access approval as the longest-lead item in the project, based on a
+participant's report in the forum thread:
 
 > "New accounts also start with model throughput quotas at zero until you request
 > an increase, which takes time to approve."
 
-⚠️ This is a participant's report, **not** an organizer statement and not AWS
-documentation, and I have not verified it. But it is consistent with the known
-requirement to enable model access per-model per-region, and if true the
-consequence is severe: no inference at all until approval lands, on a build with
-a hard deadline.
+**That is stale.** AWS changed it in October 2025:
 
-**Mitigation, in order:**
-1. Create the AWS account and request Bedrock model access **first**, before
-   writing a line of Bedrock code. It is the longest-lead item in the project.
-2. Set an AWS Budgets alert at a few dollars on day one. Cheap insurance — and
-   AWS Budgets is itself one of the credit-earning activities (§6.2).
-3. If access has not landed within a few days, implement Ollama providers behind
-   the existing `EmbeddingProvider` / `LLMProvider` interfaces. Nothing else
-   changes — that is precisely what the abstraction is for.
+> "Amazon Bedrock now provides immediate access to all serverless foundation
+> models by default for users in all commercial AWS regions. This update
+> eliminates the need for manually activating model access"
+
+> "Access to all Amazon Bedrock foundation models is enabled by default with the
+> correct AWS Marketplace permissions."
+
+Confirmed against the live console: there is no longer a "Model access → Modify
+model access" request page. Serverless models are simply listed in a **Model
+catalog** and are invocable.
+
+**One exception, and it matters if we want Claude as a fallback:**
+
+> "Anthropic models, although enabled by default, still require you to submit a
+> one-time usage form before first use."
+
+Per account, once. Amazon's own models — Titan and Nova, which is what we
+actually chose — need nothing.
+
+⚠️ **Access is not the same as quota.** The change above removes the *access*
+request. It says nothing about per-account Service Quotas for InvokeModel
+requests-per-minute, which may still be low on a new account. Do not assume the
+forum poster was wrong about quotas just because they were wrong about access.
+
+❌ **The only real verification is an API call.** The console cannot tell you
+whether your IAM principal can actually invoke a model in your region at your
+quota. Per SPEC §1.2 this needs a smoke test, not a screenshot.
+
+**Remaining mitigation:**
+1. Set an AWS Budgets alert at a few dollars on day one. Still worth it — and
+   AWS Budgets is one of the credit-earning activities (§6.2).
+2. Ollama stays as the documented fallback behind the existing provider
+   interfaces, but the scenario it was insuring against has largely evaporated.
 
 Note that dropping Bedrock does **not** break eligibility: SPEC §7 requires ≥1
 AWS service, and Lambda + S3 are two. Bedrock is what makes the AWS involvement
@@ -698,8 +725,10 @@ Ordered by how badly a wrong assumption would hurt.
    chosen region. (§4.6)
 6. ⚠️ Vector indexing's GA-vs-Preview status. (§1.8) — if still Preview, say so
    plainly in the README rather than overclaiming. Judges will know.
-7. ❌ Bedrock model-access approval time. (§6.6) — longest-lead item in the whole
-   project. Request it on day one; everything model-shaped queues behind it.
+7. ~~Bedrock model-access approval time.~~ **Resolved 2026-07-29** — AWS
+   auto-enables serverless models since Oct 2025; there is nothing to request
+   (§6.6). What remains unverified is the *Service Quota* for InvokeModel RPM on
+   a new account, which only an API call can answer. ❌
 8. ❌ Whether the AWS account qualifies for the post-15-July-2025 $200 credit
    programme. (§6.2) — it should, being new, but confirm at sign-up rather than
    assuming.
