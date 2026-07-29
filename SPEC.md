@@ -121,6 +121,11 @@ CockroachDB Cloud (free tier)
 - **Language: TypeScript/Node** for the Lambda. First-class Lambda support, clean `pg` driver compatibility with CockroachDB, good Bedrock SDK. (C#/.NET is possible but slower to iterate here; do not switch without a reason logged in the Progress Log.)
 - **Frontend:** single-page React or plain HTML+fetch, built to static assets, hosted on S3. Do **not** spend time on design systems, component libraries, or routing. Three views maximum (see §6).
 - **LLM + embeddings: Amazon Bedrock.** This satisfies the mandatory AWS requirement with a component that is genuinely load-bearing rather than decorative. Verify model access is enabled in the chosen region before building — this is a common day-one blocker.
+  - **Confirmed 2026-07-29, and Bedrock stays.** The organizers have ruled that there are no hackathon AWS credits and that Bedrock has no free tier, suggesting Ollama as a workaround (NOTES.md §6.1). Costed out, Ollama is the *more* expensive option here: it needs an always-on instance to be reachable from the deployed Lambda through judging (~$20–40 for the window), whereas Bedrock at this volume comes to **under $1 total** against **$100–200 of AWS new-account credits** the organizers did not mention (NOTES.md §6.2–§6.4). Bedrock also keeps the AWS involvement load-bearing, which is a scoring matter.
+  - **The binding constraint is quota approval, not cost.** New accounts reportedly start with model throughput at zero pending an access request. Request Bedrock model access on **day one, before writing any Bedrock code** — it is the longest-lead item in the project (NOTES.md §6.6).
+  - **Documented fallback:** if model access has not landed within a few days, implement Ollama behind the existing `EmbeddingProvider` / `LLMProvider` interfaces. No other code changes. Eligibility survives either way — §7 needs ≥1 AWS service and Lambda + S3 are two.
+- **Deployment must scale to zero.** The demo has to stay live for the whole Aug 19 – Sep 15 judging window on no budget. Lambda **Function URL** + S3, never ECS/Fargate + ALB: a Function URL has no hourly charge and idle costs nothing, so the ~$30–50/month figure other participants are hitting does not apply. Lambda's 1M-requests/month always-free allowance survived the July 2025 free-tier restructure (NOTES.md §6.5). Do not introduce an always-on component without logging the reason here.
+- **The demo URL is judge-only.** The organizers confirm the functional app link goes in the submission form's 'Additional Info' section, which only judges see. Traffic is therefore bounded — but still set an AWS Budgets alert at a few dollars on day one.
 - **DB access:** standard Postgres driver from Lambda for the write path; MCP Server for the read-only analyst path.
 
 ---
@@ -195,9 +200,11 @@ Three views, unstyled-but-clean:
 
 **AWS (need ≥1; we use 2–3):**
 
-- [ ] **Amazon Bedrock** — reasoning + embeddings.
-- [ ] **AWS Lambda** — agent execution.
+- [ ] **Amazon Bedrock** — reasoning + embeddings. *Scoring, not qualifying — see below.*
+- [ ] **AWS Lambda** — agent execution. Function URL, no API Gateway or ALB.
 - [ ] **Amazon S3** — static frontend hosting.
+
+> **Eligibility floor:** the ≥1 AWS requirement is satisfied by Lambda + S3 alone, both of which are free-tier. Bedrock is what makes the AWS involvement load-bearing rather than decorative, so losing it costs points, not eligibility. Worth knowing before panicking if Bedrock model access is slow to approve (NOTES.md §6.6).
 
 **Submission artifacts:**
 
@@ -313,4 +320,27 @@ _Append dated entries below. Format: date — what was done — what's blocked �
 
   **Dependencies added, with reasons (per §10)** — all declared, none imported yet: `pg` (§3, write path), `@aws-sdk/client-bedrock-runtime` (§3, Bedrock), `zod` (§5.2, validate agent JSON). Dev: `typescript`, `@types/node`, `@types/pg`.
 
-  **Next** — M1, in this order: install Node and typecheck; create the CockroachDB Cloud account; provision a Basic cluster via ccloud CLI and commit the script; run `001_init.sql` and fix whatever the two flagged statements do; then the §M1 exit criterion — embed two strings, store them, retrieve the nearer one. Do not write retrieval code before that passes.
+  **Next** — M1, in this order: install Node and typecheck; create the CockroachDB Cloud account; provision a Basic cluster via ccloud CLI and commit the script; run `001_init.sql` and fix whatever the two flagged statements do; then the §M1 exit criterion — embed two strings, store them, retrieve the nearer one. Do not write retrieval code before that passes. _(Superseded below: Bedrock model access moves to first.)_
+
+- 2026-07-29 (session 2, addendum) — **Organizers ruled on AWS credits. Bedrock stays; M1 ordering changes.**
+
+  Organizer ruling in the Devpost forum: no hackathon AWS credits, Bedrock has no free tier, suggested workaround is Ollama. Researched and costed rather than accepting or rejecting it — full analysis in NOTES.md §6.
+
+  **Decision: stay on Bedrock.** The ruling is correct but incomplete on two counts.
+  - AWS restructured its Free Tier on 2025-07-15: new accounts get **up to $200 in credits** ($100 at sign-up, $100 for activities — Bedrock and AWS Budgets are both qualifying activities). Not hackathon credits, but credits. No AWS account exists yet, so we qualify.
+  - Priced out, Bedrock at our volume is **under $1 total** for build plus the whole judging window (Titan V2 at $0.02/M tokens; Nova Lite at $0.06/$0.24 per M in/out). Ollama would need an always-on instance to be reachable from the deployed Lambda, i.e. **$20–40 fixed** for the judging window, plus CPU-inference latency and a weaker model. The suggested workaround is the more expensive option at this scale.
+
+  **The $30–50/month figure in that thread does not apply to us.** It assumes ECS/Fargate + ALB. §3 already specifies Lambda Function URL + S3: no hourly charge, idle costs nothing, and Lambda's 1M-requests/month always-free allowance survived the 2025 restructure. Added to §3 as a standing constraint so no always-on component sneaks in later.
+
+  **Also useful:** the demo URL goes in the submission form's judge-only 'Additional Info' section, so traffic is bounded to judges over Aug 19 – Sep 15.
+
+  **What actually changes**
+  - §3 gains the cost/quota reasoning, the scale-to-zero constraint, and Ollama as a documented fallback.
+  - §7 now states the eligibility floor explicitly: ≥1 AWS service is met by Lambda + S3 alone. Bedrock is scoring, not qualifying — so slow model access is a points risk, not a disqualification.
+  - **M1 reordering: request Bedrock model access FIRST.** New accounts reportedly start at zero model throughput pending approval, and that is now the longest-lead item in the project. Everything model-shaped queues behind it, so it should be waiting in the background while the CockroachDB work happens. Set an AWS Budgets alert at the same time.
+
+  **Blocked / unverified (adds to the list above)**
+  - The zero-quota-pending-approval claim is a *participant's* report, not an organizer statement and not AWS documentation. Unverified, but cheap to defend against by requesting access early.
+  - Token-volume estimates behind the cost figures are guesses; the prices are verified. Real numbers arrive when M3 runs and `agent_runs` starts recording.
+
+  **Next** — unchanged except that AWS account creation + Bedrock model access request now happen first, in parallel with: install Node and typecheck, then the CockroachDB cluster and vector smoke test.

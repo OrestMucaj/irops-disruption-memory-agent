@@ -546,7 +546,143 @@ show off. Documented in the DDL so it does not look accidental.
 
 ---
 
-## 6. Open questions — resolve before writing dependent code
+## 6. Cost, quota, and eligibility — the deployment constraint
+
+Added 2026-07-29 after the organizers ruled on AWS credits in the Devpost
+discussion forum. This section decides whether the Bedrock dependency in
+SPEC §3 survives contact with a zero-budget deployment.
+
+### 6.1 What the organizers said ✅
+
+Michelle Brain (organizer), Devpost discussion forum:
+
+> "We currently do not have AWS Credits to distribute for participants so please
+> first work with the Free account provided by AWS. AWS Bedrock is the only
+> service we are aware of on the list provided that lacks a free tier. The
+> workaround the team has found is to use Ollama, which is straightforward and
+> free to run. The models are smaller but still reasonably capable for demos."
+
+And, materially for cost:
+
+> "the submission form questions on the submission step called 'Additional Info'
+> will only show to the judges. Add your functional app link to those questions
+> only to avoid outside usage."
+
+Three consequences:
+- No hackathon credits, and the organizers are right that Bedrock has no free tier.
+- **The demo URL is judge-only.** Traffic is bounded to a handful of judges over
+  Aug 19 – Sep 15, not the open internet. That bounds cost enormously.
+- Ollama is the organizers' suggested workaround.
+
+### 6.2 AWS's own new-account credits ⚠️ — the organizers' answer is incomplete
+
+There are no *hackathon* credits. That is true and it is not the whole picture:
+AWS restructured its Free Tier on 15 July 2025, and new accounts now get credits
+directly from AWS.
+
+> "Starting July 15, 2025, new AWS customers will receive up to $200 in AWS Free
+> Tier credits"
+
+$100 on sign-up, plus a further $100 for completing activities — and **Amazon
+Bedrock is explicitly named among the qualifying activity services**, as is AWS
+Budgets.
+
+The free account plan "expires after 6 months or when you exhaust your credits,
+whichever comes first." Signing up on 2026-07-29 covers the Aug 19 – Sep 15
+judging window with about four months to spare.
+
+⚠️ This applies to accounts created **after** 15 July 2025. An older account sits
+in the legacy programme (12-month trials plus always-free tier) and gets no $200.
+Since no AWS account exists yet, we qualify for the new programme — but only if
+the account is genuinely new.
+
+### 6.3 What Bedrock actually costs at our volume ✅
+
+Verified on-demand prices:
+
+| Model | Price |
+| --- | --- |
+| Titan Text Embeddings V2 | $0.02 per million tokens |
+| Amazon Nova Lite | $0.06 per million input tokens, $0.24 per million output |
+
+Estimate for the entire project — build, demo, and the full judging window:
+
+| Workload | Volume | Cost |
+| --- | --- | --- |
+| Embeddings (100 seed cases + ~500 dev/demo) | ~120K tokens | ~$0.002 |
+| Agent runs (~500 runs × 3K in / 600 out, Nova Lite) | 1.5M in, 300K out | ~$0.16 |
+| **Total** | | **under $1** |
+
+Ten times these volumes still lands under $2, against $100–200 of credits. The
+"surprise bill" fear is reasonable in principle and negligible in magnitude for
+a workload this small.
+
+⚠️ Volumes are my estimates, not measurements. The prices are verified; the token
+counts are guesses that will not be real until M3 runs. Amazon Nova Micro is
+text-only and cheaper still — I did not verify its price.
+
+### 6.4 Ollama would cost more here, not less ⚠️
+
+For heavy inference the organizers' advice is sound. At our volume it inverts:
+
+- Ollama must run somewhere the deployed Lambda can reach. Ollama on a laptop
+  cannot serve a demo URL that has to stay up from Aug 19 to Sep 15.
+- On AWS that means an always-on instance through judging. A small CPU instance
+  is roughly $12–15/month; anything with a GPU is far more.
+- That trades a ~$0.20 *variable* cost for a ~$20–40 *fixed* cost, and pays for
+  it again in CPU-inference latency and a weaker model.
+
+**Decision: stay on Bedrock.** Keep Ollama as a documented fallback for the one
+scenario where it genuinely wins — see §6.6.
+
+### 6.5 The always-on cost concern does not apply to this architecture ✅
+
+The forum thread prices an always-on demo at $30–50/month, based on ECS/Fargate
+plus an Application Load Balancer. SPEC §3 already specifies **Lambda + S3**,
+which behaves differently:
+
+> "The free tier provides 1M requests per month for AWS Lambda. The always-free
+> tier is available under both the new Free Tier program and the legacy Free
+> Tier program."
+
+- A Lambda **Function URL** has no hourly charge, unlike an ALB or API Gateway.
+- Idle costs nothing — scale-to-zero is the entire point.
+- S3 static hosting for three small views is cents.
+
+The architecture chosen before this ruling already sidesteps the problem. Say so
+explicitly in the README: it reads as a production-readiness decision, which is
+a judging criterion, not merely as budgeting.
+
+### 6.6 The real risk is quota approval, not money ❌
+
+From the same forum thread, and consistent with §4.6:
+
+> "New accounts also start with model throughput quotas at zero until you request
+> an increase, which takes time to approve."
+
+⚠️ This is a participant's report, **not** an organizer statement and not AWS
+documentation, and I have not verified it. But it is consistent with the known
+requirement to enable model access per-model per-region, and if true the
+consequence is severe: no inference at all until approval lands, on a build with
+a hard deadline.
+
+**Mitigation, in order:**
+1. Create the AWS account and request Bedrock model access **first**, before
+   writing a line of Bedrock code. It is the longest-lead item in the project.
+2. Set an AWS Budgets alert at a few dollars on day one. Cheap insurance — and
+   AWS Budgets is itself one of the credit-earning activities (§6.2).
+3. If access has not landed within a few days, implement Ollama providers behind
+   the existing `EmbeddingProvider` / `LLMProvider` interfaces. Nothing else
+   changes — that is precisely what the abstraction is for.
+
+Note that dropping Bedrock does **not** break eligibility: SPEC §7 requires ≥1
+AWS service, and Lambda + S3 are two. Bedrock is what makes the AWS involvement
+*load-bearing* rather than decorative, which is a scoring matter, not a
+qualifying one.
+
+---
+
+## 7. Open questions — resolve before writing dependent code
 
 Ordered by how badly a wrong assumption would hurt.
 
@@ -562,10 +698,15 @@ Ordered by how badly a wrong assumption would hurt.
    chosen region. (§4.6)
 6. ⚠️ Vector indexing's GA-vs-Preview status. (§1.8) — if still Preview, say so
    plainly in the README rather than overclaiming. Judges will know.
+7. ❌ Bedrock model-access approval time. (§6.6) — longest-lead item in the whole
+   project. Request it on day one; everything model-shaped queues behind it.
+8. ❌ Whether the AWS account qualifies for the post-15-July-2025 $200 credit
+   programme. (§6.2) — it should, being new, but confirm at sign-up rather than
+   assuming.
 
 ---
 
-## 7. Sources
+## 8. Sources
 
 - CockroachDB — [VECTOR data type](https://www.cockroachlabs.com/docs/v26.2/vector)
 - CockroachDB — [Vector Indexes](https://www.cockroachlabs.com/docs/stable/vector-indexes)
@@ -578,3 +719,9 @@ Ordered by how badly a wrong assumption would hurt.
 - AWS — [Amazon Titan Text Embeddings models](https://docs.aws.amazon.com/bedrock/latest/userguide/titan-embedding-models.html)
 - AWS — [Titan Embeddings request/response](https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters-titan-embed-text.html)
 - AWS — [Cohere Embed v4](https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters-embed-v4.html)
+- AWS — [Amazon Bedrock pricing](https://aws.amazon.com/bedrock/pricing/)
+- AWS — [Amazon Nova pricing](https://aws.amazon.com/nova/pricing/)
+- AWS — [Free Tier update: up to $200 in credits](https://aws.amazon.com/blogs/aws/aws-free-tier-update-new-customers-can-get-started-and-explore-aws-with-up-to-200-in-credits/)
+- AWS — [Free Tier FAQs](https://aws.amazon.com/free/free-tier-faqs/)
+- AWS — [Lambda pricing](https://aws.amazon.com/lambda/pricing/)
+- Devpost — [Hackathon discussion forum](https://cockroachdb-ai.devpost.com/forum_topics) (organizer ruling on credits, §6.1)
