@@ -283,3 +283,34 @@ No music (copyright rule). Screen recording plus voiceover. Rehearse once; do no
 _Append dated entries below. Format: date — what was done — what's blocked — next step._
 
 - 2026-07-29 — Spec created. Nothing built yet. Next: M1, starting with ccloud CLI provisioning and a vector smoke test.
+
+- 2026-07-29 (session 2) — **Pre-work only. Nothing touched a live service; no CockroachDB Cloud or AWS account exists yet.**
+
+  **Done**
+  - Repo scaffolded and committed in small steps: MIT `LICENSE` (Orest Mucaj), `.gitignore` (excludes `.env` and key material), `package.json` (TS/Node, ESM, Node 20+), strict `tsconfig.json`, `.env.example`, README skeleton with honest _TODO_ markers rather than aspirational prose. Git initialised on `main`; identity set repo-locally.
+  - `NOTES.md` written from live official docs — vector indexing, Managed MCP Server, free tier, Bedrock embeddings. Findings tagged ✅ verified / ⚠️ ambiguous / ❌ unverified so gaps stay visible.
+  - `migrations/001_init.sql` written from §4, syntax grounded in NOTES. **Not run.**
+  - `EmbeddingProvider` / `LLMProvider` behind a config-selected factory. Fakes are deterministic and offline; both Bedrock implementations are stubs that throw `ProviderNotConfiguredError`. App boots with zero credentials.
+
+  **Findings that change the plan**
+  - **§7 MCP question resolved in favour of option (a).** The Managed MCP Server supports service-account API keys, "Intended for fully autonomous environments." A Lambda holding one is the intended shape, not a workaround. Target the runtime read-only analyst path; option (b) stays as fallback. Endpoint `https://cockroachlabs.cloud/mcp` as this spec assumed — confirmed.
+  - **Vector index prefix columns drive the schema.** A vector index may carry leading non-vector columns, and filtering on them is index-accelerated rather than a post-filter. That is what makes §5.1's hybrid structured + semantic retrieval real. `case_embeddings` therefore carries a denormalized `case_status` purely to be that prefix. Cost: it can drift from `disruption_cases.status`; the drift-check query is documented on the table and belongs in the test suite.
+  - **Free tier figures in §1.2 need updating when the README is written.** It is now the **Basic** plan: 10 GiB + 50M RUs/month, no credit card. The widely-cited "1 vCPU / 5 GB" is stale. Hitting the RU limit *disables the cluster* — so keep the demo RU-cheap and never embed on a page load.
+  - **Embedding model chosen:** Amazon Titan Text Embeddings V2, `amazon.titan-embed-text-v2:0`, 1024 dims. Schema is `VECTOR(1024)`; `src/config.ts` refuses to boot if `EMBEDDING_DIMENSIONS` disagrees. Cosine (`<=>` + `vector_cosine_ops`) throughout — an index built with the default `vector_l2_ops` will not accelerate a `<=>` query.
+  - No doc contradicted this spec. Two docs contradicted *themselves* — see below.
+
+  **Blocked / unverified — all need a live account**
+  1. Whether a free Basic cluster actually creates and uses vector indexes. Blocks the entire retrieval design. Smoke-test before anything else.
+  2. `feature.vector_index.enabled`: the Vector Indexes page says to turn it on, the Cluster Settings reference says it defaults to `true`. Not resolved by guessing.
+  3. Whether a free Basic org can create a service-account API key for MCP. Decides §7 (a) vs (b).
+  4. Exact MCP transport and auth header format — Bearer is the Cloud API convention but is **not** stated for the MCP endpoint. Do not assume.
+  5. Bedrock model access for `amazon.titan-embed-text-v2:0` in the target region.
+  6. Vector indexing's GA-vs-Preview status. Shipped in v25.2 as Preview; no GA statement found. If still Preview, say so in the README rather than overclaiming.
+  7. Two DDL statements are flagged inline in `001_init.sql` as most-likely-to-fail: the prefix-plus-opclass composition (the docs only ever show those two features separately), and whether a vector index tolerates NULL embeddings.
+
+  **Caveat on the TypeScript**
+  Node.js is not installed on this machine, so `npm install` and `tsc --noEmit` have never run. The code is written to the strict tsconfig and reviewed by hand, but **it has not been compiled**. Install Node and run `npm install && npm run typecheck` before building on it — expect to fix small things.
+
+  **Dependencies added, with reasons (per §10)** — all declared, none imported yet: `pg` (§3, write path), `@aws-sdk/client-bedrock-runtime` (§3, Bedrock), `zod` (§5.2, validate agent JSON). Dev: `typescript`, `@types/node`, `@types/pg`.
+
+  **Next** — M1, in this order: install Node and typecheck; create the CockroachDB Cloud account; provision a Basic cluster via ccloud CLI and commit the script; run `001_init.sql` and fix whatever the two flagged statements do; then the §M1 exit criterion — embed two strings, store them, retrieve the nearer one. Do not write retrieval code before that passes.
