@@ -283,6 +283,7 @@ No music (copyright rule). Screen recording plus voiceover. Rehearse once; do no
 - Prefer boring, working solutions over clever ones. This is a 2.5-week build with a hard deadline.
 - Do not add dependencies without a reason logged here.
 - Ask before any architectural change to this spec.
+- **Claude Code cannot run `ccloud`.** Its shell is sandboxed into a Windows app container that sees a frozen mirror of `%APPDATA%`, so `%APPDATA%\.cockroachdb\credentials.json` reads as 0 bytes even after a successful `ccloud auth login` in a normal terminal. Verified 2026-07-29. Anything depending on ccloud's local credential store must be run by the human; paste the output back. This does **not** affect the database itself — `pg` connects over the network using `DATABASE_URL` from `.env`, which Claude Code can read and use normally. So migrations, seeding, smoke tests and all application code stay on the Claude Code side; only cluster lifecycle commands move to the human.
 
 ---
 
