@@ -17,6 +17,7 @@
     "verify:schema": "node --env-file=.env scripts/verify-schema.mjs",
     "check:db": "node --env-file=.env scripts/db-check.mjs",
     "check:bedrock": "node --env-file=.env scripts/bedrock-check.mjs",
+    "check:mcp": "npm run build && node --env-file=.env scripts/mcp-check.mjs",
     "seed": "npm run build && node --env-file=.env dist/seed/run.js",
     "check:retrieval": "npm run build && node --env-file=.env dist/seed/check-retrieval.js",
     "dev": "npm run build && node --env-file=.env dist/api/server.js",

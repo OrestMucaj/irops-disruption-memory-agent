@@ -372,20 +372,59 @@ incapable of mutating the memory layer.
 
 No restriction to IDE environments is stated.
 
-### 2.5 What remains unverified ❌
+### 2.5 Connection mechanics — RESOLVED 2026-08-04 ✅
 
-The blog announces the capability; it is not a full API reference. Before
-building the runtime path:
-- Confirm the exact HTTP transport (streamable HTTP vs SSE) and how the API key
-  is presented (`Authorization: Bearer <key>` is the CockroachDB Cloud API
-  convention, but I have **not** seen it stated for the MCP endpoint
-  specifically — do not assume).
-- Confirm a service-account API key can be created on a **free Basic** org, not
-  just paid tiers. Nothing I read says either way. ⚠️
-- Confirm which MCP client library to use from Node.
+Source: [Connect to the CockroachDB Cloud MCP Server](https://www.cockroachlabs.com/docs/cockroachcloud/connect-to-the-cockroachdb-cloud-mcp-server)
+(a dedicated quickstart that did not exist / was not found during the July
+research; it supersedes the blog for mechanics).
 
-**Plan:** target option (a), timebox it per SPEC §10's 30-minute rule, fall
-back to (b) and be honest in the README if the auth handshake fights back.
+- **Transport:** streamable HTTP. "HTTP transport is supported and recommended";
+  "SSE transport is intentionally excluded (deprecated in MCP)".
+- **Auth header, verbatim:** `"Authorization": "Bearer {your-service-account-api-key}"`.
+- **Cluster scoping:** header `"mcp-cluster-id": "{your-cluster-id}"`. The
+  cluster ID is the UUID in the console URL
+  (`https://cockroachlabs.cloud/cluster/{id}/overview`).
+- **RBAC, and this is the surprise:** an API-key service account "must have
+  **'Cluster Admin' or 'Cluster Operator'** role on target clusters." There is
+  **no read-only role option for MCP access**. The `mcp:read`/`mcp:write`
+  scopes from the blog are OAuth scopes, not API-key scopes.
+
+⚠️ **Consequence for the "read-only" claim.** With an API key, read-only cannot
+be enforced by giving the account a read-only role — the platform requires
+Operator/Admin. Read-only must therefore be enforced at the **client layer**:
+our code only ever invokes tools from an explicit read-only allowlist
+(`select_query`, `explain_query`, `get_table_schema`, `list_tables`,
+`list_databases`) and refuses anything else even if the server offers it.
+Choose **Cluster Operator** over Cluster Admin (the lesser of the two permitted
+roles). Say all of this plainly in the README rather than implying a read-only
+credential exists.
+
+**Tools (from the quickstart):** read-only — `list_clusters`, `get_cluster`,
+`list_databases`, `list_tables`, `get_table_schema`, `select_query`,
+`explain_query`, `show_statement`, `show_running_queries`; write —
+`create_database`, `create_table`, `insert_rows`.
+
+**Operational limits that shape the analyst design:**
+- one SQL statement per call, ≤16,384 chars; **20-second query timeout**
+- **10 KiB response cap**; `SELECT` without `LIMIT` returns 25 rows; explicit
+  `LIMIT` capped at 10,000
+- blocked schemas: `system`, `crdb_internal`, `pg_catalog`,
+  `information_schema`, `pg_extension`
+- `explain_query` supports `SELECT`/`INSERT`/`CREATE TABLE` only; no
+  `EXPLAIN ANALYZE`
+
+So the analyst must instruct the model to always use LIMIT, keep result sets
+small, and never query system schemas — the server enforces all three anyway,
+but a model that knows the limits wastes fewer round trips.
+
+### 2.6 Still unverified ❌
+
+- Whether a **free Basic org** can create a service account + API key at all.
+  The Authorization docs describe service accounts as org-level with no tier
+  caveat, and the quickstart mentions none — but only the console answers this.
+  This is the last fact deciding SPEC §7 option (a) vs (b).
+- Whether `Cluster Operator` suffices in practice for `select_query` on a
+  Basic cluster (quickstart lists it as sufficient; smoke test will confirm).
 
 ---
 
@@ -885,8 +924,11 @@ Ordered by how badly a wrong assumption would hurt.
 2. ~~Is `feature.vector_index.enabled` already `true`?~~ ✅ **RESOLVED — it is
    `true` by default.** The Vector Indexes page is stale (§1.8, §1.10).
 3. ❌ Can a **free Basic org create a service-account API key** for the MCP
-   server? (§2.5) — decides SPEC §7 option (a) vs (b).
-4. ❌ Exact MCP transport and auth header format. (§2.5) — do not assume Bearer.
+   server? (§2.6) — the last fact deciding SPEC §7 option (a) vs (b).
+4. ~~Exact MCP transport and auth header format.~~ ✅ **RESOLVED 2026-08-04**
+   — streamable HTTP; `Authorization: Bearer <key>` + `mcp-cluster-id` header;
+   service account needs Cluster Operator/Admin (no read-only role exists, so
+   read-only is enforced by our client-side tool allowlist). §2.5.
 5. ❌ Bedrock model access enabled for `amazon.titan-embed-text-v2:0` in the
    chosen region. (§4.6)
 6. ⚠️ Vector indexing's GA-vs-Preview status. (§1.8, §1.10) — no official GA

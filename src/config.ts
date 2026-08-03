@@ -64,6 +64,15 @@ export interface Config {
   readonly bedrockEmbeddingModelId: string | null;
   readonly bedrockLlmModelId: string | null;
 
+  /**
+   * CockroachDB Cloud Managed MCP Server (the analyst path, SPEC §7).
+   * All three nullable: the analyst feature switches off cleanly when they are
+   * absent rather than half-configuring itself.
+   */
+  readonly mcpUrl: string;
+  readonly mcpApiKey: string | null;
+  readonly mcpClusterId: string | null;
+
   /** Guardrails — SPEC §5.4. */
   readonly maxModelCallsPerCase: number;
   readonly dbTimeoutMs: number;
@@ -125,6 +134,9 @@ export function loadConfig(env: Env = process.env): Config {
     awsRegion,
     bedrockEmbeddingModelId,
     bedrockLlmModelId,
+    mcpUrl: readString(env, 'MCP_URL') ?? 'https://cockroachlabs.cloud/mcp',
+    mcpApiKey: readString(env, 'MCP_API_KEY'),
+    mcpClusterId: readString(env, 'MCP_CLUSTER_ID'),
     maxModelCallsPerCase: readInt(env, 'MAX_MODEL_CALLS_PER_CASE', 3, { min: 1, max: 100 }, problems),
     dbTimeoutMs: readInt(env, 'DB_TIMEOUT_MS', 5_000, { min: 100, max: 120_000 }, problems),
     modelTimeoutMs: readInt(env, 'MODEL_TIMEOUT_MS', 30_000, { min: 100, max: 300_000 }, problems),
@@ -154,6 +166,9 @@ export function describeConfig(config: Config): Record<string, string | number |
     awsRegion: config.awsRegion,
     bedrockEmbeddingModelId: config.bedrockEmbeddingModelId ?? '(not set)',
     bedrockLlmModelId: config.bedrockLlmModelId ?? '(not set)',
+    mcpUrl: config.mcpUrl,
+    mcpApiKey: config.mcpApiKey === null ? '(not set)' : '(set, redacted)',
+    mcpClusterId: config.mcpClusterId ?? '(not set)',
     maxModelCallsPerCase: config.maxModelCallsPerCase,
     dbTimeoutMs: config.dbTimeoutMs,
     modelTimeoutMs: config.modelTimeoutMs,
