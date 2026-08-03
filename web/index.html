@@ -59,6 +59,10 @@
 
 <div id="toast" class="toast" hidden></div>
 
+<!-- Written by scripts/deploy.ps1 and points the page at the Lambda Function
+     URL. Absent in local development, where the dev server synthesises an
+     empty one and app.js falls back to same-origin /api. -->
+<script src="config.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

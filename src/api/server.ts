@@ -90,6 +90,15 @@ async function serveApi(
 }
 
 async function serveStatic(pathname: string, res: ServerResponse): Promise<void> {
+  // config.js only exists after a deploy, where it pins the frontend to the
+  // Lambda Function URL. Locally, synthesise an empty one so app.js falls back
+  // to same-origin /api without a 404 in the console.
+  if (pathname === '/config.js') {
+    res.writeHead(200, { 'content-type': MIME['.js'] ?? 'text/javascript', 'cache-control': 'no-cache' });
+    res.end("window.API_BASE = '';\n");
+    return;
+  }
+
   const relative = pathname === '/' ? 'index.html' : pathname.replace(/^\/+/, '');
 
   // Confine to WEB_ROOT. `normalize` collapses ../ segments, and the prefix
