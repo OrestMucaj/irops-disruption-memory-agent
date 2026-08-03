@@ -247,7 +247,8 @@ Assume ~2–3 hours per weekday evening, more at weekends. Deadline Aug 18.
 **M4 — Frontend + deploy (2–3 evenings)** — ✅ **COMPLETE 2026-08-03**
 - [x] Three views, wired to Lambda
 - [x] Lambda deployed, frontend on S3, public URL live
-- [x] **Exit criterion MET** — demo: `http://irops-memory-demo-21.s3-website-us-east-1.amazonaws.com`, API: `https://7p2mkku36rbgbj2chqcsers5qy0gkccu.lambda-url.us-east-1.on.aws`. Agent run verified through the deployed Lambda: 5 precedents, 4 actions, 4.5s.
+- [x] **Exit criterion MET** — demo: `https://irops-memory-demo-21.s3.us-east-1.amazonaws.com/index.html`, API: `https://7p2mkku36rbgbj2chqcsers5qy0gkccu.lambda-url.us-east-1.on.aws`. Agent run verified through the deployed Lambda: 5 precedents, 4 actions, 4.5s.
+- **Share the HTTPS URL, not the `s3-website-` one.** S3's website endpoint does index-document routing but is HTTP-only (no TLS listener at all); the REST endpoint does HTTPS but has no index document, so the path must be explicit and the bare root 403s. Any judge whose browser forces HTTPS would see a connection error on the website endpoint. CloudFront would give both at once — deliberately not added, as one more thing to keep alive through judging.
 
 **M5 — MCP + Skills integration (1–2 evenings)**
 - Read-only MCP path working, or documented dev-time usage

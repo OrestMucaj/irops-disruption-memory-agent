@@ -359,10 +359,24 @@ $configPath = Join-Path $repoRoot 'web\config.js'
 Write-Host "   uploading frontend"
 aws s3 sync (Join-Path $repoRoot 'web') "s3://$BucketName/" --delete --cache-control 'no-cache' | Out-Null
 
-$siteUrl = "http://$BucketName.s3-website-$Region.amazonaws.com"
+# Two ways to reach the same objects, with different trade-offs:
+#
+#   website endpoint : bare URL works (index document routing), but S3 website
+#                      endpoints are HTTP-ONLY -- there is no TLS listener, so
+#                      https:// fails with a connection reset. Browsers set to
+#                      force HTTPS cannot open it at all.
+#   REST endpoint    : HTTPS works, but there is no index-document concept, so
+#                      the path must be spelled out. The bare root 403s.
+#
+# The HTTPS one is the URL to hand to anyone, because a browser that upgrades
+# HTTP to HTTPS would otherwise show them nothing. CloudFront in front of the
+# bucket would give both at once; it is not worth the extra moving parts here.
+$siteHttp  = "http://$BucketName.s3-website-$Region.amazonaws.com"
+$siteHttps = "https://$BucketName.s3.$Region.amazonaws.com/index.html"
 
 Write-Host "`n== done =="
-Write-Host "   API  : $functionUrl/api/health"
-Write-Host "   DEMO : $siteUrl"
+Write-Host "   API        : $functionUrl/api/health"
+Write-Host "   DEMO (https): $siteHttps      <- share this one"
+Write-Host "   demo (http) : $siteHttp"
 Write-Host ""
 Write-Host "   Verify with:  curl $functionUrl/api/health"

@@ -245,6 +245,24 @@ failure surfaces.
 
 ---
 
+## Live demo
+
+**<https://irops-memory-demo-21.s3.us-east-1.amazonaws.com/index.html>**
+
+> The `/index.html` is required. S3 offers two endpoints for the same objects
+> and neither does both things: the **website** endpoint
+> (`s3-website-…`) handles index-document routing but is **HTTP-only** — it has
+> no TLS listener, so `https://` fails with a connection reset. The **REST**
+> endpoint (`s3.…`) serves HTTPS but has no index-document concept, so the path
+> must be spelled out and the bare root returns 403.
+>
+> The HTTPS one is what gets shared, because any browser configured to upgrade
+> HTTP to HTTPS would otherwise show a connection error and nothing else.
+> CloudFront in front of the bucket would give both at once, at the cost of
+> another moving part to keep alive through judging.
+
+---
+
 ## Deploying
 
 The demo is a Lambda Function URL plus an S3 static site.
