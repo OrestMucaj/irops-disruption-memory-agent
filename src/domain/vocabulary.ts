@@ -199,6 +199,23 @@ export const WINDOW_PHRASE: Record<RecoveryWindow, string> = {
   overnight: 'late night departure with no same-day recovery, overnight accommodation likely',
 };
 
+/**
+ * The operational consequence of the recovery window, stated plainly.
+ *
+ * Exists to reinforce the window a second time in the summary. A semantic
+ * embedding weights a concept mentioned once, in a subordinate clause, far
+ * lower than the topic of the text overall — which is how the window signal
+ * came to sit at chance (27.8%) with Titan while a lexical matcher scored 70%.
+ * Saying the consequence outright, in its own sentence, gives the model
+ * something concrete to encode.
+ */
+export const WINDOW_CONSEQUENCE: Record<RecoveryWindow, string> = {
+  early_morning: 'Passengers can be reaccommodated the same day.',
+  midday: 'Same-day reaccommodation is still possible but options are thinning.',
+  evening: 'Few same-day options remain and overnight accommodation may be needed.',
+  overnight: 'No same-day options remain, so overnight accommodation is required.',
+};
+
 export const AIRCRAFT_PHRASE: Record<AircraftClass, string> = {
   turboprop: 'turboprop',
   regional_jet: 'regional jet',

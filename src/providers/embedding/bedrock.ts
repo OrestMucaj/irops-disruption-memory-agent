@@ -1,31 +1,27 @@
+import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime';
+
 import type { EmbeddingProvider } from '../types.js';
-import { ProviderNotConfiguredError } from '../types.js';
+import { ProviderResponseError } from '../types.js';
 
 /**
- * Amazon Bedrock embedding provider — NOT YET IMPLEMENTED.
+ * Amazon Bedrock embedding provider (Amazon Titan Text Embeddings V2).
  *
- * Deliberately a stub. SPEC §1.2 forbids writing code against an API whose
- * behaviour has not been proven with a smoke test first, and no AWS account
- * exists yet. Constructing this is fine; calling `embed()` throws.
+ * Request and response shapes are those recorded in NOTES.md §4.1 and since
+ * confirmed against the live service by `npm run check:bedrock` on 2026-07-29:
+ * 1024 dimensions returned, L2 norm 1.000000, related text at cosine 0.575
+ * versus 0.044 for unrelated text.
  *
- * Implementation is mechanical once an account exists — the exact request and
- * response shapes are already recorded in NOTES.md §4.1, verified against the
- * AWS docs:
+ * Two things the smoke test settled that are worth not re-litigating:
  *
- *   Model ID:  amazon.titan-embed-text-v2:0
- *   Request:   { "inputText": string, "dimensions": int, "normalize": boolean }
- *              `dimensions` accepts 1024 (default), 512, 256
- *   Response:  { "embedding": [float...], "inputTextTokenCount": int }
+ *  - Titan normalizes by default (`normalize` defaults to true), so cosine
+ *    distance and L2 rank identically. The schema uses `vector_cosine_ops`
+ *    regardless — see NOTES.md §5.2 for why that is still the right choice.
+ *  - `embeddingTypes` is deliberately never set. Setting it to `["binary"]`
+ *    alone removes the `embedding` field from the response entirely.
  *
- * Two traps recorded during research, worth re-reading before writing this:
- *
- *  1. Leave `embeddingTypes` unset. If it is set to `["binary"]` only, the
- *     `embedding` field is absent from the response entirely.
- *  2. Bedrock throttles embedding models by requests-per-minute, not
- *     tokens-per-minute (NOTES.md §4.5). The M2 backfill must rate-limit.
- *
- * Before implementing, confirm model access is enabled for this model in the
- * target region — NOTES.md §4.6 flags it as a common day-one blocker.
+ * There is no fallback to the fake provider on failure, by design. A silent
+ * downgrade would write vectors that are not comparable with the stored ones
+ * and nothing downstream would notice (see providers/types.ts).
  */
 export class BedrockEmbeddingProvider implements EmbeddingProvider {
   public readonly name = 'bedrock';
@@ -33,20 +29,85 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
   public readonly dimensions: number;
   public readonly region: string;
 
-  constructor(options: { modelId: string; dimensions: number; region: string }) {
+  private readonly client: BedrockRuntimeClient;
+
+  constructor(options: {
+    modelId: string;
+    dimensions: number;
+    region: string;
+    /** Overridable so tests can inject a stub client. */
+    client?: BedrockRuntimeClient;
+  }) {
     this.modelId = options.modelId;
     this.dimensions = options.dimensions;
     this.region = options.region;
+    this.client = options.client
+      ?? new BedrockRuntimeClient({
+        region: options.region,
+        // The SDK retries throttling and transient 5xx by default. Three
+        // attempts is enough to ride out a brief rate limit without turning a
+        // hard failure into a long stall — the caller has its own timeout.
+        maxAttempts: 3,
+      });
   }
 
-  public embed(_text: string): Promise<number[]> {
-    return Promise.reject(
-      new ProviderNotConfiguredError(
+  public async embed(text: string): Promise<number[]> {
+    if (text.trim() === '') {
+      // Titan rejects empty input, and an all-zero vector would be worse: it
+      // has undefined cosine distance to everything and would quietly poison
+      // retrieval rather than failing.
+      throw new ProviderResponseError(
         'BedrockEmbeddingProvider',
-        'No AWS account is wired up yet. Set EMBEDDING_PROVIDER=fake for local ' +
-          'development, or implement this against NOTES.md §4.1 once Bedrock ' +
-          'model access is confirmed.',
-      ),
+        'refusing to embed empty text',
+      );
+    }
+
+    const response = await this.client.send(
+      new InvokeModelCommand({
+        modelId: this.modelId,
+        contentType: 'application/json',
+        accept: 'application/json',
+        body: JSON.stringify({
+          inputText: text,
+          dimensions: this.dimensions,
+          normalize: true,
+        }),
+      }),
     );
+
+    if (response.body === undefined) {
+      throw new ProviderResponseError('BedrockEmbeddingProvider', 'response had no body');
+    }
+
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(new TextDecoder().decode(response.body));
+    } catch (err) {
+      throw new ProviderResponseError(
+        'BedrockEmbeddingProvider',
+        `response body was not JSON: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
+
+    const embedding = (parsed as { embedding?: unknown }).embedding;
+    if (!Array.isArray(embedding)) {
+      throw new ProviderResponseError(
+        'BedrockEmbeddingProvider',
+        `response had no 'embedding' array (keys: ${Object.keys(parsed as object).join(', ')})`,
+      );
+    }
+
+    // Width is checked rather than trusted. A vector of the wrong length is
+    // rejected by the VECTOR(n) column anyway, but failing here names the
+    // actual cause instead of surfacing as a confusing database error several
+    // frames away.
+    if (embedding.length !== this.dimensions) {
+      throw new ProviderResponseError(
+        'BedrockEmbeddingProvider',
+        `expected ${this.dimensions} dimensions, got ${embedding.length}`,
+      );
+    }
+
+    return embedding as number[];
   }
 }

@@ -1,5 +1,5 @@
 import { loadConfig } from '../config.js';
-import { createPool } from '../db.js';
+import { checkEmbeddingModelConsistency, createPool } from '../db.js';
 import { createEmbeddingProvider, createLLMProvider } from '../providers/index.js';
 
 import { runAgent } from './run.js';
@@ -26,6 +26,15 @@ async function main(): Promise<void> {
   }
 
   try {
+    // Fail loudly rather than retrieving nonsense. See db.ts for why this is
+    // the sharpest footgun in the system.
+    const mismatch = await checkEmbeddingModelConsistency(pool, embedder.modelId);
+    if (mismatch !== null) {
+      console.error(`\nEMBEDDING MODEL MISMATCH\n  ${mismatch}`);
+      process.exitCode = 1;
+      return;
+    }
+
     let caseId = process.argv[2];
 
     if (caseId === undefined) {

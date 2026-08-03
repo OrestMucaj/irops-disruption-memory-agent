@@ -6,6 +6,7 @@ import {
   SCALE_PHRASE,
   SEVERITY_PHRASE,
   STATION_PHRASE,
+  WINDOW_CONSEQUENCE,
   WINDOW_PHRASE,
   misconnectPressureOf,
   recoveryWindowOf,
@@ -67,44 +68,55 @@ export function buildCaseSummary(
 
   const sentences: string[] = [];
 
-  // 1. The operational shape. This is the part that should dominate similarity.
+  // 1. OPERATIONAL SIGNATURE. Every discriminator that should drive similarity,
+  //    compressed into the opening sentence: recovery window, cause, severity,
+  //    misconnect pressure, station type.
+  //
+  //    Order here is not cosmetic. Measured 2026-07-29: with the window buried
+  //    at sentence 5 behind a boilerplate flight/route sentence, Titan scored
+  //    27.8% on window match -- exactly chance -- while a lexical matcher scored
+  //    70.5%. The summary had been accidentally tuned to token overlap. Leading
+  //    with the window and demoting the boilerplate is the fix.
   sentences.push(
-    `${capitalise(CAUSE_PHRASE[disruption.cause])} causing a ` +
-      `${SEVERITY_PHRASE[severity]} at a ${STATION_PHRASE[originType]}.`,
+    `${capitalise(WINDOW_PHRASE[window])}. ` +
+      `${capitalise(CAUSE_PHRASE[disruption.cause])} causing a ${SEVERITY_PHRASE[severity]}. ` +
+      `${capitalise(PRESSURE_PHRASE[pressure])} at a ${STATION_PHRASE[originType]}.`,
   );
 
-  // 2. Concrete specifics, kept deliberately short.
+  // 2. Magnitude.
   sentences.push(
-    `Flight ${disruption.flightNo} from ${disruption.origin} to ${disruption.destination}, ` +
-      `${AIRCRAFT_PHRASE[disruption.aircraftClass]}, delayed ${disruption.delayMinutes} minutes.`,
-  );
-
-  // 3. Who is affected and how badly.
-  sentences.push(
-    `${capitalise(SCALE_PHRASE[scale])} of ${disruption.paxCount} passengers with ` +
-      `${PRESSURE_PHRASE[pressure]}: ${disruption.misconnectCount} passengers misconnecting, ` +
+    `Delayed ${disruption.delayMinutes} minutes. ` +
+      `${capitalise(SCALE_PHRASE[scale])} of ${disruption.paxCount} passengers, ` +
+      `${disruption.misconnectCount} misconnecting, ` +
       `${missed} already missed and ${atRisk} at risk.`,
   );
 
-  // 4. Priority pressure — a small number of premium passengers changes the
-  //    handling far more than the raw count suggests.
-  if (disruption.priorityPaxCount > 0) {
-    sentences.push(
-      `${disruption.priorityPaxCount} priority passengers affected.`,
-    );
-  } else {
-    sentences.push('No priority passengers affected.');
-  }
+  // 3. Priority pressure — a handful of premium passengers changes the handling
+  //    far more than the raw count suggests.
+  sentences.push(
+    disruption.priorityPaxCount > 0
+      ? `${disruption.priorityPaxCount} priority passengers affected.`
+      : 'No priority passengers affected.',
+  );
 
-  // 5. The recovery window. Frequently the deciding factor.
-  sentences.push(`${capitalise(WINDOW_PHRASE[window])}.`);
+  // 4. The window's consequence, stated outright. Deliberate repetition: this
+  //    is the single most decision-relevant fact about a disruption, and one
+  //    mention in a subordinate clause is not enough for a semantic model to
+  //    weight it properly.
+  sentences.push(WINDOW_CONSEQUENCE[window]);
 
-  // 6. Special handling, only when present.
   if (specialHandlingCount > 0) {
-    sentences.push(
-      `${specialHandlingCount} passengers require special handling assistance.`,
-    );
+    sentences.push(`${specialHandlingCount} passengers require special handling assistance.`);
   }
+
+  // 5. Identifiers LAST, and deliberately terse. Flight number and airport pair
+  //    are near-identical noise across the corpus -- they dilute the signal
+  //    above without helping retrieval. They stay only because a human reading
+  //    the memory view wants to know which flight this was.
+  sentences.push(
+    `${capitalise(AIRCRAFT_PHRASE[disruption.aircraftClass])}. ` +
+      `Flight ${disruption.flightNo} ${disruption.origin} to ${disruption.destination}.`,
+  );
 
   return sentences.join(' ');
 }

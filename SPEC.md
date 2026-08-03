@@ -239,7 +239,10 @@ Assume ~2–3 hours per weekday evening, more at weekends. Deadline Aug 18.
 - [x] `agent_runs` logging, opened before work starts so a killed process still leaves evidence
 - [x] Runs locally end-to-end against a seeded case (`npm run agent`)
 - [x] Guardrails tested rather than asserted (`npm run check:guardrails`) — 5/5 failure paths hold
-- [ ] `BedrockLLMProvider` implementation — needs AWS IAM keys. A `heuristic` decision-tree provider stands in so the loop, and later the UI, are developable offline. **It is not a language model and must never be the demo path.**
+- [x] `BedrockLLMProvider` implementation — **done 2026-07-29.** Converse API, `amazon.nova-lite-v1:0`. Full loop verified on real Bedrock: 1,930 prompt / 937 completion tokens (real API counts, not estimates), 8.4s, 4 grounded actions persisted.
+- [x] Amazon Bedrock embeddings live — `amazon.titan-embed-text-v2:0`, whole corpus re-embedded.
+
+**M3 is complete.** The `heuristic` decision-tree provider remains available for offline development and as a baseline. It is not a language model and must never be the demo path.
 
 **M4 — Frontend + deploy (2–3 evenings)**
 - Three views, wired to Lambda
@@ -422,3 +425,29 @@ _Append dated entries below. Format: date — what was done — what's blocked �
   **Blocked** — `BedrockLLMProvider` is still a stub. It needs AWS IAM keys (the dev user + scoped Bedrock policy). Nothing else waits on it.
 
   **Next: M4 — frontend and deploy.** Three views, Lambda, S3, public URL. Can be built entirely against the heuristic provider and swapped to Bedrock when keys arrive.
+
+- 2026-07-29 (session 2, M3 complete) — **Running on real Bedrock end to end. And the switch exposed a serious flaw in `summary_text` that only real embeddings could reveal.**
+
+  IAM user created with a policy granting exactly `bedrock:InvokeModel` in one region. Smoke tests first, per §1.2, then implementation.
+
+  **Bedrock verified (NOTES §4A):** Titan V2 returns 1024 dimensions at L2 norm 1.000000 — confirming it normalizes by default, which retroactively justifies the fake provider doing the same. Related text scores cosine 0.575 against 0.044 for unrelated. No throttling on first call, so **Service Quota is not zero on a new account** — closing the last doubt from §6.6.
+
+  **Model IDs were probed, not chosen from a page**, because §4.3 records AWS's own docs contradicting themselves on one. All three Nova models work in us-east-1 and return strict JSON; Anthropic returns ResourceNotFound pending the one-time use-case form. Picked `amazon.nova-lite-v1:0` over the probe's latency-based recommendation of Micro: all three answer in ~700ms, and multi-document reasoning over precedent is the wrong place to economise on model size when the difference is fractions of a cent.
+
+  **Converse API, not InvokeModel** — one request shape across all models, so swapping model is a config edit, and it reports token usage uniformly. `agent_runs` now records **real** token counts (1,930 / 937 on a live run) rather than estimates. `stopReason: max_tokens` raises its own error, since a retry would truncate identically and "not valid JSON" would be a misleading thing to log.
+
+  **The finding that mattered.** Switching to real embeddings made retrieval *worse*, and the recovery-window signal — the most decision-relevant fact about a disruption — fell to **27.8%, exactly chance**, from 70.5% with the lexical fake.
+
+  Cause: `summary_text` had been accidentally tuned to token overlap. The window sat at sentence 5 of 6, behind a sentence of flight number, route and aircraft that is near-identical across all 84 cases. Lexical matching does not care about position or dilution. A semantic model does.
+
+  Fix: lead with an operational-signature sentence carrying every discriminator, restate the window's consequence in its own sentence, demote flight and route to last. Window recovered to **42.8% (1.54× lift)** and all three axes pass. Cause gave up some ground (61.3% → 56.0%) — a real trade, taken deliberately.
+
+  ⚠️ **The fake embedder still scores higher on this benchmark, and that does not mean it is better.** The metric scores agreement on labels that are literally words in the text, which is what lexical matching is unbeatable at. Titan generalises to paraphrases the fake cannot see. The benchmark flatters the fake by construction. Worth remembering before quoting either number at a judge.
+
+  **Guard added:** `checkEmbeddingModelConsistency` refuses to run when stored vectors came from a different model than the configured provider. Flipping `EMBEDDING_PROVIDER` on a seeded database would otherwise return confident, ordered, meaningless results with nothing erroring — the sharpest footgun in the system, and the reason `case_embeddings.model_id` exists.
+
+  **Verified after the switch:** all 5 guardrail scenarios still pass; M2 exit criterion re-met on real embeddings; agent runs end to end producing 4 grounded actions citing real precedent IDs and real passenger references.
+
+  **Quality note for M6:** Nova Lite's rationales are formulaic and it cites all five precedents indiscriminately on the case-level action. Prompt tuning, or Nova Pro, is a cheap polish item — not a blocker.
+
+  **Next: M4 — frontend and deploy.**

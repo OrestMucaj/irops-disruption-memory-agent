@@ -38,3 +38,44 @@ export function createPool(config: Config): pg.Pool {
 export function toVectorLiteral(vector: readonly number[]): string {
   return `[${vector.join(',')}]`;
 }
+
+/**
+ * Refuses to query with an embedding model different from the one that wrote
+ * the stored vectors.
+ *
+ * This is the sharpest footgun in the whole system. Vectors from two different
+ * models occupy unrelated spaces, so comparing them returns confident, ordered,
+ * completely meaningless results. Nothing errors. The distances look plausible.
+ * Retrieval quality just silently collapses to noise, and every downstream
+ * claim built on it becomes false.
+ *
+ * It is precisely what happens the first time you flip EMBEDDING_PROVIDER from
+ * `fake` to `bedrock` against an already-seeded database — which is why
+ * `case_embeddings.model_id` exists and why this check is cheap insurance.
+ *
+ * Returns a description of the mismatch, or null when everything agrees.
+ */
+export async function checkEmbeddingModelConsistency(
+  db: pg.Pool,
+  currentModelId: string,
+): Promise<string | null> {
+  const { rows } = await db.query<{ model_id: string; n: string }>(
+    `SELECT model_id, count(*)::STRING AS n
+       FROM case_embeddings
+      GROUP BY model_id
+      ORDER BY count(*) DESC`,
+  );
+
+  if (rows.length === 0) return null;
+
+  const foreign = rows.filter((r) => r.model_id !== currentModelId);
+  if (foreign.length === 0) return null;
+
+  const stored = rows.map((r) => `${r.model_id} (${r.n} rows)`).join(', ');
+  return (
+    `stored embeddings were produced by ${stored}, but the configured provider is ` +
+    `"${currentModelId}". Vectors from different models are not comparable, so ` +
+    'retrieval would return confident nonsense. Re-embed everything with: ' +
+    'npm run seed -- --reset'
+  );
+}
