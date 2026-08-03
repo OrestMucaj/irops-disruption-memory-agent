@@ -108,6 +108,64 @@ export function groundActions(
   return { actions: kept, warnings, droppedActions, droppedCitations };
 }
 
+/** Action types that actually do something for a stranded passenger. */
+const REMEDIAL_ACTIONS: ReadonlySet<string> = new Set(['rebook', 'hotel', 'prioritise']);
+
+export interface CoveragePassenger {
+  readonly paxRef: string;
+  readonly connectionStatus: string;
+}
+
+/**
+ * Finds passengers who have already missed their connection and have no action
+ * that would actually reaccommodate them.
+ *
+ * This exists because prompting is a request, not a guarantee.
+ *
+ * Observed 2026-08-03 on a live case: 4 passengers had missed connections,
+ * the agent proposed rebooking exactly one of them, and the only thing the
+ * chosen four had in common was a special-handling requirement — it had
+ * latched onto that column as a selection criterion. Two of the five retrieved
+ * precedents were rated 2/5 with the note "Misconnecting passengers were not
+ * proactively rebooked", so the memory layer had supplied precisely the warning
+ * needed and the reasoning step ignored it.
+ *
+ * The prompt has since been fixed, but a prompt fix only makes the failure less
+ * likely. This makes it *visible every time it happens*, including with a model
+ * nobody has tested. Same division of labour as the hallucination guard: the
+ * model supplies judgement, code enforces invariants.
+ *
+ * Deliberately NOT an error. Occasionally there is a good reason to leave a
+ * missed passenger alone, and silently discarding the whole plan would be worse
+ * than flagging it. The human decides; the system refuses to let it pass
+ * unnoticed.
+ *
+ * At-risk passengers are excluded on purpose. Their connection may still hold,
+ * and rebooking everyone releases seats that may not need releasing — that is a
+ * real judgement call and not something to assert in code.
+ */
+export function findCoverageGaps(
+  actions: ReadonlyArray<{ action_type: string; target_pax_ref: string | null }>,
+  passengers: readonly CoveragePassenger[],
+): string[] {
+  // A case-level remedial action (no specific target) is taken to cover
+  // everyone — "rebook the misconnecting passengers" is a legitimate plan.
+  const hasCaseLevelRemedy = actions.some(
+    (a) => a.target_pax_ref === null && REMEDIAL_ACTIONS.has(a.action_type),
+  );
+  if (hasCaseLevelRemedy) return [];
+
+  const targeted = new Set(
+    actions
+      .filter((a) => a.target_pax_ref !== null && REMEDIAL_ACTIONS.has(a.action_type))
+      .map((a) => a.target_pax_ref as string),
+  );
+
+  return passengers
+    .filter((p) => p.connectionStatus === 'missed' && !targeted.has(p.paxRef))
+    .map((p) => p.paxRef);
+}
+
 /**
  * Pulls a JSON object out of a model response.
  *

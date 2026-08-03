@@ -152,7 +152,7 @@ async function renderCase() {
     return;
   }
 
-  const { case: c, passengers, actions, precedents, lastRun, resolution } = data;
+  const { case: c, passengers, actions, precedents, lastRun, resolution, coverageGaps = [] } = data;
   const parts = [];
 
   // --- Facts -------------------------------------------------------------
@@ -233,6 +233,17 @@ async function renderCase() {
   // --- Proposed actions --------------------------------------------------
   const actCard = el('div', { className: 'card' },
     el('h2', {}, 'Proposed actions — nothing is executed without approval'));
+
+  // Deterministic invariant check, not model output. Surfaced prominently
+  // because it is the difference between "the plan looks reasonable" and
+  // "somebody is going to sleep in the terminal".
+  if (coverageGaps.length) {
+    actCard.append(el('div', { className: 'banner err' },
+      el('b', {}, `${coverageGaps.length} passenger${coverageGaps.length === 1 ? '' : 's'} left unhandled. `),
+      'These have already missed their connection and no proposed action reaccommodates them: ',
+      coverageGaps.join(', '),
+      '. Review before approving.'));
+  }
 
   if (!actions.length) {
     actCard.append(el('div', { className: 'muted' }, 'No proposals yet.'));

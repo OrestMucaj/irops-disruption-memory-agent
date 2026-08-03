@@ -6,6 +6,7 @@ import { toVectorLiteral } from '../db.js';
 import { buildResolutionSummary } from '../domain/summary.js';
 import { runAgent } from '../agent/run.js';
 import { loadCase } from '../agent/retrieval.js';
+import { findCoverageGaps } from '../agent/schema.js';
 import type { EmbeddingProvider, LLMProvider } from '../providers/index.js';
 
 /**
@@ -192,11 +193,24 @@ async function caseDetail(deps: ApiDeps, caseId: string): Promise<ApiResponse> {
     precedents = retrievedIds.map((id) => byId.get(id)).filter((r) => r !== undefined);
   }
 
+  // Recomputed on read, not stored. A human rejecting the only rebooking action
+  // creates a coverage gap that did not exist when the agent ran, and a stale
+  // stored value would hide exactly that.
+  const undecided = actions.rows.filter((a) => a.status !== 'rejected');
+  const coverageGaps = findCoverageGaps(
+    undecided.map((a) => ({
+      action_type: String(a.action_type),
+      target_pax_ref: a.target_pax_ref === null ? null : String(a.target_pax_ref),
+    })),
+    loaded.passengers,
+  );
+
   return ok({
     case: loaded.subject,
     passengers: loaded.passengers,
     actions: actions.rows,
     precedents,
+    coverageGaps,
     lastRun: lastRun.rows[0] ?? null,
     resolution: resolution.rows[0] ?? null,
   });
@@ -213,6 +227,7 @@ async function runAgentRoute(deps: ApiDeps, caseId: string): Promise<ApiResponse
     runId: result.runId,
     error: result.error,
     warnings: result.warnings,
+    coverageGaps: result.coverageGaps,
     modelCalls: result.modelCalls,
     latencyMs: result.latencyMs,
     actionCount: result.actions.length,

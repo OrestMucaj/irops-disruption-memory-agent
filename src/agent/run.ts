@@ -10,6 +10,7 @@ import type { Precedent } from './retrieval.js';
 import {
   agentOutputSchema,
   extractJson,
+  findCoverageGaps,
   groundActions,
 } from './schema.js';
 import type { GroundedAction } from './schema.js';
@@ -40,6 +41,8 @@ export interface AgentRunResult {
   readonly actions: readonly GroundedAction[];
   readonly precedents: readonly Precedent[];
   readonly warnings: readonly string[];
+  /** Passengers with a missed connection and no action to reaccommodate them. */
+  readonly coverageGaps: readonly string[];
   readonly modelCalls: number;
   readonly latencyMs: number;
   /** Non-null when the run failed. The caller should surface this to the user. */
@@ -57,6 +60,7 @@ export async function runAgent(
   const runId = await beginRun(pool, caseId, llm.modelId);
 
   const warnings: string[] = [];
+  let coverageGaps: readonly string[] = [];
   let precedents: readonly Precedent[] = [];
   let modelCalls = 0;
   let promptTokens: number | null = null;
@@ -130,9 +134,18 @@ export async function runAgent(
         error: message,
       });
       return {
-        runId, caseId, actions: [], precedents, warnings,
+        runId, caseId, actions: [], precedents, warnings, coverageGaps,
         modelCalls, latencyMs: Date.now() - started, error: message,
       };
+    }
+
+    // Invariant check, not a model instruction. See findCoverageGaps.
+    coverageGaps = findCoverageGaps(actions, retrieval.passengers);
+    if (coverageGaps.length > 0) {
+      warnings.push(
+        `${coverageGaps.length} passenger(s) have already missed their connection but have ` +
+          `no action to reaccommodate them: ${coverageGaps.join(', ')}`,
+      );
     }
 
     // --- Persist ----------------------------------------------------------
@@ -154,7 +167,7 @@ export async function runAgent(
     });
 
     return {
-      runId, caseId, actions, precedents, warnings,
+      runId, caseId, actions, precedents, warnings, coverageGaps,
       modelCalls, latencyMs: Date.now() - started, error: null,
     };
   } catch (err) {
@@ -170,7 +183,7 @@ export async function runAgent(
     }).catch(() => { /* the original error matters more than this one */ });
 
     return {
-      runId, caseId, actions: [], precedents, warnings,
+      runId, caseId, actions: [], precedents, warnings, coverageGaps,
       modelCalls, latencyMs: Date.now() - started, error: message,
     };
   }
@@ -217,6 +230,22 @@ async function persist(pool: pg.Pool, input: PersistInput): Promise<void> {
         toVectorLiteral(input.embedding),
         input.modelId,
       ],
+    );
+
+    // Clear still-undecided proposals from earlier runs on this case.
+    //
+    // Re-running otherwise stacks a second plan on top of the first, producing
+    // duplicate and sometimes contradictory actions with nothing to say which
+    // run each came from. An undecided proposal that a fresh run has superseded
+    // is stale noise, not history.
+    //
+    // Decided actions are deliberately untouched. Approved, edited and rejected
+    // are human decisions and are exactly the memory SPEC §5.3 wants kept --
+    // deleting a rejection to tidy the list would erase the most informative
+    // signal in the system.
+    await client.query(
+      `DELETE FROM proposed_actions WHERE case_id = $1 AND status = 'proposed'`,
+      [input.caseId],
     );
 
     for (const action of input.actions) {

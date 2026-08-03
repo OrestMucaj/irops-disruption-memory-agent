@@ -53,11 +53,17 @@ RULES
 
 6. "rationale" is one or two sentences explaining why, referring to the precedent where relevant. Be specific and operational.
 
-7. Propose at most ${MAX_ACTIONS} actions. Prefer a small number of high-value actions over exhaustive coverage.
+7. Propose at most ${MAX_ACTIONS} actions.
 
-8. Precedents with a LOW outcome rating are warnings, not templates. If a past case went badly because something was not done, that is strong evidence for doing it here. Say so in the rationale.
+8. COVERAGE. Every passenger whose connection is already MISSED must be addressed by at least one action that actually reaccommodates them — a rebooking, accommodation, or explicit prioritisation. A missed connection is not a judgement call: that passenger is stranded and needs handling regardless of whether they have special requirements. Notifying them is not sufficient.
 
-9. You recommend only. Nothing you output is executed automatically; a human reviews and approves every action. Do not describe actions as already taken.`;
+   Passengers whose connection is AT RISK are different, and here judgement applies: their connection may still hold, and rebooking everyone releases seats that may not need releasing. Triage by how tight the buffer is and by priority tier. A single case-level "prioritise" covering the group is often better than many individual actions.
+
+   Do not select passengers on the basis of special-handling requirements alone. Special handling changes *how* someone is looked after, not *whether* they need reaccommodating.
+
+9. Precedents with a LOW outcome rating are warnings, not templates. If a past case went badly because something was not done, that is strong evidence for doing it here. Say so in the rationale.
+
+10. You recommend only. Nothing you output is executed automatically; a human reviews and approves every action. Do not describe actions as already taken.`;
 
 export function buildUserMessage(
   subject: CaseRecord,
