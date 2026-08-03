@@ -10,8 +10,9 @@
     "node": ">=20"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "npm run check:web && tsc",
     "typecheck": "tsc --noEmit",
+    "check:web": "node --check web/app.js",
     "migrate": "node --env-file=.env scripts/migrate.mjs",
     "verify:schema": "node --env-file=.env scripts/verify-schema.mjs",
     "check:db": "node --env-file=.env scripts/db-check.mjs",

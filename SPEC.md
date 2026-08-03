@@ -184,6 +184,8 @@ Single Bedrock call with a strict system prompt:
 
 Three views, unstyled-but-clean:
 
+> **Amended 2026-08-04, at the author's request.** The "not a pretty UI" instruction below is superseded: the frontend was rebuilt as a proper operations console — dense tables, Zulu time, tabular figures, a reserved four-colour status palette, severity rails, and an outcome-distribution chart. Rationale: for a judged submission, looking like software an airline would actually run is itself evidence of the "Real-World Impact" and "Production Readiness" criteria, and a demo video of a plain page undersells the memory layer behind it. Still no framework, no build step, no component library — three static files. The original instruction's *intent* (don't burn evenings on design systems) is intact.
+
 1. **Case list** — open and resolved disruptions.
 2. **Case detail** — the main view: case facts, misconnecting passenger table, a "Retrieved precedent" panel showing the similar past cases *and their outcomes*, and the proposed action list with approve/edit/reject controls.
 3. **Memory view** — a simple view of what the agent has learned: recent resolutions, most-cited precedents. This exists so the demo video can *show the memory layer*, which the rules explicitly require the video to demonstrate.
