@@ -202,8 +202,8 @@ Three views, unstyled-but-clean:
 **AWS (need ≥1; we use 2–3):**
 
 - [ ] **Amazon Bedrock** — reasoning + embeddings. *Scoring, not qualifying — see below.*
-- [ ] **AWS Lambda** — agent execution. Function URL, no API Gateway or ALB.
-- [ ] **Amazon S3** — static frontend hosting.
+- [x] **AWS Lambda** — agent execution. Function URL, no API Gateway or ALB. Deployed 2026-08-03.
+- [x] **Amazon S3** — static frontend hosting. Deployed 2026-08-03.
 
 > **Eligibility floor:** the ≥1 AWS requirement is satisfied by Lambda + S3 alone, both of which are free-tier. Bedrock is what makes the AWS involvement load-bearing rather than decorative, so losing it costs points, not eligibility. Worth knowing before panicking if Bedrock model access is slow to approve (NOTES.md §6.6).
 
@@ -244,10 +244,10 @@ Assume ~2–3 hours per weekday evening, more at weekends. Deadline Aug 18.
 
 **M3 is complete.** The `heuristic` decision-tree provider remains available for offline development and as a baseline. It is not a language model and must never be the demo path.
 
-**M4 — Frontend + deploy (2–3 evenings)**
-- Three views, wired to Lambda
-- Lambda deployed, frontend on S3, public URL live
-- **Exit criterion:** someone with the URL and no instructions can trigger the loop.
+**M4 — Frontend + deploy (2–3 evenings)** — ✅ **COMPLETE 2026-08-03**
+- [x] Three views, wired to Lambda
+- [x] Lambda deployed, frontend on S3, public URL live
+- [x] **Exit criterion MET** — demo: `http://irops-memory-demo-21.s3-website-us-east-1.amazonaws.com`, API: `https://7p2mkku36rbgbj2chqcsers5qy0gkccu.lambda-url.us-east-1.on.aws`. Agent run verified through the deployed Lambda: 5 precedents, 4 actions, 4.5s.
 
 **M5 — MCP + Skills integration (1–2 evenings)**
 - Read-only MCP path working, or documented dev-time usage
@@ -451,3 +451,28 @@ _Append dated entries below. Format: date — what was done — what's blocked �
   **Quality note for M6:** Nova Lite's rationales are formulaic and it cites all five precedents indiscriminately on the case-level action. Prompt tuning, or Nova Pro, is a cheap polish item — not a blocker.
 
   **Next: M4 — frontend and deploy.**
+
+- 2026-08-03 (M4 complete) — **Live on AWS. Public demo URL working end to end.**
+
+  Demo: `http://irops-memory-demo-21.s3-website-us-east-1.amazonaws.com`
+  API: `https://7p2mkku36rbgbj2chqcsers5qy0gkccu.lambda-url.us-east-1.on.aws`
+
+  Lambda Function URL + S3 static site — no API Gateway, no ALB, no VPC. Scales to zero, so the Aug 19 – Sep 15 judging window costs essentially nothing. Deployment is scripted and committed (`scripts/deploy.ps1`), and deliberately does **not** create the IAM execution role, so the deploying user never needs `iam:CreateRole` — the key can deploy code but cannot mint identities, which matters for a public repo.
+
+  **Verified on the deployed stack, not just locally:** an agent run through the Lambda returned 5 precedents and 4 grounded actions in 4.5s; the browser loads all 84 cases from S3 against the Function URL; approve / edit / reject and case resolution were all exercised through the API, including the 409 and 400 refusal paths.
+
+  **The grounding guard fired in production.** A live run returned `"action 0 (notify): removed 1 citation(s) to cases that were not retrieved for this run"` — Nova Lite cited a precedent it was never given, and the guard stripped it before it reached the database. The safeguard earning its place on a real request rather than in a test.
+
+  **Three deployment bugs worth recording, because each looked like something else:**
+
+  1. **403 on the Function URL despite a textbook-correct resource policy.** AWS changed this in **October 2025**: "new function URLs will require both `lambda:InvokeFunctionUrl` **and** `lambda:InvokeFunction` permissions", and the docs are explicit that missing the second gives 403 "even if the function URL uses the `NONE` auth type". Almost every example online shows only the first. The policy read as perfectly correct — Allow, Principal `*`, right condition — and still failed, with nothing indicating which half was missing. The console and SAM add both automatically; the CLI does not.
+
+  2. **Duplicate CORS headers.** The Lambda handler set CORS headers *and* the Function URL's `--cors` config added them, producing two `Access-Control-Allow-Origin` headers. The spec permits exactly one, so browsers rejected every response with an opaque "Failed to fetch" — while curl, which does not enforce CORS, reported a healthy 200. Fixed by making the Function URL own CORS in deployment and the dev server own it locally.
+
+  3. **Two PowerShell traps, one a repeat.** `Set-Content -Encoding utf8` emits a BOM in PowerShell 5.1 and the AWS CLI cannot parse JSON starting with one; switched to `[System.IO.File]::WriteAllText`. And redirecting native stderr with `2>&1` under `ErrorActionPreference=Stop` throws before `$LASTEXITCODE` can be read — the same trap already fixed once in the provisioning script, reintroduced here.
+
+  **Security incident, recorded honestly.** The BOM parse failure made the AWS CLI echo the entire environment payload — including `DATABASE_URL` with its password — to the console. Passing it by file reference was meant to keep it off command lines; it did not anticipate the CLI printing the file back on a parse error. The script now routes all AWS output through a redactor that masks connection strings. **The database password was exposed and should be rotated.**
+
+  **Also:** README rewritten from the day-one skeleton into a real document — architecture, setup from zero with a verification command at each step, the `EXPLAIN` output proving hybrid retrieval is index-accelerated, cost reasoning, and an "Honest status" section covering vector indexing's Preview status, the heuristic provider not being an LLM, and why the retrieval benchmark flatters the fake embedder.
+
+  **Next: M5 — MCP Server + Agent Skills**, then M6 polish, video and submission. Still open: whether a free Basic org can create a service-account API key (decides §7 MCP option a vs b).

@@ -1,5 +1,5 @@
 import { handle } from './router.js';
-import { CORS_HEADERS, getDeps, warnOnModelMismatch } from './shared.js';
+import { getDeps, warnOnModelMismatch } from './shared.js';
 
 /**
  * AWS Lambda handler for a **Function URL**.
@@ -12,6 +12,14 @@ import { CORS_HEADERS, getDeps, warnOnModelMismatch } from './shared.js';
  * Event shape is the Function URL / API Gateway v2 payload format:
  *   { requestContext: { http: { method, path } }, rawQueryString, body,
  *     isBase64Encoded }
+ *
+ * CORS IS NOT SET HERE, deliberately. The Function URL's own `--cors` config
+ * adds the headers, and if the handler adds them too the response carries TWO
+ * `Access-Control-Allow-Origin` headers. The CORS spec permits exactly one, so
+ * every browser rejects the response with an opaque "Failed to fetch" -- while
+ * curl, which does not enforce CORS, reports a perfectly healthy 200. That
+ * combination is unpleasant to debug, so: the Function URL owns CORS in
+ * deployment, and src/api/server.ts owns it locally.
  */
 
 interface FunctionUrlEvent {
@@ -41,8 +49,10 @@ export async function handler(event: FunctionUrlEvent): Promise<FunctionUrlRespo
   const method = event.requestContext?.http?.method ?? 'GET';
   const path = event.requestContext?.http?.path ?? event.rawPath ?? '/';
 
+  // Preflight is answered by the Function URL itself and never reaches here.
+  // Handled anyway so the adapter stays correct if CORS config is ever removed.
   if (method === 'OPTIONS') {
-    return { statusCode: 204, headers: CORS_HEADERS, body: '' };
+    return { statusCode: 204, headers: {}, body: '' };
   }
 
   const query: Record<string, string> = {};
@@ -76,7 +86,7 @@ export async function handler(event: FunctionUrlEvent): Promise<FunctionUrlRespo
 function json(statusCode: number, body: unknown): FunctionUrlResponse {
   return {
     statusCode,
-    headers: { ...CORS_HEADERS, 'content-type': 'application/json' },
+    headers: { 'content-type': 'application/json' },
     body: JSON.stringify(body),
   };
 }

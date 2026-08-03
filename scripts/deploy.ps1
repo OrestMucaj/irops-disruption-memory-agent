@@ -146,45 +146,89 @@ $envVars = @{
     }
 }
 $envFile = Join-Path ([System.IO.Path]::GetTempPath()) "irops-env-$(Get-Random).json"
-$envVars | ConvertTo-Json -Depth 4 -Compress | Set-Content -Path $envFile -Encoding utf8
+# WriteAllText, NOT Set-Content -Encoding utf8. In Windows PowerShell 5.1 the
+# latter emits a UTF-8 BOM, and the AWS CLI cannot parse JSON that starts with
+# one -- it fails with "Expected: '=', received: '<BOM>'". .NET's WriteAllText
+# defaults to UTF-8 without a BOM.
+[System.IO.File]::WriteAllText($envFile, ($envVars | ConvertTo-Json -Depth 4 -Compress))
+
+# The AWS CLI echoes the offending payload when it cannot parse a --cli-input
+# or file:// argument. That payload contains DATABASE_URL. Everything below
+# routes aws output through this, so a malformed request can never leak the
+# connection string to a console, a CI log, or a terminal scrollback.
+function Invoke-AwsRedacted {
+    param([string[]]$Arguments, [string]$What)
+    # EAP must be Continue across the call. Windows PowerShell 5.1 wraps every
+    # stderr line from a native executable in an ErrorRecord when redirected,
+    # and under ErrorActionPreference=Stop that throws before $LASTEXITCODE can
+    # be inspected -- turning a clean, redacted error into a NativeCommandError.
+    $prevEap = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try {
+        $output = & aws @Arguments 2>&1 | Out-String
+        $exit = $LASTEXITCODE
+    } finally {
+        $ErrorActionPreference = $prevEap
+    }
+    if ($exit -ne 0) {
+        $safe = $output -replace 'postgresql://[^"\s]*', 'postgresql://<redacted>'
+        throw "$What failed (exit $exit):`n$safe"
+    }
+    return $output
+}
+
+<#
+    Runs an aws command whose failure is acceptable (already-exists cases).
+    Same stderr-wrapping caveat as above.
+#>
+function Invoke-AwsTolerant {
+    param([string[]]$Arguments)
+    $prevEap = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try { & aws @Arguments 2>&1 | Out-Null } finally { $ErrorActionPreference = $prevEap }
+}
 
 try {
     if (-not $exists) {
         if ($CodeOnly) { throw "Function $FunctionName does not exist; run without -CodeOnly first." }
         Write-Host "   creating function"
-        aws lambda create-function `
-            --function-name $FunctionName `
-            --runtime nodejs22.x `
-            --role $RoleArn `
-            --handler dist/api/lambda.handler `
-            --zip-file "fileb://$zipPath" `
-            --timeout 60 `
-            --memory-size 512 `
-            --environment "file://$envFile" `
-            --region $Region | Out-Null
-        if ($LASTEXITCODE -ne 0) { throw 'create-function failed' }
+        Invoke-AwsRedacted -What 'create-function' -Arguments @(
+            'lambda', 'create-function',
+            '--function-name', $FunctionName,
+            '--runtime', 'nodejs22.x',
+            '--role', $RoleArn,
+            '--handler', 'dist/api/lambda.handler',
+            '--zip-file', "fileb://$zipPath",
+            '--timeout', '60',
+            '--memory-size', '512',
+            '--environment', "file://$envFile",
+            '--region', $Region
+        ) | Out-Null
 
         Write-Host "   waiting for it to become active"
         aws lambda wait function-active-v2 --function-name $FunctionName --region $Region
     }
     else {
         Write-Host "   updating code"
-        aws lambda update-function-code `
-            --function-name $FunctionName `
-            --zip-file "fileb://$zipPath" `
-            --region $Region | Out-Null
-        if ($LASTEXITCODE -ne 0) { throw 'update-function-code failed' }
+        Invoke-AwsRedacted -What 'update-function-code' -Arguments @(
+            'lambda', 'update-function-code',
+            '--function-name', $FunctionName,
+            '--zip-file', "fileb://$zipPath",
+            '--region', $Region
+        ) | Out-Null
         aws lambda wait function-updated-v2 --function-name $FunctionName --region $Region
 
         if (-not $CodeOnly) {
             Write-Host "   updating configuration"
-            aws lambda update-function-configuration `
-                --function-name $FunctionName `
-                --handler dist/api/lambda.handler `
-                --timeout 60 `
-                --memory-size 512 `
-                --environment "file://$envFile" `
-                --region $Region | Out-Null
+            Invoke-AwsRedacted -What 'update-function-configuration' -Arguments @(
+                'lambda', 'update-function-configuration',
+                '--function-name', $FunctionName,
+                '--handler', 'dist/api/lambda.handler',
+                '--timeout', '60',
+                '--memory-size', '512',
+                '--environment', "file://$envFile",
+                '--region', $Region
+            ) | Out-Null
             aws lambda wait function-updated-v2 --function-name $FunctionName --region $Region
         }
     }
@@ -204,21 +248,64 @@ if ([string]::IsNullOrWhiteSpace($functionUrl) -or $functionUrl -eq 'None') {
     # AuthType NONE: judges must be able to use the demo without credentials
     # (SPEC §7). The URL is shared only in the judge-only 'Additional Info'
     # submission field, per the organisers' guidance (NOTES.md §6.1).
+    #
+    # AllowMethods deliberately omits OPTIONS. Function URLs answer preflight
+    # themselves, and each member is capped at 6 characters -- "OPTIONS" is 7
+    # and is rejected with a confusing length-constraint error.
     $functionUrl = (aws lambda create-function-url-config `
         --function-name $FunctionName `
         --auth-type NONE `
-        --cors 'AllowOrigins=*,AllowMethods=GET,POST,OPTIONS,AllowHeaders=content-type' `
+        --cors 'AllowOrigins=*,AllowMethods=GET,POST,AllowHeaders=content-type' `
         --region $Region --query FunctionUrl --output text)
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($functionUrl)) {
+        throw 'create-function-url-config failed'
+    }
 
-    aws lambda add-permission `
-        --function-name $FunctionName `
-        --statement-id FunctionURLAllowPublicAccess `
-        --action lambda:InvokeFunctionUrl `
-        --principal '*' `
-        --function-url-auth-type NONE `
-        --region $Region | Out-Null
 }
-$functionUrl = $functionUrl.TrimEnd('/')
+
+# Ensured on EVERY run, not only when the URL is created.
+#
+# A Function URL and permission to invoke it are two separate things: the URL
+# can exist and still answer 403 because the resource policy is incomplete.
+#
+# TWO statements are required, and this is the part that is easy to get wrong.
+# Per the AWS docs: "Starting in October 2025, new function URLs will require
+# both lambda:InvokeFunctionUrl and lambda:InvokeFunction permissions", and
+# "If a function's resource-based policy doesn't grant lambda:invokeFunctionUrl
+# and lambda:InvokeFunction permissions, users get a 403 Forbidden error code
+# ... This occurs even if the function URL uses the NONE auth type."
+#
+# Nearly every tutorial and older example shows only the first. A policy with
+# just InvokeFunctionUrl looks completely correct -- Effect Allow, Principal *,
+# right condition -- and still returns 403, with nothing anywhere saying which
+# half is missing.
+#
+# The console and AWS SAM add both for you. The CLI does not.
+#
+# Tolerant: on a re-run the statements already exist, which is not an error.
+Invoke-AwsTolerant @(
+    'lambda', 'add-permission',
+    '--function-name', $FunctionName,
+    '--statement-id', 'FunctionURLAllowPublicAccess',
+    '--action', 'lambda:InvokeFunctionUrl',
+    '--principal', '*',
+    '--function-url-auth-type', 'NONE',
+    '--region', $Region
+)
+Invoke-AwsTolerant @(
+    'lambda', 'add-permission',
+    '--function-name', $FunctionName,
+    '--statement-id', 'UrlPolicyInvokeFunction',
+    '--action', 'lambda:InvokeFunction',
+    '--principal', '*',
+    '--invoked-via-function-url',
+    '--region', $Region
+)
+
+if ([string]::IsNullOrWhiteSpace($functionUrl) -or $functionUrl -eq 'None') {
+    throw 'could not determine the function URL'
+}
+$functionUrl = $functionUrl.Trim().TrimEnd('/')
 Write-Host "   url: $functionUrl"
 
 # --- S3 frontend -------------------------------------------------------------
@@ -253,7 +340,8 @@ if (-not $CodeOnly) {
             })
         } | ConvertTo-Json -Depth 5 -Compress
         $policyFile = Join-Path ([System.IO.Path]::GetTempPath()) "irops-policy-$(Get-Random).json"
-        $policy | Set-Content -Path $policyFile -Encoding utf8
+        # No BOM, for the same reason as the environment file above.
+        [System.IO.File]::WriteAllText($policyFile, $policy)
         try {
             aws s3api put-bucket-policy --bucket $BucketName --policy "file://$policyFile" | Out-Null
         } finally { Remove-Item $policyFile -Force -ErrorAction SilentlyContinue }
@@ -266,7 +354,7 @@ if (-not $CodeOnly) {
 # gitignored: it contains a deployment-specific URL, not a secret, but it should
 # not be committed as though it were source.
 $configPath = Join-Path $repoRoot 'web\config.js'
-"window.API_BASE = '$functionUrl';" | Set-Content -Path $configPath -Encoding utf8
+[System.IO.File]::WriteAllText($configPath, "window.API_BASE = '$functionUrl';`n")
 
 Write-Host "   uploading frontend"
 aws s3 sync (Join-Path $repoRoot 'web') "s3://$BucketName/" --delete --cache-control 'no-cache' | Out-Null
