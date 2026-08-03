@@ -61,7 +61,7 @@ html { background: var(--plane); }
 body {
   background: var(--plane);
   color: var(--ink-2);
-  font: 13px/1.45 var(--sans);
+  font: 13.5px/1.5 var(--sans);
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
 }
@@ -175,7 +175,8 @@ main { padding: 18px; max-width: 1560px; margin: 0 auto; }
 .panel > header {
   display: flex;
   align-items: center;
-  gap: 12px;
+  flex-wrap: wrap;
+  gap: 10px 12px;
   padding: 10px var(--pad);
   border-bottom: 1px solid var(--line);
 }
@@ -324,8 +325,8 @@ td.rail { padding-left: 0; padding-right: 0; width: 3px; }
 
 button.btn {
   appearance: none;
-  font: 500 12px/1 var(--sans);
-  padding: 7px 13px;
+  font: 500 12.5px/1 var(--sans);
+  padding: 8px 14px;
   border-radius: var(--r);
   border: 1px solid var(--line-2);
   background: var(--surface-2);
@@ -533,3 +534,22 @@ textarea { resize: vertical; min-height: 66px; }
   letter-spacing: .05em;
   text-transform: uppercase;
 }
+
+/* Case-detail workflow: numbered steps so the order of work is visible
+   without training. */
+.stepnum {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px; height: 18px;
+  flex: none;
+  border: 1px solid var(--line-2);
+  border-radius: 2px;
+  background: var(--surface-3);
+  color: var(--ink-2);
+  font: 600 10.5px/1 var(--mono);
+}
+
+/* Row-open affordance on the caseload */
+th.chev, td.chev { width: 30px; text-align: center; }
+td.chev { color: var(--ink-3); font-size: 14px; }

@@ -44,6 +44,10 @@ const zulu = (d) => {
 const zuluTime = (d) => (d ? `${pad(new Date(d).getUTCHours())}:${pad(new Date(d).getUTCMinutes())}Z` : '—');
 const short = (id) => String(id || '').slice(0, 8);
 
+/* Small numbered badge for the case-detail workflow. Ease of use over
+   everything: a new employee should see the order of work without training. */
+const step = (n) => el('span', { className: 'stepnum' }, String(n));
+
 /* Mirrors severityOf() in src/domain/vocabulary.ts. Display-only duplication —
    the server owns the real classification; this just colours the rail. */
 const severity = (m) => (m < 60 ? 'minor' : m < 120 ? 'moderate' : m < 240 ? 'severe' : 'extreme');
@@ -165,8 +169,9 @@ async function renderCases() {
   const table = el('table', {},
     el('thead', {}, el('tr', {},
       el('th', { className: 'rail' }),
-      ...['Flight', 'Sector', 'STD', 'Cause', 'Delay', 'Pax', 'Misconn', 'Priority', 'Status', 'Outcome']
-        .map((h, i) => el('th', { className: [4, 5, 6, 7].includes(i) ? 'num' : '' }, h)))),
+      ...['Flight', 'Sector', 'STD', 'Cause', 'Delay', 'Pax', 'Misconnects', 'Priority', 'Status', 'Outcome']
+        .map((h, i) => el('th', { className: [4, 5, 6, 7].includes(i) ? 'num' : '' }, h)),
+      el('th', { className: 'chev' }))),
     el('tbody', {}, ...rows.map(caseRow)),
   );
 
@@ -175,7 +180,7 @@ async function renderCases() {
     el('div', { className: 'panel' },
       el('header', {},
         el('h2', {}, 'Disruption caseload'),
-        el('span', { className: 'note' }, `${rows.length} shown`),
+        el('span', { className: 'note' }, `${rows.length} shown · select a row to open it`),
         el('div', { className: 'right' }, seg)),
       el('div', { className: 'body flush' },
         rows.length ? table : el('div', { className: 'empty' }, 'No disruptions match this filter.'))),
@@ -207,6 +212,7 @@ function caseRow(c) {
       : pendingCount > 0
         ? el('span', { className: 'tag proposed plain' }, `${pendingCount} to review`)
         : el('span', { className: 'dim' }, '—')),
+    el('td', { className: 'chev' }, '›'),
   );
   tr.onclick = () => openCase(c.id);
   return tr;
@@ -263,32 +269,35 @@ async function renderCase() {
       fact('Actual dep', c.actualDep ? zuluTime(c.actualDep) : 'not departed', true)),
   );
 
-  /* agent bar */
-  const runBtn = el('button', { className: 'btn primary' }, actions.length ? 'Re-run agent' : 'Run agent');
+  /* agent bar — plain language: employees ask for recommendations, they do
+     not "run" anything. Token counts stay in Memory → Agent runs; here they
+     are noise. */
+  const runBtn = el('button', { className: 'btn primary' },
+    actions.length ? 'Refresh recommendations' : 'Get recommendations');
   runBtn.onclick = async () => {
     runBtn.disabled = true;
-    runBtn.textContent = 'Retrieving precedent…';
+    runBtn.textContent = 'Searching past disruptions…';
     try {
       const r = await call(`/api/cases/${currentCase}/run`, { method: 'POST' });
       toast(r.error
-        ? `Run failed — ${r.error}`
-        : `${r.actionCount} actions proposed from ${r.precedentCount} precedents · ${r.latencyMs}ms`, !!r.error);
+        ? `Failed — ${r.error}`
+        : `Proposed ${r.actionCount} actions, based on ${r.precedentCount} similar past disruptions`, !!r.error);
       await renderCase();
     } catch (err) {
-      toast(`Run failed — ${err.message}`, true);
+      toast(`Failed — ${err.message}`, true);
       runBtn.disabled = false;
-      runBtn.textContent = 'Run agent';
+      runBtn.textContent = 'Get recommendations';
     }
   };
 
   const runMeta = lastRun
     ? el('span', { className: 'note' },
-        `last run ${zulu(lastRun.created_at)} · ${lastRun.model_id} · ` +
-        `${lastRun.prompt_tokens ?? '?'}/${lastRun.completion_tokens ?? '?'} tok · ${lastRun.latency_ms ?? '?'}ms`)
-    : el('span', { className: 'note' }, 'not yet run');
+        `last run ${zulu(lastRun.created_at)} · ${(lastRun.retrieved_case_ids || []).length} similar cases retrieved · ${lastRun.latency_ms ?? '?'}ms`)
+    : el('span', { className: 'note' }, 'searches past disruptions for similar cases and proposes a plan citing them');
 
   const agentPanel = el('div', { className: 'panel' },
-    el('header', {}, el('h2', {}, 'Agent'), runMeta, el('div', { className: 'right' }, runBtn)),
+    el('header', {}, step(2), el('h2', {}, 'Agent recommendation'), runMeta,
+      el('div', { className: 'right' }, runBtn)),
     lastRun && lastRun.error
       ? el('div', { className: 'body' },
           el('div', { className: 'notice err' }, el('span', { className: 'ico' }, '!!'), lastRun.error))
@@ -298,10 +307,11 @@ async function renderCase() {
   /* precedent column */
   const precBody = el('div', { className: 'body' });
   if (!precedents.length) {
-    precBody.append(el('div', { className: 'empty' }, 'No precedent retrieved yet. Run the agent to search the memory layer.'));
+    precBody.append(el('div', { className: 'empty' },
+      'Nothing retrieved yet — use “Get recommendations” above and the agent will search past disruptions for similar cases.'));
   } else {
     const worst = Math.max(...precedents.map((p) => Number(p.distance)));
-    for (const p of precedents) {
+    for (const [idx, p] of precedents.entries()) {
       const rating = num(p.outcome_rating);
       const cls = rating === null ? '' : rating <= 2 ? 'bad' : rating >= 4 ? 'good' : 'mid';
       const did = Array.isArray(p.actions_taken) ? p.actions_taken : [];
@@ -310,6 +320,7 @@ async function renderCase() {
       precBody.append(el('div', { className: `prec ${cls}` },
         el('div', { className: 'top' },
           el('span', { className: 'id' }, short(p.id)),
+          idx === 0 ? el('span', { className: 'tag planned plain' }, 'closest match') : null,
           el('span', { className: 'meta' }, `${p.flight_no} · ${String(p.cause).replace('_', '-')} · ${p.delay_minutes}′ · ${zulu(p.scheduled_dep)}`),
           el('div', { className: 'sim' },
             el('span', {}, 'similarity'),
@@ -330,8 +341,9 @@ async function renderCase() {
 
   const precPanel = el('div', { className: 'panel' },
     el('header', {},
-      el('h2', {}, 'Retrieved precedent'),
-      el('span', { className: 'note' }, 'what was done, and how it turned out')),
+      step(3),
+      el('h2', {}, 'Similar past disruptions'),
+      el('span', { className: 'note' }, 'what was done, and how it turned out — red went badly')),
     precBody);
 
   /* actions column */
@@ -348,7 +360,8 @@ async function renderCase() {
   }
 
   if (!actions.length) {
-    actBody.append(el('div', { className: 'empty' }, 'No proposals yet.'));
+    actBody.append(el('div', { className: 'empty' },
+      'No recommendations yet — use “Get recommendations” above.'));
   } else {
     for (const a of actions) {
       const conf = Number(a.confidence ?? 0);
@@ -361,7 +374,7 @@ async function renderCase() {
             : el('span', { className: 'dim', style: 'font-size:11px' }, 'case-level'),
           el('span', { className: `tag ${a.status}` }, a.status),
           el('div', { className: 'conf' },
-            el('span', {}, 'confidence'),
+            el('span', {}, `confidence ${conf >= .8 ? 'high' : conf >= .6 ? 'medium' : 'low'}`),
             el('span', { className: `confbar ${conf >= .8 ? 'hi' : conf < .6 ? 'lo' : ''}` },
               el('i', { style: `width:${Math.round(conf * 100)}%` })),
             el('span', {}, conf.toFixed(2)))),
@@ -413,13 +426,19 @@ async function renderCase() {
 
   const actPanel = el('div', { className: 'panel' },
     el('header', {},
+      step(4),
       el('h2', {}, 'Proposed actions'),
-      el('span', { className: 'note' }, 'nothing is executed without approval')),
+      el('span', { className: 'note' }, 'approve, edit or reject each — nothing happens without your approval')),
     actBody);
 
-  /* passengers */
+  /* passengers — above the evidence panels: you check who you are dealing
+     with before reading recommendations about them */
+  const missedN = passengers.filter((p) => p.connectionStatus === 'missed').length;
+  const riskN = passengers.filter((p) => p.connectionStatus === 'at_risk').length;
   const paxPanel = passengers.length ? el('div', { className: 'panel' },
-    el('header', {}, el('h2', {}, 'Affected passengers'), el('span', { className: 'note' }, `${passengers.length} tracked`)),
+    el('header', {}, step(1), el('h2', {}, 'Affected passengers'),
+      el('span', { className: 'note' },
+        `${passengers.length} tracked · ${missedN} missed · ${riskN} at risk`)),
     el('div', { className: 'body flush' },
       el('table', {},
         el('thead', {}, el('tr', {},
@@ -440,7 +459,8 @@ async function renderCase() {
   if (resolution) {
     const r = num(resolution.outcome_rating);
     closePanel = el('div', { className: 'panel' },
-      el('header', {}, el('h2', {}, 'Resolution'), el('span', { className: 'note' }, 'now retrievable precedent')),
+      el('header', {}, step(5), el('h2', {}, 'Resolution'),
+        el('span', { className: 'note' }, 'this outcome is now memory — future disruptions can retrieve it')),
       el('div', { className: 'body' },
         el('div', { style: 'display:flex;align-items:center;gap:12px;margin-bottom:8px' },
           el('span', { className: `score s${r}` }, el('i'), `${r}/5`),
@@ -481,16 +501,21 @@ async function renderCase() {
     };
 
     closePanel = el('div', { className: 'panel' },
-      el('header', {}, el('h2', {}, 'Close the loop'), el('span', { className: 'note' }, 'the outcome becomes precedent')),
+      el('header', {}, step(5), el('h2', {}, 'Close the loop'),
+        el('span', { className: 'note' }, 'record what actually happened — it becomes memory for future disruptions')),
       el('div', { className: 'body' },
         el('label', { className: 'field' }, 'Outcome notes'), notes,
         el('label', { className: 'field' }, 'Outcome rating — 1 failed, 5 excellent'), picker,
         submit));
   }
 
-  mount(root, back, head, agentPanel,
+  // Order is the workflow: situation → who is affected → ask the agent →
+  // review evidence and decide → close. Passengers sit above the evidence
+  // panels at the author's request — you check who you are dealing with
+  // before reading recommendations about them.
+  mount(root, back, head, paxPanel, agentPanel,
     el('div', { className: 'cols' }, precPanel, actPanel),
-    paxPanel, closePanel);
+    closePanel);
 }
 
 /* ------------------------------------------------------- view 3 · memory */
