@@ -10,14 +10,14 @@ import {
   seatRange,
   severityOf,
   stationTypeOf,
-} from './domain.js';
+} from '../domain/vocabulary.js';
 import type {
   ActionType,
   AircraftClass,
   Cause,
   ConnectionStatus,
   PriorityTier,
-} from './domain.js';
+} from '../domain/vocabulary.js';
 import { Rng } from './random.js';
 import type {
   GeneratedCase,

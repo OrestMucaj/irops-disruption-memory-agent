@@ -20,8 +20,17 @@
  */
 export const SCHEMA_EMBEDDING_DIMENSIONS = 1024;
 
-export const PROVIDER_KINDS = ['fake', 'bedrock'] as const;
-export type ProviderKind = (typeof PROVIDER_KINDS)[number];
+export const EMBEDDING_PROVIDER_KINDS = ['fake', 'bedrock'] as const;
+export type EmbeddingProviderKind = (typeof EMBEDDING_PROVIDER_KINDS)[number];
+
+/**
+ * `heuristic` is an LLM-side option only — there is no heuristic *embedding*
+ * provider, which is why these two lists are separate rather than one shared
+ * union. See src/providers/llm/heuristic.ts: it is a decision tree for
+ * developing the loop without AWS, never the demo path.
+ */
+export const LLM_PROVIDER_KINDS = ['fake', 'heuristic', 'bedrock'] as const;
+export type LLMProviderKind = (typeof LLM_PROVIDER_KINDS)[number];
 
 export const LOG_LEVELS = ['debug', 'info', 'warn', 'error'] as const;
 export type LogLevel = (typeof LOG_LEVELS)[number];
@@ -45,8 +54,8 @@ export interface Config {
    */
   readonly databaseUrl: string | null;
 
-  readonly embeddingProvider: ProviderKind;
-  readonly llmProvider: ProviderKind;
+  readonly embeddingProvider: EmbeddingProviderKind;
+  readonly llmProvider: LLMProviderKind;
 
   /** Always equal to SCHEMA_EMBEDDING_DIMENSIONS; validated at load. */
   readonly embeddingDimensions: number;
@@ -69,8 +78,8 @@ export type Env = Readonly<Record<string, string | undefined>>;
 export function loadConfig(env: Env = process.env): Config {
   const problems: string[] = [];
 
-  const embeddingProvider = readEnum(env, 'EMBEDDING_PROVIDER', PROVIDER_KINDS, 'fake', problems);
-  const llmProvider = readEnum(env, 'LLM_PROVIDER', PROVIDER_KINDS, 'fake', problems);
+  const embeddingProvider = readEnum(env, 'EMBEDDING_PROVIDER', EMBEDDING_PROVIDER_KINDS, 'fake', problems);
+  const llmProvider = readEnum(env, 'LLM_PROVIDER', LLM_PROVIDER_KINDS, 'fake', problems);
 
   const embeddingDimensions = readInt(
     env,

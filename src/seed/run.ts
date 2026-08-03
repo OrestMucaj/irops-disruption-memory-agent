@@ -4,7 +4,7 @@ import { createEmbeddingProvider } from '../providers/index.js';
 import type { EmbeddingProvider } from '../providers/index.js';
 
 import { generateDataset } from './generate.js';
-import { buildCaseSummary, buildResolutionSummary } from './summary.js';
+import { buildCaseSummary, buildResolutionSummary } from '../domain/summary.js';
 import type { GeneratedCase } from './types.js';
 
 /**

@@ -2,7 +2,7 @@ import { createPool, toVectorLiteral } from '../db.js';
 import { loadConfig } from '../config.js';
 import { createEmbeddingProvider } from '../providers/index.js';
 
-import { misconnectPressureOf, recoveryWindowOf, severityOf } from './domain.js';
+import { misconnectPressureOf, recoveryWindowOf, severityOf } from '../domain/vocabulary.js';
 
 /**
  * M2 exit criterion: does semantic search over the seeded data return

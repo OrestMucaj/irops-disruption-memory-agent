@@ -16,7 +16,9 @@
     "verify:schema": "node --env-file=.env scripts/verify-schema.mjs",
     "check:db": "node --env-file=.env scripts/db-check.mjs",
     "seed": "npm run build && node --env-file=.env dist/seed/run.js",
-    "check:retrieval": "npm run build && node --env-file=.env dist/seed/check-retrieval.js"
+    "check:retrieval": "npm run build && node --env-file=.env dist/seed/check-retrieval.js",
+    "agent": "npm run build && node --env-file=.env dist/agent/cli.js",
+    "check:guardrails": "npm run build && node --env-file=.env dist/agent/check-guardrails.js"
   },
   "dependencies": {
     "@aws-sdk/client-bedrock-runtime": "^3.0.0",

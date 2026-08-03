@@ -14,6 +14,7 @@ import { BedrockEmbeddingProvider } from './embedding/bedrock.js';
 import { FakeEmbeddingProvider } from './embedding/fake.js';
 import { BedrockLLMProvider } from './llm/bedrock.js';
 import { FakeLLMProvider } from './llm/fake.js';
+import { HeuristicLLMProvider } from './llm/heuristic.js';
 import type { EmbeddingProvider, LLMProvider } from './types.js';
 
 export type { EmbeddingProvider, LLMProvider } from './types.js';
@@ -22,6 +23,7 @@ export { ProviderNotConfiguredError, ProviderResponseError } from './types.js';
 export { FakeEmbeddingProvider } from './embedding/fake.js';
 export { BedrockEmbeddingProvider } from './embedding/bedrock.js';
 export { FakeLLMProvider } from './llm/fake.js';
+export { HeuristicLLMProvider } from './llm/heuristic.js';
 export { BedrockLLMProvider } from './llm/bedrock.js';
 
 export function createEmbeddingProvider(config: Config): EmbeddingProvider {
@@ -45,6 +47,9 @@ export function createLLMProvider(config: Config): LLMProvider {
   switch (config.llmProvider) {
     case 'fake':
       return new FakeLLMProvider();
+
+    case 'heuristic':
+      return new HeuristicLLMProvider();
 
     case 'bedrock':
       return new BedrockLLMProvider({

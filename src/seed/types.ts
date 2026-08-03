@@ -5,7 +5,7 @@ import type {
   Cause,
   ConnectionStatus,
   PriorityTier,
-} from './domain.js';
+} from '../domain/vocabulary.js';
 
 /**
  * In-memory shapes produced by the generator, before they touch the database.

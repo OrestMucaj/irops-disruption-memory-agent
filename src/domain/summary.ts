@@ -12,8 +12,15 @@ import {
   scaleOf,
   severityOf,
   stationTypeOf,
-} from './domain.js';
-import type { SyntheticCase, SyntheticPassenger, SyntheticResolution } from './types.js';
+} from './vocabulary.js';
+import type { ActionType, CaseFacts, PassengerFacts } from './vocabulary.js';
+
+/** The parts of a resolution needed to describe it. */
+export interface ResolutionFacts {
+  readonly actionsTaken: ReadonlyArray<{ action_type: ActionType; affected_pax: number }>;
+  readonly outcomeNotes: string;
+  readonly outcomeRating: number;
+}
 
 /**
  * Builds the natural-language digest that semantic similarity actually runs on.
@@ -45,8 +52,8 @@ import type { SyntheticCase, SyntheticPassenger, SyntheticResolution } from './t
  * and the failure is silent.
  */
 export function buildCaseSummary(
-  disruption: SyntheticCase,
-  passengers: readonly SyntheticPassenger[],
+  disruption: CaseFacts,
+  passengers: readonly PassengerFacts[],
 ): string {
   const severity = severityOf(disruption.delayMinutes);
   const scale = scaleOf(disruption.paxCount);
@@ -111,8 +118,8 @@ export function buildCaseSummary(
  * targets, not "someone pressed rebook".
  */
 export function buildResolutionSummary(
-  disruption: SyntheticCase,
-  resolution: SyntheticResolution,
+  disruption: CaseFacts,
+  resolution: ResolutionFacts,
 ): string {
   const severity = severityOf(disruption.delayMinutes);
   const window = recoveryWindowOf(disruption.scheduledDep);

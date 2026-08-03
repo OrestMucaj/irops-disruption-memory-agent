@@ -47,6 +47,33 @@ export type RecoveryWindow = 'early_morning' | 'midday' | 'evening' | 'overnight
 export type AircraftClass = 'turboprop' | 'regional_jet' | 'narrow_body' | 'wide_body';
 export type StationType = 'hub' | 'outstation';
 
+// --- Shared record shapes ---------------------------------------------------
+//
+// The minimum a case must expose to be summarised and embedded. Deliberately
+// structural rather than tied to a concrete class, so that BOTH the synthetic
+// generator and a row read back from the database satisfy it without
+// conversion. That is not tidiness — it is the mechanism that guarantees a live
+// case and a seeded case are summarised by the same code path. If they ever
+// diverge, similarity silently collapses and nothing errors.
+
+export interface CaseFacts {
+  readonly flightNo: string;
+  readonly origin: string;
+  readonly destination: string;
+  readonly scheduledDep: Date;
+  readonly delayMinutes: number;
+  readonly cause: Cause;
+  readonly aircraftClass: AircraftClass;
+  readonly paxCount: number;
+  readonly misconnectCount: number;
+  readonly priorityPaxCount: number;
+}
+
+export interface PassengerFacts {
+  readonly connectionStatus: ConnectionStatus;
+  readonly specialHandling: readonly string[];
+}
+
 /**
  * Fictional carrier code. Two letters so it reads like a flight number, chosen
  * to be visibly a placeholder rather than plausibly a real airline.

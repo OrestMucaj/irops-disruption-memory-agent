@@ -234,10 +234,12 @@ Assume ~2–3 hours per weekday evening, more at weekends. Deadline Aug 18.
 - [x] Backfill embeddings — written in the same transaction as the case they describe
 - [x] **Exit criterion MET.** Leave-one-out over all 80 resolved cases, measured against the baseline from the corpus's own class distribution rather than an assumed uniform one: same cause **71.3%** vs 21.3% chance (3.34× lift), same severity **65.0%** vs 35.6% (1.83×), same recovery window **70.5%** vs 27.7% (2.54×). Reproduce with `npm run check:retrieval`. Note this is the *fake* lexical embedder; Bedrock should do better, not worse.
 
-**M3 — Agent loop (2–3 evenings)**
-- Retrieval → Bedrock → validated JSON actions → persistence
-- `agent_runs` logging
-- Runs locally end-to-end against a seeded case
+**M3 — Agent loop (2–3 evenings)** — 🟡 **Structurally complete 2026-07-29; only the Bedrock call itself is outstanding (blocked on IAM keys)**
+- [x] Retrieval → reasoning → validated JSON actions → persistence
+- [x] `agent_runs` logging, opened before work starts so a killed process still leaves evidence
+- [x] Runs locally end-to-end against a seeded case (`npm run agent`)
+- [x] Guardrails tested rather than asserted (`npm run check:guardrails`) — 5/5 failure paths hold
+- [ ] `BedrockLLMProvider` implementation — needs AWS IAM keys. A `heuristic` decision-tree provider stands in so the loop, and later the UI, are developable offline. **It is not a language model and must never be the demo path.**
 
 **M4 — Frontend + deploy (2–3 evenings)**
 - Three views, wired to Lambda
@@ -402,3 +404,21 @@ _Append dated entries below. Format: date — what was done — what's blocked �
   **IP separation (SPEC §1.1) held throughout:** fictional carrier code, obviously-synthetic passenger references, generic aircraft size classes rather than manufacturer models, and an arbitrary selection of public IATA airport codes that deliberately does not reproduce any real carrier's network. Provenance rules are documented at the top of `src/seed/domain.ts`.
 
   **Next: M3 — the agent loop.** Retrieval → Bedrock → validated JSON actions → persistence, with `agent_runs` logging. Needs AWS IAM keys before the Bedrock half; the retrieval half can be built now against the fake provider. Still open and unblocking-but-unanswered: service accounts on Basic (§7 MCP option a vs b), MCP transport format.
+
+- 2026-07-29 (session 2, M3 structural) — **Agent loop runs end-to-end and its failure paths are tested. Only the Bedrock call is missing.**
+
+  `npm run agent` executes the full loop against a seeded case: retrieve precedent → build prompt → model → parse → validate → ground → persist proposals → log the run. Observed on a live case: 5 precedents retrieved (4 of 5 same-cause, one flagged as having gone badly), 4 grounded actions persisted as `proposed`, `agent_runs` row written with token counts, latency and retrieved case IDs.
+
+  **Refactor first, to close a silent-failure hole.** `summary_text` generation lived inside `src/seed/`, so a live case would have been summarised by different code from the seeded corpus — similarity would have quietly collapsed with nothing erroring. Moved to `src/domain/` behind structural `CaseFacts`/`PassengerFacts` interfaces that both the generator and a database row satisfy. One code path, guaranteed.
+
+  **The guardrail that matters most is grounding, not schema validation.** A model can emit perfectly valid JSON citing a precedent that was never retrieved, or naming a passenger who is not on the flight. Schema validation passes that straight through. So the two are separated, and treated asymmetrically: a **fabricated citation** is stripped but the action survives (the advice may still be sound, it just is not supported by the case it claims); a **fabricated passenger reference** kills the whole action (there is no safe way to partially honour rebooking someone who does not exist). For an agent whose pitch is "it cites its precedents", an uncheckable citation is worse than none — it looks like evidence.
+
+  **Failure paths are tested, not asserted** — `npm run check:guardrails`, 5/5 passing: unparseable response degrades gracefully with a retry; valid-JSON-wrong-shape degrades gracefully; fabricated citation stripped with the action surviving; fabricated passenger reference drops the action while its safe sibling survives; well-formed response persists. Every scenario also asserts the failure reached `agent_runs`, and the test cleans up every row it creates.
+
+  **Badly-rated precedents are given to the model and labelled as warnings.** The obvious move is to show only successes; that discards the most informative rows in the corpus. 14 of 80 seeded resolutions went wrong, and why they went wrong is exactly the institutional knowledge the system exists to retain.
+
+  **Added `heuristic` LLM provider** — a hand-written decision tree, emphatically not a language model. It exists so the loop and the M4 UI are developable offline at zero cost, and as a baseline Bedrock has to beat. Loudly labelled in code, in `.env.example`, and in CLI output. `EMBEDDING_PROVIDER` and `LLM_PROVIDER` now have separate value lists since `heuristic` is meaningless for embeddings.
+
+  **Blocked** — `BedrockLLMProvider` is still a stub. It needs AWS IAM keys (the dev user + scoped Bedrock policy). Nothing else waits on it.
+
+  **Next: M4 — frontend and deploy.** Three views, Lambda, S3, public URL. Can be built entirely against the heuristic provider and swapped to Bedrock when keys arrive.
