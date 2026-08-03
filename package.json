@@ -20,7 +20,8 @@
     "check:retrieval": "npm run build && node --env-file=.env dist/seed/check-retrieval.js",
     "dev": "npm run build && node --env-file=.env dist/api/server.js",
     "agent": "npm run build && node --env-file=.env dist/agent/cli.js",
-    "check:guardrails": "npm run build && node --env-file=.env dist/agent/check-guardrails.js"
+    "check:guardrails": "npm run build && node --env-file=.env dist/agent/check-guardrails.js",
+    "eval": "npm run build && node --env-file=.env dist/eval/harness.js"
   },
   "dependencies": {
     "@aws-sdk/client-bedrock-runtime": "^3.0.0",

@@ -14,8 +14,10 @@ import {
 import type {
   ActionType,
   AircraftClass,
+  CaseFacts,
   Cause,
   ConnectionStatus,
+  PassengerFacts,
   PriorityTier,
 } from '../domain/vocabulary.js';
 import { Rng } from './random.js';
@@ -302,10 +304,21 @@ function generatePassengers(rng: Rng, disruption: SyntheticCase): SyntheticPasse
  * agent is supposed to rediscover from precedent. If it were subtle, a
  * successful demo would prove nothing -- you could not tell whether retrieval
  * worked or the model got lucky.
+ *
+ * EXPORTED because src/eval/ scores the agent against it. That makes the
+ * evaluation honest about what it measures: this function generated the
+ * historical outcomes, so scoring against it asks "did the agent recover the
+ * rule that produced this corpus from precedent alone?" -- a real question with
+ * a knowable answer. It emphatically does NOT ask "is the agent right about
+ * airline operations", which no synthetic benchmark can answer.
+ *
+ * Parameters are structural (CaseFacts / PassengerFacts) rather than the
+ * generator's own types, so a case read back from the database can be scored
+ * without conversion.
  */
-function idealActions(
-  disruption: SyntheticCase,
-  passengers: readonly SyntheticPassenger[],
+export function idealActions(
+  disruption: CaseFacts,
+  passengers: readonly PassengerFacts[],
 ): Set<ActionType> {
   const severity = severityOf(disruption.delayMinutes);
   const window = recoveryWindowOf(disruption.scheduledDep);

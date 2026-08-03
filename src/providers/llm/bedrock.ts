@@ -29,8 +29,22 @@ import { ProviderResponseError } from '../types.js';
  * (they need the one-time use-case form first).
  */
 
-/** Enough for a full action list with rationales, without inviting rambling. */
-const DEFAULT_MAX_TOKENS = 2000;
+/**
+ * Enough for a full action list with rationales and citations.
+ *
+ * Raised from 2000 on 2026-08-03 after an evaluation run truncated 5 of 30
+ * cases. Only the with-precedent arm failed, and the reason is structural: each
+ * action carries `precedent_case_ids` of full 36-character UUIDs plus a
+ * rationale referring to them, so a case with several misconnecting passengers
+ * and five precedents to cite produces several times the output of the same
+ * case with no memory. Truncation therefore looked exactly like "memory makes
+ * the agent worse" in the aggregate scores.
+ *
+ * Output tokens cost $0.24 per million, so the headroom is worth roughly
+ * $0.001 per call. Cheap insurance against a failure mode that reads as a
+ * quality regression.
+ */
+const DEFAULT_MAX_TOKENS = 4000;
 
 export class BedrockLLMProvider implements LLMProvider {
   public readonly name = 'bedrock';
