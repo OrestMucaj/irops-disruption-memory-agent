@@ -1,0 +1,151 @@
+/* Minimal, legible, functional. SPEC §2 explicitly says not a pretty UI, and
+   §6 says no design systems or component libraries. Plain CSS, one file. */
+
+:root {
+  --bg: #12151a;
+  --panel: #1a1e26;
+  --panel-2: #222731;
+  --line: #2f3644;
+  --text: #e6e9ef;
+  --muted: #949cad;
+  --accent: #5aa9e6;
+  --good: #4caf7d;
+  --warn: #d9a441;
+  --bad: #d4685f;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.55 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 14px 22px;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  flex-wrap: wrap;
+}
+.brand strong { font-size: 16px; }
+.brand .sub { display: block; color: var(--muted); font-size: 12px; }
+nav { display: flex; gap: 8px; margin-left: auto; }
+nav button, .back {
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 7px 14px;
+  cursor: pointer;
+  font-size: 14px;
+}
+nav button.active { background: var(--accent); color: #08111a; border-color: var(--accent); font-weight: 600; }
+nav button:hover, .back:hover { border-color: var(--accent); }
+.health { font-size: 12px; color: var(--muted); font-family: var(--mono); width: 100%; }
+
+main { padding: 22px; max-width: 1180px; margin: 0 auto; }
+
+.toolbar { display: flex; align-items: center; gap: 16px; margin-bottom: 14px; }
+select {
+  background: var(--panel-2); color: var(--text);
+  border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px;
+}
+.muted { color: var(--muted); font-size: 13px; }
+
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th {
+  text-align: left; font-weight: 600; color: var(--muted);
+  border-bottom: 1px solid var(--line); padding: 9px 10px; font-size: 12px;
+  text-transform: uppercase; letter-spacing: .04em;
+}
+td { padding: 9px 10px; border-bottom: 1px solid var(--line); }
+tbody tr { cursor: pointer; }
+tbody tr:hover { background: var(--panel-2); }
+
+.pill {
+  display: inline-block; padding: 2px 8px; border-radius: 999px;
+  font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em;
+}
+.pill.open { background: #3a2b1a; color: var(--warn); }
+.pill.planned { background: #1d2f3d; color: var(--accent); }
+.pill.resolved { background: #1c3128; color: var(--good); }
+.pill.proposed { background: #2b2f3a; color: var(--muted); }
+.pill.approved { background: #1c3128; color: var(--good); }
+.pill.rejected { background: #35211f; color: var(--bad); }
+.pill.edited { background: #3a2b1a; color: var(--warn); }
+
+.card {
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: 8px; padding: 16px 18px; margin-bottom: 16px;
+}
+.card h2 { margin: 0 0 12px; font-size: 14px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.card h3 { margin: 0 0 6px; font-size: 15px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px 18px; }
+.facts div span { display: block; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+.facts div b { font-weight: 600; font-size: 15px; }
+
+.precedent { border-left: 3px solid var(--line); padding: 10px 14px; margin-bottom: 12px; background: var(--panel-2); border-radius: 0 6px 6px 0; }
+.precedent.bad { border-left-color: var(--bad); }
+.precedent.good { border-left-color: var(--good); }
+.precedent .meta { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-bottom: 5px; }
+.precedent .summary { font-size: 13px; margin-bottom: 6px; }
+.precedent .outcome { font-size: 13px; }
+.precedent .outcome em { color: var(--muted); font-style: normal; }
+
+.action { border: 1px solid var(--line); border-radius: 7px; padding: 13px 15px; margin-bottom: 11px; background: var(--panel-2); }
+.action .head { display: flex; align-items: center; gap: 10px; margin-bottom: 7px; flex-wrap: wrap; }
+.action .type { font-weight: 700; letter-spacing: .05em; }
+.action .rationale { font-size: 14px; margin-bottom: 8px; }
+.action .cites { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-bottom: 9px; word-break: break-all; }
+.action .controls { display: flex; gap: 7px; flex-wrap: wrap; }
+
+button.act {
+  border: 1px solid var(--line); background: var(--panel);
+  color: var(--text); border-radius: 6px; padding: 5px 12px; cursor: pointer; font-size: 13px;
+}
+button.act:hover:not(:disabled) { border-color: var(--accent); }
+button.act.approve:hover:not(:disabled) { border-color: var(--good); color: var(--good); }
+button.act.reject:hover:not(:disabled) { border-color: var(--bad); color: var(--bad); }
+button.act:disabled { opacity: .4; cursor: default; }
+
+button.primary {
+  background: var(--accent); color: #08111a; border: none; border-radius: 6px;
+  padding: 9px 18px; font-weight: 600; cursor: pointer; font-size: 14px;
+}
+button.primary:disabled { opacity: .5; cursor: default; }
+
+.banner { padding: 10px 13px; border-radius: 6px; font-size: 13px; margin-bottom: 12px; }
+.banner.err { background: #35211f; color: #f0b3ad; border: 1px solid #5c332e; }
+.banner.warn { background: #332a19; color: #e8c98a; border: 1px solid #574526; }
+.banner.info { background: #1d2833; color: #a9cbe6; border: 1px solid #2c435a; }
+
+textarea, input[type=number] {
+  width: 100%; background: var(--panel-2); color: var(--text);
+  border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px;
+  font: inherit; margin-bottom: 9px;
+}
+label.field { display: block; font-size: 12px; color: var(--muted); margin-bottom: 3px; text-transform: uppercase; letter-spacing: .04em; }
+
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; }
+.stat { background: var(--panel-2); border-radius: 7px; padding: 12px 14px; }
+.stat b { display: block; font-size: 24px; line-height: 1.2; }
+.stat span { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+
+.toast {
+  position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%);
+  background: var(--panel-2); border: 1px solid var(--accent); color: var(--text);
+  padding: 10px 18px; border-radius: 7px; font-size: 14px; z-index: 20;
+}
+
+.spin { color: var(--muted); padding: 18px 0; }
+code { font-family: var(--mono); font-size: 12px; }

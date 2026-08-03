@@ -94,6 +94,27 @@ try {
   if (/prefix spans/i.test(plan)) pass('the case_status filter is pushed into the index as a prefix span');
   else fail('no prefix span -- the structured filter is not index-accelerated');
 
+  console.log('\n=== denormalization has not drifted ===');
+  // case_embeddings.case_status is duplicated from disruption_cases.status so it
+  // can be the vector index prefix. If they diverge, resolved cases silently
+  // stop appearing as precedent -- no error, just worse answers.
+  const drift = await q(
+    `SELECT c.id::STRING AS id, c.status AS case_status, e.case_status AS embedding_status
+       FROM disruption_cases c
+       JOIN case_embeddings e ON e.case_id = c.id
+      WHERE c.status <> e.case_status`,
+  );
+  if (drift.length === 0) {
+    pass('every case_embeddings.case_status matches its case');
+  } else {
+    fail(`${drift.length} case(s) drifted, e.g. ${JSON.stringify(drift[0])}`);
+  }
+
+  const [{ n: resolvedEmbedded }] = await q(
+    `SELECT count(*)::INT AS n FROM case_embeddings WHERE case_status = 'resolved'`,
+  );
+  console.log(`  ..    ${resolvedEmbedded} cases are retrievable as precedent`);
+
   console.log('\n=== vector dimension is enforced ===');
   try {
     await client.query(

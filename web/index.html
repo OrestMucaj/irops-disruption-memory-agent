@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IROPS Disruption Memory Agent</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <strong>IROPS Disruption Memory Agent</strong>
+    <span class="sub">Operational memory on CockroachDB &middot; all data synthetic</span>
+  </div>
+  <nav>
+    <button data-view="cases" class="active">Cases</button>
+    <button data-view="memory">Memory</button>
+  </nav>
+  <div id="health" class="health"></div>
+</header>
+
+<main>
+  <!-- Case list -->
+  <section id="view-cases">
+    <div class="toolbar">
+      <label>Show
+        <select id="status-filter">
+          <option value="all">all cases</option>
+          <option value="open">open</option>
+          <option value="planned">planned</option>
+          <option value="resolved">resolved</option>
+        </select>
+      </label>
+      <span id="case-count" class="muted"></span>
+    </div>
+    <table id="case-table">
+      <thead>
+        <tr>
+          <th>Flight</th><th>Route</th><th>Cause</th><th>Delay</th>
+          <th>Pax</th><th>Misconn.</th><th>Status</th><th>Outcome</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <!-- Case detail -->
+  <section id="view-detail" hidden>
+    <button class="back" data-view="cases">&larr; back to cases</button>
+    <div id="detail-body"></div>
+  </section>
+
+  <!-- Memory -->
+  <section id="view-memory" hidden>
+    <div id="memory-body"></div>
+  </section>
+</main>
+
+<div id="toast" class="toast" hidden></div>
+
+<script src="app.js"></script>
+</body>
+</html>
