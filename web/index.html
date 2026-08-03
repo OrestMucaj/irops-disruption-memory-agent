@@ -9,26 +9,57 @@
 </head>
 <body>
 
-<div class="topbar">
-  <div class="mark">
-    <span class="name">IROPS DISRUPTION MEMORY</span>
-    <span class="role">Operations Console</span>
+<div class="shell">
+
+  <aside class="side">
+    <div class="logo">
+      <span class="logochip">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+      </span>
+      <div>
+        <b>IROPS Memory</b>
+        <small>Operations Console</small>
+      </div>
+    </div>
+
+    <div class="navlabel">Main menu</div>
+    <nav class="nav">
+      <button data-view="cases" class="on">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>
+        Disruptions <b id="tab-cases"></b>
+      </button>
+      <button data-view="memory">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M20 5v14c0 1.7-3.6 3-8 3s-8-1.3-8-3V5"/><path d="M20 12c0 1.7-3.6 3-8 3s-8-1.3-8-3"/></svg>
+        Memory <b id="tab-memory"></b>
+      </button>
+    </nav>
+
+    <div class="sideend">
+      <div class="navlabel">System</div>
+      <div class="sysbox" id="sysbox"><span class="dot"></span><div>connecting…</div></div>
+      <div class="synth">All data is synthetic</div>
+    </div>
+  </aside>
+
+  <div class="mainwrap">
+    <header class="topbar">
+      <div class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="20" y1="20" x2="16.5" y2="16.5"/></svg>
+        <input id="q" type="search" placeholder="Search flight, sector or cause…" autocomplete="off">
+      </div>
+      <div class="spacer"></div>
+      <span class="pillbadge">Synthetic demo data</span>
+      <div class="clock" id="clock">--:--:--<span>Z</span></div>
+    </header>
+
+    <main>
+      <section id="view-cases"></section>
+      <section id="view-detail" hidden></section>
+      <section id="view-memory" hidden></section>
+    </main>
   </div>
-  <div class="spacer"></div>
-  <div class="clock" id="clock">--:--:--<span>Z</span></div>
-  <div class="sysstat" id="sysstat"><span class="dot"></span>connecting</div>
+
 </div>
-
-<nav class="tabs">
-  <button data-view="cases" class="on">Disruptions <b id="tab-cases"></b></button>
-  <button data-view="memory">Memory <b id="tab-memory"></b></button>
-</nav>
-
-<main>
-  <section id="view-cases"></section>
-  <section id="view-detail" hidden></section>
-  <section id="view-memory" hidden></section>
-</main>
 
 <div id="toast" class="toast" hidden></div>
 
