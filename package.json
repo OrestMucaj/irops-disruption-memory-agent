@@ -11,7 +11,12 @@
   },
   "scripts": {
     "build": "tsc",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "migrate": "node --env-file=.env scripts/migrate.mjs",
+    "verify:schema": "node --env-file=.env scripts/verify-schema.mjs",
+    "check:db": "node --env-file=.env scripts/db-check.mjs",
+    "seed": "npm run build && node --env-file=.env dist/seed/run.js",
+    "check:retrieval": "npm run build && node --env-file=.env dist/seed/check-retrieval.js"
   },
   "dependencies": {
     "@aws-sdk/client-bedrock-runtime": "^3.0.0",

@@ -229,10 +229,10 @@ Assume ~2–3 hours per weekday evening, more at weekends. Deadline Aug 18.
 - [x] Schema applied; vector index working end-to-end in a smoke test
 - [x] **Exit criterion MET** — `scripts/db-check.mjs` embeds four summaries, stores them, and correctly returns the weather case (0.6518) ahead of the crew case (0.8333) and unrelated text (1.0000) for an unseen query phrasing. An `open` case planted as a control did not leak into `resolved`-only results.
 
-**M2 — Synthetic data (1 evening)**
-- Generator producing ~60–100 realistic-but-fake historical cases with resolutions and outcomes, across a mix of causes/severities
-- Backfill embeddings
-- **Exit criterion:** semantic search over seeded data returns intuitively sensible precedents. If it doesn't, fix `summary_text` generation before building anything else — everything downstream depends on this.
+**M2 — Synthetic data (1 evening)** — ✅ **COMPLETE 2026-07-29**
+- [x] Generator producing ~60–100 realistic-but-fake historical cases with resolutions and outcomes, across a mix of causes/severities — 84 cases (80 resolved, 4 live), 1,513 passengers, deterministic from a seed
+- [x] Backfill embeddings — written in the same transaction as the case they describe
+- [x] **Exit criterion MET.** Leave-one-out over all 80 resolved cases, measured against the baseline from the corpus's own class distribution rather than an assumed uniform one: same cause **71.3%** vs 21.3% chance (3.34× lift), same severity **65.0%** vs 35.6% (1.83×), same recovery window **70.5%** vs 27.7% (2.54×). Reproduce with `npm run check:retrieval`. Note this is the *fake* lexical embedder; Bedrock should do better, not worse.
 
 **M3 — Agent loop (2–3 evenings)**
 - Retrieval → Bedrock → validated JSON actions → persistence
@@ -378,3 +378,27 @@ _Append dated entries below. Format: date — what was done — what's blocked �
   **New artifacts:** `scripts/db-check.mjs` (answers every doc-unanswerable question against a real cluster), `scripts/migrate.mjs` (forward-only runner with checksums, refuses to run a migration edited after it was applied), `scripts/verify-schema.mjs` (asserts the applied schema matches intent, and that retrieval has not silently regressed to a full scan).
 
   **Blocked / next** — nothing blocks M2. Remaining unknowns are all AWS- or MCP-side and none gate the data work: service accounts on Basic (decides §7 MCP option a vs b), MCP transport/auth format, Bedrock IAM keys and quota. **Next: M2 — synthetic data generator, ~60–100 fake historical cases with resolutions and outcomes, then backfill embeddings.** The M2 exit criterion is that semantic search over seeded data returns intuitively sensible precedents; if it does not, fix `summary_text` generation before building anything else.
+
+- 2026-07-29 (session 2, M2 complete) — **Synthetic history seeded. Retrieval measurably beats chance. M2 exit criterion met.**
+
+  84 cases (80 resolved + 4 live), 1,513 passengers, 84 case embeddings, 80 resolutions. Fully deterministic from a seed — same input, same dataset, same UUIDs, on any machine. `npm run seed -- --reset`.
+
+  **The dataset contains a deliberate, learnable pattern.** A corpus of random rows would let retrieval look like it works while proving nothing. So the generator encodes a legible playbook — the right response is driven mostly by cause, severity, and above all the *hour of day*, because a three-hour delay at 07:00 is an inconvenience and the same delay at 21:00 means hotels — then deviates from it in 28% of cases and records the worse outcome that followed. 14 of 80 resolutions are rated 1–2 with notes explaining what went wrong. **Negative precedent is the point**: an agent that can retrieve "this was tried here and it backfired" is more useful than one that only sees successes.
+
+  **Exit criterion, measured rather than eyeballed.** Three hand-picked examples prove nothing, so: leave-one-out over all 80 resolved cases, scored against the baseline from the corpus's own class distribution (assuming a uniform baseline would have flattered the result).
+
+  | Axis | Retrieved | Chance | Lift |
+  | --- | --- | --- | --- |
+  | same cause | 71.3% | 21.3% | 3.34× |
+  | same severity | 65.0% | 35.6% | 1.83× |
+  | same recovery window | 70.5% | 27.7% | 2.54× |
+
+  This is the **fake** lexical embedder. Bedrock should improve on it, so this is a floor rather than a ceiling — and it means the retrieval path is developable and demo-able with no AWS account at all.
+
+  **`summary_text` design, since M2 says everything downstream depends on it:** lead with what makes cases operationally alike (cause, severity, station type, recovery window) and keep flight number and airport pair brief, or every LHR departure looks like every other one. Emit the bucket word *and* the number — "187 minutes" and "192 minutes" are operationally identical and lexically unrelated, so numbers alone are nearly useless to an embedding. Fully deterministic; a summary that drifts silently invalidates every stored vector.
+
+  **Also:** batched the passenger inserts into one multi-row statement per case. Seeding went 254s → 66s; almost all of the original time was round-trip latency to us-east-1. Embeddings are still written one row at a time per NOTES §1.9. Added npm scripts (`seed`, `check:retrieval`, `check:db`, `migrate`, `verify:schema`) so setup-from-zero does not require remembering `node --env-file=` incantations.
+
+  **IP separation (SPEC §1.1) held throughout:** fictional carrier code, obviously-synthetic passenger references, generic aircraft size classes rather than manufacturer models, and an arbitrary selection of public IATA airport codes that deliberately does not reproduce any real carrier's network. Provenance rules are documented at the top of `src/seed/domain.ts`.
+
+  **Next: M3 — the agent loop.** Retrieval → Bedrock → validated JSON actions → persistence, with `agent_runs` logging. Needs AWS IAM keys before the Bedrock half; the retrieval half can be built now against the fake provider. Still open and unblocking-but-unanswered: service accounts on Basic (§7 MCP option a vs b), MCP transport format.
