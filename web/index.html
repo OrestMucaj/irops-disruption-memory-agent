@@ -156,183 +156,281 @@
 
         <div v-if="!detail" class="empty">loading case…</div>
         <template v-else>
-          <p-card class="casehead-card">
-            <template #content>
-              <div class="casehead">
-                <div>
-                  <div class="route">
-                    {{ detail.case.flightNo }}<em>·</em>{{ detail.case.origin }}<em>→</em>{{ detail.case.destination }}
-                  </div>
-                  <div class="sub">
-                    STD {{ zulu(detail.case.scheduledDep) }} · {{ detail.case.aircraftClass.replace('_','-') }} · case {{ short(detail.case.id) }}
-                  </div>
-                </div>
-                <div class="right">
-                  <p-tag :value="detail.case.status" :severity="statusSeverity(detail.case.status)"></p-tag>
-                </div>
-              </div>
-              <div class="facts">
-                <div class="fact" v-for="f in caseFacts" :key="f.k">
-                  <div class="k">{{ f.k }}</div><div class="v">{{ f.v }}</div>
-                </div>
-              </div>
-            </template>
-          </p-card>
+          <!-- Sticky identity strip. Deep in a twelve-passenger action list you
+               still need to know which flight, how late, and how many people. -->
+          <div class="casebar">
+            <span class="route">
+              {{ detail.case.flightNo }}<em>·</em>{{ detail.case.origin }}<em>→</em>{{ detail.case.destination }}
+            </span>
+            <p-tag :value="detail.case.status" :severity="statusSeverity(detail.case.status)"></p-tag>
+            <span class="cbf">
+              <b :class="'sev-' + severity(detail.case.delayMinutes)">{{ detail.case.delayMinutes }}′</b> delay
+            </span>
+            <span class="cbf">
+              <b :class="detail.case.misconnectCount > 0 ? 'sev-severe' : 'dim'">{{ detail.case.misconnectCount }}</b> misconnecting
+            </span>
+            <span class="cbf"><b>{{ detail.case.paxCount }}</b> pax</span>
+            <span class="spacer"></span>
+            <p-button :label="detail.actions.length ? 'Re-run agent' : 'Get recommendations'"
+                      icon="pi pi-sparkles" :loading="running" size="small" @click="runAgent"></p-button>
+          </div>
 
-          <!-- 1 · passengers -->
-          <p-panel v-if="detail.passengers.length" class="step">
-            <template #header>
-              <span class="stepnum">1</span>
-              <span class="ptitle">Affected passengers</span>
-              <span class="pnote">{{ detail.passengers.length }} tracked · {{ missedCount }} missed · {{ atRiskCount }} at risk</span>
-            </template>
-            <p-datatable :value="detail.passengers" size="small" striped-rows removable-sort
-                         paginator :rows="10" :rows-per-page-options="[10, 25, 50]"
-                         paginator-template="PrevPageLink CurrentPageReport NextPageLink RowsPerPageDropdown"
-                         current-page-report-template="{first}–{last} of {totalRecords}">
-              <p-column field="paxRef" header="Reference" sortable>
-                <template #body="{ data }"><span class="ident">{{ data.paxRef }}</span></template>
-              </p-column>
-              <p-column field="priorityTier" header="Tier" sortable>
-                <template #body="{ data }">
-                  <p-tag :value="data.priorityTier" :severity="data.priorityTier === 'standard' ? 'secondary' : 'contrast'"></p-tag>
-                </template>
-              </p-column>
-              <p-column field="connectionStatus" header="Connection" sortable>
-                <template #body="{ data }">
-                  <p-tag :value="data.connectionStatus.replace('_',' ')" :severity="connSeverity(data.connectionStatus)"></p-tag>
-                </template>
-              </p-column>
-              <p-column field="connectionMinutes" header="Buffer" sortable data-type="numeric">
-                <template #body="{ data }">
-                  <span class="num">{{ data.connectionMinutes !== null ? data.connectionMinutes + '′' : '—' }}</span>
-                </template>
-              </p-column>
-              <p-column field="onwardFlight" header="Onward">
-                <template #body="{ data }"><span class="ident">{{ data.onwardFlight || '—' }}</span></template>
-              </p-column>
-              <p-column field="rebookedTo" header="Rebooked to">
-                <template #body="{ data }"><span class="ident">{{ data.rebookedTo || '—' }}</span></template>
-              </p-column>
-              <p-column header="Special handling">
-                <template #body="{ data }">
-                  <p-tag v-for="s in data.specialHandling" :key="s" :value="s.replace(/_/g,' ')"
-                         severity="warn" class="mini"></p-tag>
-                  <span v-if="!data.specialHandling.length" class="dim">—</span>
-                </template>
-              </p-column>
-            </p-datatable>
-          </p-panel>
-
-          <!-- 2 · agent -->
+          <!-- 1 · the plan. The decision is the page; everything else supports it. -->
           <p-panel class="step">
             <template #header>
-              <span class="stepnum">2</span>
-              <span class="ptitle">Agent recommendation</span>
-              <span class="pnote">{{ runMeta }}</span>
-              <p-button class="hdrbtn" :label="detail.actions.length ? 'Refresh recommendations' : 'Get recommendations'"
-                        icon="pi pi-sparkles" :loading="running" size="small" @click="runAgent"></p-button>
+              <span class="stepnum">1</span>
+              <span class="ptitle">Recommended plan</span>
+              <span class="pnote">{{ planNote }}</span>
+              <span class="pnote hdrbtn mono">{{ runMeta }}</span>
             </template>
+
             <p-message v-if="detail.lastRun && detail.lastRun.error" severity="error" :closable="false">
               {{ detail.lastRun.error }}
             </p-message>
-            <div v-else class="pnote pad">Searches past disruptions for similar cases and proposes a plan citing them.</div>
-          </p-panel>
 
-          <div class="cols">
-            <!-- 3 · precedent -->
-            <p-panel class="step">
-              <template #header>
-                <span class="stepnum">3</span>
-                <span class="ptitle">Similar past disruptions</span>
-                <span class="pnote">what was done, and how it turned out</span>
-              </template>
-              <div v-if="!detail.precedents.length" class="empty">
-                Nothing retrieved yet — use “Get recommendations” above.
-              </div>
-              <div v-for="(p, i) in detail.precedents" :key="p.id" class="prec" :class="precTone(p.outcome_rating)">
-                <div class="top">
-                  <span class="id">{{ short(p.id) }}</span>
-                  <p-tag v-if="i === 0" value="closest match" severity="info" class="mini"></p-tag>
-                  <span class="meta">{{ p.flight_no }} · {{ p.cause.replace('_','-') }} · {{ p.delay_minutes }}′ · {{ zulu(p.scheduled_dep) }}</span>
-                  <span class="sim">
-                    <span class="dim">similarity</span>
-                    <p-progressbar :value="simPct(p)" :show-value="false" style="width:56px;height:5px"></p-progressbar>
-                  </span>
-                </div>
-                <div class="txt">{{ p.summary_text }}</div>
-                <div class="did">
-                  <span class="lbl">Did</span>
-                  <p-tag v-for="a in (p.actions_taken || [])" :key="a.action_type" :value="a.action_type"
-                         severity="secondary" class="mini"></p-tag>
-                  <span v-if="!(p.actions_taken || []).length" class="dim">nothing recorded</span>
-                  <span class="lbl gap">Outcome</span>
-                  <span v-if="p.outcome_rating !== null" class="score" :class="'s' + p.outcome_rating">
-                    <i></i>{{ p.outcome_rating }}/5
-                  </span>
-                  <span v-else class="dim">unrated</span>
-                </div>
-                <div v-if="p.outcome_notes" class="note">{{ p.outcome_notes }}</div>
-              </div>
-            </p-panel>
+            <p-message v-if="detail.coverageGaps && detail.coverageGaps.length" severity="error" :closable="false">
+              <b>{{ detail.coverageGaps.length }} passenger(s) unhandled.</b>
+              Already missed their connection with no action to reaccommodate them:
+              <span class="ident">{{ detail.coverageGaps.join(', ') }}</span>. Review before approving.
+            </p-message>
 
-            <!-- 4 · actions -->
-            <p-panel class="step">
-              <template #header>
-                <span class="stepnum">4</span>
-                <span class="ptitle">Proposed actions</span>
-                <span class="pnote">nothing happens without your approval</span>
-              </template>
+            <div v-if="!detail.actions.length" class="blank">
+              <i class="pi pi-sparkles"></i>
+              <div class="bt">No plan yet</div>
+              <div class="bs">The agent searches past disruptions for similar cases and proposes a plan citing them.</div>
+              <p-button label="Get recommendations" icon="pi pi-sparkles" :loading="running" @click="runAgent"></p-button>
+            </div>
 
-              <p-message v-if="detail.coverageGaps && detail.coverageGaps.length" severity="error" :closable="false">
-                <b>{{ detail.coverageGaps.length }} passenger(s) unhandled.</b>
-                Already missed their connection with no action to reaccommodate them:
-                <span class="ident">{{ detail.coverageGaps.join(', ') }}</span>. Review before approving.
-              </p-message>
-
-              <div v-if="!detail.actions.length" class="empty">
-                No recommendations yet — use “Get recommendations” above.
+            <div v-for="g in actionGroups" :key="g.type" class="grp" :class="{ open: isExpanded(g.type) }">
+              <div class="grphead" @click="toggleGroup(g.type)">
+                <span class="grpicon" :class="g.type"><i :class="g.icon"></i></span>
+                <span class="grpname">
+                  <b>{{ g.label }}</b>
+                  <span class="grpn">{{ g.items.length }}</span>
+                  <span class="dim">— {{ g.blurb }}</span>
+                  <span class="grpwho">{{ g.headline }}</span>
+                </span>
+                <span class="grpstat">
+                  <p-tag v-if="g.pending.length" :value="g.pending.length + ' to review'" severity="info"></p-tag>
+                  <p-tag v-if="g.approved" :value="g.approved + ' approved'" severity="success" class="mini"></p-tag>
+                  <p-tag v-if="g.edited" :value="g.edited + ' edited'" severity="warn" class="mini"></p-tag>
+                  <p-tag v-if="g.rejected" :value="g.rejected + ' rejected'" severity="danger" class="mini"></p-tag>
+                </span>
+                <i class="pi grpchev" :class="isExpanded(g.type) ? 'pi-chevron-up' : 'pi-chevron-down'"></i>
               </div>
 
-              <div v-for="a in detail.actions" :key="a.id" class="act">
-                <div class="top">
-                  <span class="kind">{{ a.action_type }}</span>
-                  <span v-if="a.target_pax_ref" class="target">{{ a.target_pax_ref }}</span>
-                  <span v-else class="dim small">case-level</span>
-                  <p-tag :value="a.status" :severity="actionSeverity(a.status)"></p-tag>
+              <div class="grpbody">
+                <!-- Precedent at the point of decision: flight and outcome, not a hash. -->
+                <div class="cites">
+                  <span class="lbl">Because</span>
+                  <button v-for="c in g.cites" :key="c.id" class="pchip" :class="c.tone"
+                          @click.stop="openPrecedent(c.id)"
+                          v-tooltip.top="'Open this past disruption'">
+                    <i class="pi pi-history"></i>
+                    <span class="pf">{{ c.flight }}</span>
+                    <span v-if="c.rating !== null" class="pr" :class="'s' + c.rating">{{ c.rating }}/5</span>
+                    <span class="pw">{{ c.word }}</span>
+                  </button>
+                  <span v-if="!g.cites.length" class="dim">no past disruption cited</span>
                   <span class="conf">
-                    <span class="dim">confidence {{ confWord(a.confidence) }}</span>
-                    <p-progressbar :value="Math.round(Number(a.confidence) * 100)" :show-value="false"
+                    <span class="dim">confidence {{ confWord(g.confidence) }}</span>
+                    <p-progressbar :value="Math.round(g.confidence * 100)" :show-value="false"
                                    style="width:48px;height:5px"></p-progressbar>
                   </span>
                 </div>
-                <div class="why">{{ a.rationale }}</div>
-                <div class="cites">
-                  <template v-if="a.precedent_case_ids && a.precedent_case_ids.length">
-                    <b>cites</b> {{ a.precedent_case_ids.map(short).join('  ') }}
+
+                <div class="grpctl">
+                  <template v-if="g.pending.length">
+                    <p-button :label="g.pending.length === 1 ? 'Approve' : 'Approve all ' + g.pending.length"
+                              icon="pi pi-check" severity="success" size="small"
+                              :disabled="busy" @click.stop="bulkDecide(g.pending, 'approved')"></p-button>
+                    <p-button label="Reject all" icon="pi pi-times" severity="danger" outlined size="small"
+                              :disabled="busy" @click.stop="bulkDecide(g.pending, 'rejected')"></p-button>
                   </template>
-                  <template v-else>cites nothing</template>
+                  <span v-else class="dim small"><i class="pi pi-check-circle"></i> all decided</span>
+                  <p-button :label="isExpanded(g.type) ? 'Hide the ' + g.items.length : 'Review individually'"
+                            :icon="isExpanded(g.type) ? 'pi pi-chevron-up' : 'pi pi-list'"
+                            text size="small" @click.stop="toggleGroup(g.type)"></p-button>
                 </div>
-                <div v-if="a.status === 'proposed'" class="ctl">
-                  <p-button label="Approve" icon="pi pi-check" severity="success" size="small"
-                            :disabled="deciding" @click="decide(a, 'approved')"></p-button>
-                  <p-button label="Approve with edit" icon="pi pi-pencil" severity="secondary" outlined size="small"
-                            :disabled="deciding" @click="decideEdit(a)"></p-button>
-                  <p-button label="Reject" icon="pi pi-times" severity="danger" outlined size="small"
-                            :disabled="deciding" @click="decide(a, 'rejected')"></p-button>
-                </div>
-                <p-message v-else-if="a.edited_payload && a.edited_payload.reviewer_note"
-                           severity="warn" :closable="false">
-                  <b>Reviewer edit —</b> {{ a.edited_payload.reviewer_note }}
-                </p-message>
               </div>
-            </p-panel>
+
+              <div v-if="isExpanded(g.type)" class="grpitems">
+                <div v-for="a in g.items" :key="a.id" class="itm" :class="a.status">
+                  <span class="itmtarget ident">{{ a.target_pax_ref || 'case-level' }}</span>
+                  <span class="itmwhy">
+                    {{ a.rationale }}
+                    <span v-if="a.edited_payload && a.edited_payload.reviewer_note" class="itmnote">
+                      <b>Reviewer:</b> {{ a.edited_payload.reviewer_note }}
+                    </span>
+                  </span>
+                  <span class="itmcites">
+                    <button v-for="c in citeChips(a.precedent_case_ids)" :key="c.id" class="pchip tiny"
+                            :class="c.tone" @click="openPrecedent(c.id)">{{ c.flight }}</button>
+                  </span>
+                  <span class="itmctl">
+                    <template v-if="a.status === 'proposed'">
+                      <p-button icon="pi pi-check" severity="success" text rounded size="small"
+                                :disabled="busy" v-tooltip.top="'Approve'" @click="decide(a, 'approved')"></p-button>
+                      <p-button icon="pi pi-pencil" severity="secondary" text rounded size="small"
+                                :disabled="busy" v-tooltip.top="'Approve with an edit'" @click="openEdit(a)"></p-button>
+                      <p-button icon="pi pi-times" severity="danger" text rounded size="small"
+                                :disabled="busy" v-tooltip.top="'Reject'" @click="decide(a, 'rejected')"></p-button>
+                    </template>
+                    <p-tag v-else :value="a.status" :severity="actionSeverity(a.status)"></p-tag>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </p-panel>
+
+          <!-- Sticky decision bar. The repeated interaction should never be
+               more than a glance away, however far down the page you are. -->
+          <div v-if="detail.actions.length" class="decisionbar"
+               :class="pendingActions.length ? '' : 'done'">
+            <template v-if="pendingActions.length">
+              <span class="dbn">{{ pendingActions.length }}</span>
+              <span class="dbt">awaiting your decision<span v-if="decidedCount" class="dim"> · {{ decidedCount }} decided</span></span>
+              <span v-if="detail.coverageGaps && detail.coverageGaps.length" class="dbwarn">
+                <i class="pi pi-exclamation-triangle"></i> {{ detail.coverageGaps.length }} unhandled
+              </span>
+              <span class="spacer"></span>
+              <span v-if="bulk" class="dim small mono">{{ bulk.done }}/{{ bulk.total }}…</span>
+              <p-button :label="'Approve all ' + pendingActions.length" icon="pi pi-check" severity="success"
+                        size="small" :disabled="busy" :loading="bulk !== null"
+                        @click="bulkDecide(pendingActions, 'approved')"></p-button>
+              <p-button label="Reject all" icon="pi pi-times" severity="danger" outlined size="small"
+                        :disabled="busy" @click="bulkDecide(pendingActions, 'rejected')"></p-button>
+            </template>
+            <template v-else>
+              <i class="pi pi-check-circle"></i>
+              <span class="dbt">All {{ decidedCount }} actions decided</span>
+              <span class="spacer"></span>
+              <p-button v-if="!detail.resolution && detail.case.status !== 'resolved'"
+                        label="Record what happened" icon="pi pi-database" size="small"
+                        @click="scrollToClose"></p-button>
+            </template>
           </div>
 
-          <!-- 5 · close -->
+          <!-- 2 · evidence. Three reference views behind one panel: the roster,
+               the full retrieved set, and what the model actually did. -->
           <p-panel class="step">
             <template #header>
-              <span class="stepnum">5</span>
+              <span class="stepnum">2</span>
+              <span class="ptitle">Evidence</span>
+              <span class="pnote">{{ paxSummary }}</span>
+            </template>
+
+            <p-tabs v-model:value="evidenceTab">
+              <p-tablist>
+                <p-tab value="pax">
+                  <i class="pi pi-users"></i> Affected passengers
+                  <p-badge :value="detail.passengers.length" severity="secondary"></p-badge>
+                </p-tab>
+                <p-tab value="prec">
+                  <i class="pi pi-history"></i> Retrieved precedent
+                  <p-badge :value="detail.precedents.length" severity="secondary"></p-badge>
+                </p-tab>
+                <p-tab value="run">
+                  <i class="pi pi-server"></i> Agent run
+                </p-tab>
+              </p-tablist>
+
+              <p-tabpanels>
+                <p-tabpanel value="pax">
+                  <p-datatable :value="detail.passengers" size="small" striped-rows removable-sort
+                               paginator :rows="10" :rows-per-page-options="[10, 25, 50]"
+                               paginator-template="PrevPageLink CurrentPageReport NextPageLink RowsPerPageDropdown"
+                               current-page-report-template="{first}–{last} of {totalRecords}">
+                    <template #empty><div class="empty">No passengers tracked on this case.</div></template>
+                    <p-column field="paxRef" header="Reference" sortable>
+                      <template #body="{ data }"><span class="ident">{{ data.paxRef }}</span></template>
+                    </p-column>
+                    <p-column field="priorityTier" header="Tier" sortable>
+                      <template #body="{ data }">
+                        <p-tag :value="data.priorityTier" :severity="data.priorityTier === 'standard' ? 'secondary' : 'contrast'"></p-tag>
+                      </template>
+                    </p-column>
+                    <p-column field="connectionStatus" header="Connection" sortable>
+                      <template #body="{ data }">
+                        <p-tag :value="data.connectionStatus.replace('_',' ')" :severity="connSeverity(data.connectionStatus)"></p-tag>
+                      </template>
+                    </p-column>
+                    <p-column field="connectionMinutes" header="Buffer" sortable data-type="numeric">
+                      <template #body="{ data }">
+                        <span class="num">{{ data.connectionMinutes !== null ? data.connectionMinutes + '′' : '—' }}</span>
+                      </template>
+                    </p-column>
+                    <p-column field="onwardFlight" header="Onward">
+                      <template #body="{ data }"><span class="ident">{{ data.onwardFlight || '—' }}</span></template>
+                    </p-column>
+                    <p-column field="rebookedTo" header="Rebooked to">
+                      <template #body="{ data }"><span class="ident">{{ data.rebookedTo || '—' }}</span></template>
+                    </p-column>
+                    <p-column header="Special handling">
+                      <template #body="{ data }">
+                        <p-tag v-for="s in data.specialHandling" :key="s" :value="s.replace(/_/g,' ')"
+                               severity="warn" class="mini"></p-tag>
+                        <span v-if="!data.specialHandling.length" class="dim">—</span>
+                      </template>
+                    </p-column>
+                  </p-datatable>
+                </p-tabpanel>
+
+                <p-tabpanel value="prec">
+                  <div v-if="!detail.precedents.length" class="empty">
+                    Nothing retrieved yet — use “Get recommendations” above.
+                  </div>
+                  <div v-for="(p, i) in detail.precedents" :key="p.id" class="prec" :class="precTone(p.outcome_rating)">
+                    <div class="top">
+                      <span class="ident">{{ p.flight_no }}</span>
+                      <p-tag :value="rankWord(i)" :severity="i === 0 ? 'info' : 'secondary'" class="mini"></p-tag>
+                      <span class="meta">{{ p.origin }}→{{ p.destination }} · {{ p.cause.replace('_','-') }} · {{ p.delay_minutes }}′ · {{ zulu(p.scheduled_dep) }}</span>
+                      <span class="sim dim mono">{{ short(p.id) }}</span>
+                    </div>
+                    <div class="txt">{{ p.summary_text }}</div>
+                    <div class="did">
+                      <span class="lbl">Did</span>
+                      <p-tag v-for="a in (p.actions_taken || [])" :key="a.action_type" :value="a.action_type"
+                             severity="secondary" class="mini"></p-tag>
+                      <span v-if="!(p.actions_taken || []).length" class="dim">nothing recorded</span>
+                      <span class="lbl gap">Outcome</span>
+                      <span v-if="p.outcome_rating !== null" class="score" :class="'s' + p.outcome_rating">
+                        <i></i>{{ p.outcome_rating }}/5
+                      </span>
+                      <span v-else class="dim">unrated</span>
+                    </div>
+                    <div v-if="p.outcome_notes" class="note">{{ p.outcome_notes }}</div>
+                  </div>
+                </p-tabpanel>
+
+                <p-tabpanel value="run">
+                  <div v-if="!detail.lastRun" class="empty">This case has not been run yet.</div>
+                  <template v-else>
+                    <p-message v-if="detail.lastRun.error" severity="error" :closable="false">
+                      {{ detail.lastRun.error }}
+                    </p-message>
+                    <div class="facts">
+                      <div class="fact"><div class="k">Run at</div><div class="v">{{ zulu(detail.lastRun.created_at) }}</div></div>
+                      <div class="fact"><div class="k">Model</div><div class="v">{{ detail.lastRun.model_id }}</div></div>
+                      <div class="fact"><div class="k">Retrieved</div><div class="v">{{ (detail.lastRun.retrieved_case_ids || []).length }}</div></div>
+                      <div class="fact"><div class="k">Latency</div><div class="v">{{ detail.lastRun.latency_ms ?? '—' }}ms</div></div>
+                      <div class="fact"><div class="k">Prompt tok</div><div class="v">{{ detail.lastRun.prompt_tokens ?? '—' }}</div></div>
+                      <div class="fact"><div class="k">Completion tok</div><div class="v">{{ detail.lastRun.completion_tokens ?? '—' }}</div></div>
+                    </div>
+                    <div class="foot">
+                      Every run is written to <span class="mono">agent_runs</span>, including failures — the
+                      retrieved case ids above are what the plan on this page was built from.
+                    </div>
+                  </template>
+                </p-tabpanel>
+              </p-tabpanels>
+            </p-tabs>
+          </p-panel>
+
+          <!-- 3 · close -->
+          <p-panel class="step" id="close-the-loop">
+            <template #header>
+              <span class="stepnum">3</span>
               <span class="ptitle">{{ detail.resolution ? 'Resolution' : 'Close the loop' }}</span>
               <span class="pnote">
                 {{ detail.resolution ? 'this outcome is now memory' : 'record what happened — it becomes memory for future disruptions' }}
@@ -508,6 +606,72 @@
       </section>
     </main>
   </div>
+
+  <!-- Approve-with-edit. Was a browser prompt(); an overrule is the most
+       valuable row in the dataset and deserves better than an OS dialog. -->
+  <p-dialog :visible="editing !== null" @update:visible="closeEdit"
+            modal dismissable-mask header="Approve with an edit" :style="{ width: '38rem' }">
+    <template v-if="editing">
+      <div class="dlgmeta">
+        <p-tag :value="editing.action_type" severity="secondary"></p-tag>
+        <span class="ident">{{ editing.target_pax_ref || 'case-level' }}</span>
+      </div>
+      <div class="dlgquote">{{ editing.rationale }}</div>
+      <label class="field">What did you change, and why?</label>
+      <p-textarea v-model="editNote" rows="4" auto-resize class="dlgarea"
+                  placeholder="e.g. Rebooked onto the 06:15 instead — the 04:40 has no lie-flat and this passenger is inbound long-haul."></p-textarea>
+      <div class="dlghint">
+        <i class="pi pi-info-circle"></i>
+        Recorded as memory. A human overruling the agent is the strongest signal in the dataset,
+        so this note is kept and retrieved alongside the case.
+      </div>
+    </template>
+    <template #footer>
+      <p-button label="Cancel" text size="small" @click="closeEdit"></p-button>
+      <p-button label="Approve with this edit" icon="pi pi-check" severity="success" size="small"
+                :disabled="!editNote.trim()" @click="submitEdit"></p-button>
+    </template>
+  </p-dialog>
+
+  <!-- Precedent detail, opened from a chip inside the plan. -->
+  <p-dialog :visible="precedentOpen !== null" @update:visible="closePrecedent"
+            modal dismissable-mask :style="{ width: '46rem' }">
+    <template #header>
+      <span class="dlghead" v-if="precedentOpen">
+        <i class="pi pi-history"></i>
+        <span class="ident">{{ precedentOpen.flight_no }}</span>
+        <span class="dim">{{ precedentOpen.origin }} → {{ precedentOpen.destination }}</span>
+        <span v-if="precedentOpen.outcome_rating !== null" class="score" :class="'s' + precedentOpen.outcome_rating">
+          <i></i>{{ precedentOpen.outcome_rating }}/5 · {{ outcomeWord(precedentOpen.outcome_rating) }}
+        </span>
+      </span>
+    </template>
+    <template v-if="precedentOpen">
+      <div class="facts">
+        <div class="fact"><div class="k">Cause</div><div class="v">{{ precedentOpen.cause.replace('_','-') }}</div></div>
+        <div class="fact"><div class="k">Delay</div><div class="v">{{ precedentOpen.delay_minutes }}′</div></div>
+        <div class="fact"><div class="k">Scheduled dep</div><div class="v">{{ zulu(precedentOpen.scheduled_dep) }}</div></div>
+        <div class="fact"><div class="k">Retrieval rank</div><div class="v">{{ rankWord(precedentRank) }}</div></div>
+      </div>
+      <label class="field">What happened</label>
+      <div class="dlgquote">{{ precedentOpen.summary_text }}</div>
+      <label class="field">What was done</label>
+      <div class="dlgtags">
+        <p-tag v-for="a in (precedentOpen.actions_taken || [])" :key="a.action_type"
+               :value="a.action_type + (a.count ? ' ×' + a.count : '')" severity="secondary"></p-tag>
+        <span v-if="!(precedentOpen.actions_taken || []).length" class="dim">nothing recorded</span>
+      </div>
+      <template v-if="precedentOpen.outcome_notes">
+        <label class="field">How it turned out</label>
+        <div class="dlgquote" :class="precTone(precedentOpen.outcome_rating)">{{ precedentOpen.outcome_notes }}</div>
+      </template>
+    </template>
+    <template #footer>
+      <p-button label="Open this case" icon="pi pi-arrow-up-right" outlined size="small"
+                @click="openPrecedentCase"></p-button>
+      <p-button label="Close" text size="small" @click="closePrecedent"></p-button>
+    </template>
+  </p-dialog>
 
   <p-toast position="bottom-center"></p-toast>
 </div>

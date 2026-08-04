@@ -45,6 +45,18 @@ const short = (id) => String(id || '').slice(0, 8);
    the server owns the real classification; this only picks a colour. */
 const severity = (m) => (m < 60 ? 'minor' : m < 120 ? 'moderate' : m < 240 ? 'severe' : 'extreme');
 
+/* Presentation for the five action types in src/agent/schema.ts. Ordered most
+   consequential first: a reviewer should meet "rebook 12 people" before
+   "send a message", because that is the decision that costs money. */
+const ACTION_META = {
+  rebook:     { label: 'Rebook',     icon: 'pi pi-sync',                 blurb: 'move onto a later flight' },
+  hotel:      { label: 'Hotel',      icon: 'pi pi-home',                 blurb: 'overnight accommodation' },
+  prioritise: { label: 'Prioritise', icon: 'pi pi-flag-fill',            blurb: 'handle at the desk first' },
+  escalate:   { label: 'Escalate',   icon: 'pi pi-exclamation-triangle', blurb: 'raise to the duty manager' },
+  notify:     { label: 'Notify',     icon: 'pi pi-send',                 blurb: 'proactive passenger message' },
+};
+const ACTION_ORDER = ['rebook', 'hotel', 'prioritise', 'escalate', 'notify'];
+
 const app = createApp({
   setup() {
     const view = ref('cases');
@@ -64,6 +76,13 @@ const app = createApp({
     const resolving = ref(false);
     const outcomeNotes = ref('');
     const outcomeRating = ref(4);
+
+    const expanded = ref({});          // action_type -> bool
+    const evidenceTab = ref('pax');
+    const bulk = ref(null);            // { done, total } while a bulk decision runs
+    const editing = ref(null);         // the action open in the edit dialog
+    const editNote = ref('');
+    const precedentOpen = ref(null);   // the precedent open in the detail dialog
 
     const memory = ref(null);
     const question = ref('');
@@ -147,7 +166,10 @@ const app = createApp({
     async function openCase(id) {
       currentCaseId.value = id;
       detail.value = null;
+      expanded.value = {};
+      evidenceTab.value = 'pax';
       view.value = 'detail';
+      window.scrollTo({ top: 0 });
       await loadDetail();
     }
 
@@ -163,7 +185,6 @@ const app = createApp({
           ...p,
           delay_minutes: Number(p.delay_minutes ?? 0),
           outcome_rating: p.outcome_rating === null ? null : Number(p.outcome_rating),
-          distance: Number(p.distance ?? 0),
         }));
         detail.value = d;
       } catch (err) {
@@ -176,12 +197,13 @@ const app = createApp({
       const c = detail.value.case;
       return [
         { k: 'Cause', v: String(c.cause).replace('_', '-') },
-        { k: 'Delay', v: `${c.delayMinutes}′` },
         { k: 'Severity', v: severity(c.delayMinutes) },
+        { k: 'Aircraft', v: String(c.aircraftClass).replace('_', '-') },
         { k: 'Passengers', v: c.paxCount },
-        { k: 'Misconnecting', v: c.misconnectCount },
         { k: 'Priority pax', v: c.priorityPaxCount },
+        { k: 'Scheduled dep', v: zulu(c.scheduledDep) },
         { k: 'Actual dep', v: c.actualDep ? zulu(c.actualDep) : 'not departed' },
+        { k: 'Case ref', v: short(c.id) },
       ];
     });
 
@@ -190,26 +212,132 @@ const app = createApp({
     const atRiskCount = computed(() =>
       (detail.value?.passengers ?? []).filter((p) => p.connectionStatus === 'at_risk').length);
 
+    const paxSummary = computed(() => {
+      if (!detail.value) return '';
+      return `${detail.value.passengers.length} tracked · ${missedCount.value} missed · ${atRiskCount.value} at risk`;
+    });
+
     const runMeta = computed(() => {
       const r = detail.value?.lastRun;
       if (!r) return 'not yet run';
       return `last run ${zulu(r.created_at)} · ${(r.retrieved_case_ids || []).length} similar cases · ${r.latency_ms ?? '?'}ms`;
     });
 
-    async function runAgent() {
-      running.value = true;
-      try {
-        const r = await call(`/api/cases/${currentCaseId.value}/run`, { method: 'POST' });
-        if (r.error) notify('error', 'Run failed', r.error);
-        else notify('success', 'Recommendations ready',
-          `${r.actionCount} actions from ${r.precedentCount} similar past disruptions`);
-        await loadDetail();
-      } catch (err) {
-        notify('error', 'Run failed', err.message);
-      } finally {
-        running.value = false;
-      }
+    /* --------------------------------------------------- the action plan -- */
+
+    /* Actions carry precedent as raw case UUIDs. A reviewer cannot do anything
+       with "ee75da89", so resolve each one against the retrieved set and show
+       the flight number and how that case actually turned out. This is the
+       whole point of the product, and it belongs at the moment of decision
+       rather than in a column the reviewer has to eyeball-match against. */
+    const precedentById = computed(() => {
+      const map = new Map();
+      for (const p of detail.value?.precedents ?? []) map.set(p.id, p);
+      return map;
+    });
+
+    function outcomeWord(r) {
+      if (r === null || r === undefined) return 'unrated';
+      if (r <= 2) return 'went badly';
+      if (r === 3) return 'mixed';
+      return 'worked';
     }
+
+    function citeChips(ids) {
+      return (ids || []).map((id) => {
+        const p = precedentById.value.get(id);
+        return {
+          id,
+          known: Boolean(p),
+          flight: p ? p.flight_no : short(id),
+          rating: p ? p.outcome_rating : null,
+          tone: p ? precTone(p.outcome_rating) : '',
+          word: p ? outcomeWord(p.outcome_rating) : 'not in this run',
+        };
+      });
+    }
+
+    /* One card per action type instead of one per passenger. Twelve identical
+       "rebook SYNPAX-nnnnnn" cards is not twelve decisions — it is one decision
+       printed twelve times, and making the reviewer click Approve twelve times
+       is how a reviewer stops reading. Individual override stays one click away. */
+    const actionGroups = computed(() => {
+      const all = detail.value?.actions ?? [];
+      const byType = new Map();
+      for (const a of all) {
+        if (!byType.has(a.action_type)) byType.set(a.action_type, []);
+        byType.get(a.action_type).push(a);
+      }
+
+      const paxByRef = new Map();
+      for (const p of detail.value?.passengers ?? []) paxByRef.set(p.paxRef, p);
+
+      const groups = [];
+      for (const [type, items] of byType) {
+        const meta = ACTION_META[type] ?? { label: type, icon: 'pi pi-circle-fill', blurb: '' };
+        const pending = items.filter((a) => a.status === 'proposed');
+
+        // Distinct precedent across the whole group, most-cited first.
+        const counts = new Map();
+        for (const a of items) {
+          for (const id of a.precedent_case_ids || []) {
+            counts.set(id, (counts.get(id) || 0) + 1);
+          }
+        }
+        const cites = citeChips([...counts.entries()].sort((x, y) => y[1] - x[1]).map(([id]) => id));
+
+        // Who this group is about, in connection terms rather than pax refs.
+        const targets = items.map((a) => paxByRef.get(a.target_pax_ref)).filter(Boolean);
+        const missed = targets.filter((p) => p.connectionStatus === 'missed').length;
+        const risk = targets.filter((p) => p.connectionStatus === 'at_risk').length;
+        const caseLevel = items.filter((a) => !a.target_pax_ref).length;
+        const parts = [];
+        if (missed) parts.push(`${missed} missed their connection`);
+        if (risk) parts.push(`${risk} at risk`);
+        if (caseLevel) parts.push(`${caseLevel} case-level`);
+
+        const conf = items.reduce((s, a) => s + a.confidence, 0) / (items.length || 1);
+
+        groups.push({
+          type, items, pending, cites,
+          label: meta.label, icon: meta.icon, blurb: meta.blurb,
+          headline: parts.join(' · ') || `${items.length} action(s)`,
+          confidence: conf,
+          approved: items.filter((a) => a.status === 'approved').length,
+          rejected: items.filter((a) => a.status === 'rejected').length,
+          edited: items.filter((a) => a.status === 'edited').length,
+        });
+      }
+
+      groups.sort((a, b) => {
+        const ia = ACTION_ORDER.indexOf(a.type);
+        const ib = ACTION_ORDER.indexOf(b.type);
+        return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
+      });
+      return groups;
+    });
+
+    const pendingActions = computed(() =>
+      (detail.value?.actions ?? []).filter((a) => a.status === 'proposed'));
+
+    const decidedCount = computed(() =>
+      (detail.value?.actions ?? []).length - pendingActions.value.length);
+
+    const planNote = computed(() => {
+      const total = (detail.value?.actions ?? []).length;
+      if (!total) return 'nothing proposed yet';
+      const p = pendingActions.value.length;
+      return p
+        ? `${total} action${total === 1 ? '' : 's'} · ${p} awaiting your decision`
+        : `${total} action${total === 1 ? '' : 's'} · all decided`;
+    });
+
+    const isExpanded = (type) => expanded.value[type] === true;
+    function toggleGroup(type) { expanded.value = { ...expanded.value, [type]: !isExpanded(type) }; }
+
+    /* --------------------------------------------------------- decisions -- */
+
+    const busy = computed(() => deciding.value || bulk.value !== null);
 
     async function decide(action, status, payload) {
       deciding.value = true;
@@ -227,10 +355,67 @@ const app = createApp({
       }
     }
 
-    function decideEdit(action) {
-      const note = prompt('What did you change, and why?\n\nRecorded as memory — an overrule is the strongest signal in the dataset.');
-      if (note === null || !note.trim()) return;
-      decide(action, 'edited', { reviewer_note: note.trim(), original_rationale: action.rationale });
+    /* Bulk approve is N calls, not one — the decision endpoint is per-action so
+       every decision keeps its own audited row. Four at a time: the free-tier
+       cluster is one node and a dozen concurrent SERIALIZABLE writes would
+       mostly retry each other. Failures are counted, not swallowed. */
+    async function bulkDecide(list, status) {
+      const items = list.slice();
+      if (!items.length) return;
+      bulk.value = { done: 0, total: items.length };
+      let failed = 0;
+      let cursor = 0;
+
+      async function worker() {
+        while (cursor < items.length) {
+          const a = items[cursor];
+          cursor += 1;
+          try {
+            await call(`/api/actions/${a.id}/decision`, {
+              method: 'POST',
+              body: JSON.stringify({ status }),
+            });
+          } catch {
+            failed += 1;
+          }
+          bulk.value = { done: bulk.value.done + 1, total: items.length };
+        }
+      }
+
+      await Promise.all(Array.from({ length: Math.min(4, items.length) }, worker));
+      bulk.value = null;
+
+      const done = items.length - failed;
+      if (failed) notify('warn', `${done} of ${items.length} ${status}`, `${failed} failed — reload and retry`);
+      else notify('success', `${done} action${done === 1 ? '' : 's'} ${status}`, '');
+
+      await loadDetail();
+      await loadCases();
+    }
+
+    function openEdit(action) {
+      editing.value = action;
+      editNote.value = '';
+    }
+    function closeEdit() { editing.value = null; }
+    function closePrecedent() { precedentOpen.value = null; }
+    function openPrecedentCase() {
+      const id = precedentOpen.value?.id;
+      precedentOpen.value = null;
+      if (id) openCase(id);
+    }
+
+    async function submitEdit() {
+      const note = editNote.value.trim();
+      if (!note) { notify('warn', 'Say what you changed', 'The note is the signal.'); return; }
+      const action = editing.value;
+      editing.value = null;
+      await decide(action, 'edited', { reviewer_note: note, original_rationale: action.rationale });
+    }
+
+    function openPrecedent(id) {
+      precedentOpen.value = precedentById.value.get(id) ?? null;
+      if (!precedentOpen.value) notify('info', 'Not in this run', 'That case was not among the retrieved precedent.');
     }
 
     async function resolveCase() {
@@ -255,6 +440,25 @@ const app = createApp({
       } finally {
         resolving.value = false;
       }
+    }
+
+    async function runAgent() {
+      running.value = true;
+      try {
+        const r = await call(`/api/cases/${currentCaseId.value}/run`, { method: 'POST' });
+        if (r.error) notify('error', 'Run failed', r.error);
+        else notify('success', 'Recommendations ready',
+          `${r.actionCount} actions from ${r.precedentCount} similar past disruptions`);
+        await loadDetail();
+      } catch (err) {
+        notify('error', 'Run failed', err.message);
+      } finally {
+        running.value = false;
+      }
+    }
+
+    function scrollToClose() {
+      document.getElementById('close-the-loop')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
     /* --------------------------------------------------------- memory -- */
@@ -364,11 +568,18 @@ const app = createApp({
     const precTone = (r) => (r === null ? '' : r <= 2 ? 'bad' : r >= 4 ? 'good' : 'mid');
     const confWord = (c) => (c >= 0.8 ? 'high' : c >= 0.6 ? 'medium' : 'low');
 
-    function simPct(p) {
-      const all = detail.value?.precedents ?? [];
-      const worst = Math.max(...all.map((x) => x.distance), 0.0001);
-      return Math.round((1 - (p.distance / worst) * 0.85) * 100);
-    }
+    /* Retrieval rank, not a similarity percentage. The cosine distance is
+       computed inside the vector search and never leaves the agent run — the
+       API returns the retrieved ids in closest-first order and nothing more.
+       Rank is the real signal available here; a percentage bar fed by an
+       absent field would just be a full bar pretending to be a measurement. */
+    const RANK_WORDS = ['closest match', '2nd closest', '3rd closest', '4th closest', '5th closest'];
+    const rankWord = (i) => RANK_WORDS[i] ?? `${i + 1}th closest`;
+
+    const precedentRank = computed(() => {
+      if (!precedentOpen.value) return 0;
+      return (detail.value?.precedents ?? []).findIndex((p) => p.id === precedentOpen.value.id);
+    });
 
     onMounted(async () => {
       try { health.value = await call('/api/health'); } catch { health.value = null; }
@@ -378,14 +589,19 @@ const app = createApp({
     return {
       view, health, clock,
       cases, loadingCases, filteredCases, caseKpis, statusFilter, statusOptions, query, filters,
-      detail, caseFacts, missedCount, atRiskCount, runMeta,
+      detail, caseFacts, missedCount, atRiskCount, paxSummary, runMeta,
       running, deciding, resolving, outcomeNotes, outcomeRating,
+      actionGroups, pendingActions, decidedCount, planNote, citeChips,
+      expanded, isExpanded, toggleGroup, evidenceTab, bulk, busy,
+      editing, editNote, openEdit, submitEdit, closeEdit,
+      precedentOpen, openPrecedent, closePrecedent, openPrecedentCase,
+      outcomeWord, rankWord, precedentRank,
       memory, memoryKpis, outcomeBars, decisionBars,
       question, analyst, asking, suggestions,
-      goCases, goMemory, openCase, onRowClick, onSearch, applyStatusFilter,
-      runAgent, decide, decideEdit, resolveCase, askAnalyst,
+      goCases, goMemory, openCase, onRowClick, onSearch, applyStatusFilter, scrollToClose,
+      runAgent, decide, bulkDecide, resolveCase, askAnalyst,
       zulu, short, severity, statusSeverity, connSeverity, actionSeverity,
-      precTone, confWord, simPct,
+      precTone, confWord,
     };
   },
 });
@@ -409,9 +625,13 @@ for (const [tag, name] of [
   ['p-tag', 'Tag'], ['p-card', 'Card'], ['p-panel', 'Panel'], ['p-message', 'Message'],
   ['p-textarea', 'Textarea'], ['p-inputtext', 'InputText'], ['p-progressbar', 'ProgressBar'],
   ['p-selectbutton', 'SelectButton'], ['p-chip', 'Chip'], ['p-toast', 'Toast'],
-  ['p-iconfield', 'IconField'], ['p-inputicon', 'InputIcon'],
+  ['p-iconfield', 'IconField'], ['p-inputicon', 'InputIcon'], ['p-dialog', 'Dialog'],
+  ['p-tabs', 'Tabs'], ['p-tablist', 'TabList'], ['p-tab', 'Tab'],
+  ['p-tabpanels', 'TabPanels'], ['p-tabpanel', 'TabPanel'],
+  ['p-divider', 'Divider'], ['p-badge', 'Badge'],
 ]) {
   if (PrimeVue[name]) app.component(tag, PrimeVue[name]);
 }
+if (PrimeVue.Tooltip) app.directive('tooltip', PrimeVue.Tooltip);
 
 app.mount('#app');
