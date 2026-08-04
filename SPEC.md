@@ -496,3 +496,50 @@ _Append dated entries below. Format: date — what was done — what's blocked �
   At 84 rows none of this is measurable in wall-clock time. The index mismatch was a defect regardless of scale; the retry gap is a correctness issue that only appears under the concurrency a month of judging provides.
 
   **Next: M6 — polish, README pass for a judge with 5 minutes, architecture diagram, demo video, submission.** Outstanding: the database password still needs rotating after the deploy-error exposure.
+
+### 2026-08-04 — Case detail reorganised around the decision (post-M5 UX)
+
+The M5 coverage guard solved "passengers left unhandled" and introduced a new
+problem: one action card per passenger. ZZ1137 rendered **14 cards, 12 of them
+the same rebook sentence with a different name**, and demanded 13 Approve
+clicks. That is one decision printed thirteen times.
+
+Five changes, all frontend — no API, schema or agent changes, so nothing could
+regress server-side:
+
+1. **Actions grouped by type.** "Rebook · 12 passengers · 11 missed their
+   connection, 1 at risk" with Approve all / Reject all, and "Review
+   individually" expanding to per-passenger override. 13 clicks → 3. Bulk
+   approve stays N calls against the per-action endpoint (4 concurrent) so
+   every decision keeps its own audited row; failures are counted, not
+   swallowed.
+2. **Precedent at the point of decision.** Citations were raw UUIDs
+   (`ee75da89`) in a column the reviewer had to eyeball-match. Now chips
+   reading `ZZ2638 · 2/5 · went badly`, tinted by outcome, opening the full
+   case on click.
+3. **Evidence tabs** — passengers / retrieved precedent / run log behind one
+   panel, summary line always visible. Passengers stay first and default.
+4. **Sticky decision bar** with the pending count, bulk actions and a progress
+   counter; flips to "All N decided · Record what happened" when empty.
+5. **Approve-with-edit is a dialog**, not a browser `prompt()`, and shows the
+   rationale being overruled.
+
+**Defect found and fixed in passing:** the precedent similarity bar read
+`p.distance`, which the API has never returned — so every precedent rendered
+at **100%**, a full bar presenting itself as a measurement. The cosine distance
+is computed inside the vector search and never leaves the agent run; the
+closest-first *ordering* does survive, so the bar is now the retrieval rank.
+
+**Harness note worth keeping.** Dialogs appeared not to close during
+verification — state updated, ref went `null`, element stayed. Cause was the
+test harness, not the app: a hidden browser tab fires neither
+`requestAnimationFrame` nor `animationend`, and Vue's `<Transition>` needs both
+to complete a leave, so the mask kept `enter-active` *and* `leave-active`
+forever. Shimming rAF onto timers made the flow verifiable. Any future headless
+UI check in this repo needs the same shim.
+
+Verified locally and on the live HTTPS deployment. Committed `d0abe6a`.
+
+**Next: M6 — README pass for a judge with 5 minutes, architecture diagram, demo
+video (<3 min), submission checklist.** Outstanding: the database password
+still needs rotating after the deploy-error exposure.
