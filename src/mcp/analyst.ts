@@ -108,11 +108,16 @@ THE SCHEMA
     (average 18), NOT every passenger. A case with pax_count 285 still has at
     most 30 rows here. Counts over this table are sample statistics.
 - resolutions(id, case_id, actions_taken JSONB, outcome_notes, outcome_rating 1-5, resolved_at, embedding, model_id)
+    one row per resolved case; unresolved cases have no row here
 - proposed_actions(id, case_id, agent_run_id, action_type, target_pax_ref, payload, edited_payload, rationale, precedent_case_ids UUID[], confidence, status, created_at, decided_at)
     action_type: rebook | prioritise | hotel | notify | escalate
     status: proposed | approved | rejected | edited
 - case_embeddings(case_id, summary_text, case_status, embedding, model_id, embedded_at)
 - agent_runs(id, case_id, model_id, prompt_tokens, completion_tokens, latency_ms, retrieved_case_ids UUID[], error, created_at)
+
+JOIN KEYS — the parent key is "id", the child key is "case_id", so they are never the same name
+Every child table joins as: ON <child>.case_id = disruption_cases.id
+USING (case_id) does NOT work, because disruption_cases has no case_id column. Write the ON clause out.
 
 RULES
 1. Always pass database "${DATABASE}".
@@ -123,6 +128,7 @@ RULES
 6. Do not select the embedding columns. They are 1024-dimension vectors and will blow the response cap.
 7. You may run several queries to build an answer. When you have enough, stop and answer.
 8. If you are unsure a column exists, call get_table_schema before writing the query. Do not guess column names.
+9. Round in the SQL. AVG over a DECIMAL returns full precision — AVG(outcome_rating) comes back as 3.4210526315789473684. Always wrap it: ROUND(AVG(outcome_rating), 2). Ratings and averages get 2 decimal places, minutes get 0. An ops lead reads the number aloud; twenty decimal places is noise.
 
 COUNTS OVER PASSENGERS ARE SAMPLES — NEVER RANK CASES BY THEM
 disruption_cases carries the authoritative per-case totals: pax_count, misconnect_count, priority_pax_count. The passengers table is a capped sample of 3-30 rows, so counting its rows measures how many passengers were sampled, not how many there were. In 78 of 84 cases the sampled "missed" rows are fewer than the case's real misconnect_count, and the 30-row cap squeezes every large case into the same narrow band.
@@ -139,7 +145,7 @@ Order so that the row you want is first, then read the first row. Before answeri
 If the question names no measure — "worst", "most trouble", "biggest" — pick one explicit measure, rank on that single measure, and say in the answer which one you used. Never rank on one measure and then report figures from another.
 
 ANSWERING
-Be concise and concrete. Lead with the number or the finding. Quote the figures you actually retrieved. If the data does not support an answer, say so — never invent one. Two or three sentences is usually right.
+Be concise and concrete. Lead with the number or the finding. Quote the figures you actually retrieved, rounded to at most 2 decimal places. If the data does not support an answer, say so — never invent one. Two or three sentences is usually right.
 Output the answer as plain prose only. Do not emit reasoning tags, XML, or markup of any kind.`;
 
 export function analystAvailable(config: Config): boolean {
@@ -248,10 +254,10 @@ export async function runAnalyst(
       messages.push(reply);
 
       if (response.stopReason !== 'tool_use') {
-        answer = stripReasoningMarkup((reply.content ?? [])
+        answer = roundLongDecimals(stripReasoningMarkup((reply.content ?? [])
           .map((c) => ('text' in c ? c.text : undefined))
           .filter((t): t is string => typeof t === 'string' && t.trim() !== '')
-          .join('\n'));
+          .join('\n')));
         if (answer === '') answer = null;
         break;
       }
@@ -291,6 +297,12 @@ export async function runAnalyst(
   return { answer, queries, turns, promptTokens, completionTokens, latencyMs, refusals, error: failure };
 }
 
+/** Truncates a tool result for display without hiding that it was truncated. */
+function preview(text: string): string {
+  const trimmed = text.trim();
+  return trimmed.length <= 1200 ? trimmed : `${trimmed.slice(0, 1200)}\n… truncated (${trimmed.length} chars)`;
+}
+
 /**
  * Removes reasoning markup from an answer.
  *
@@ -300,18 +312,30 @@ export async function runAnalyst(
  * response can open the tag and never close it, and leaving the tail visible
  * would be worse than dropping it.
  */
-/** Truncates a tool result for display without hiding that it was truncated. */
-function preview(text: string): string {
-  const trimmed = text.trim();
-  return trimmed.length <= 1200 ? trimmed : `${trimmed.slice(0, 1200)}\n… truncated (${trimmed.length} chars)`;
-}
-
 function stripReasoningMarkup(text: string): string {
   return text
     .replace(/<(thinking|reasoning|scratchpad)>[\s\S]*?<\/\1>/gi, '')
     .replace(/<\/?(thinking|reasoning|scratchpad)>[\s\S]*$/i, '')
     .replace(/\n{3,}/g, '\n\n')
     .trim();
+}
+
+/**
+ * Rounds absurdly precise decimals in the prose.
+ *
+ * CockroachDB's AVG over a DECIMAL returns full precision, and a model that
+ * quotes the row verbatim produces "an average rating of 3.4210526315789473684"
+ * — correct, and unreadable. RULE 9 asks for ROUND() in the SQL, which also
+ * cleans the rows shown beneath the answer, but a prompt rule is a request and
+ * this is the sentence the ops lead actually reads. So the rule handles the
+ * query and this handles the prose, and neither depends on the other.
+ *
+ * Four or more decimal places only. Nothing in this domain legitimately needs
+ * that many: ratings are 1-5, delays and counts are integers, and averages of
+ * both are the only decimals in play.
+ */
+function roundLongDecimals(text: string): string {
+  return text.replace(/\d+\.\d{4,}/g, (n) => String(Number.parseFloat(Number(n).toFixed(2))));
 }
 
 /**
