@@ -137,6 +137,11 @@ $envVars = @{
         AWS_REGION_OVERRIDE        = $Region
         BEDROCK_EMBEDDING_MODEL_ID = $settings['BEDROCK_EMBEDDING_MODEL_ID']
         BEDROCK_LLM_MODEL_ID       = $settings['BEDROCK_LLM_MODEL_ID']
+        # Managed MCP Server (analyst path). Optional: absent values disable
+        # the feature cleanly rather than half-configuring it.
+        MCP_URL                    = if ($settings['MCP_URL']) { $settings['MCP_URL'] } else { 'https://cockroachlabs.cloud/mcp' }
+        MCP_API_KEY                = if ($settings['MCP_API_KEY']) { $settings['MCP_API_KEY'] } else { '' }
+        MCP_CLUSTER_ID             = if ($settings['MCP_CLUSTER_ID']) { $settings['MCP_CLUSTER_ID'] } else { '' }
         EMBEDDING_DIMENSIONS       = if ($settings['EMBEDDING_DIMENSIONS']) { $settings['EMBEDDING_DIMENSIONS'] } else { '1024' }
         RETRIEVAL_TOP_K            = if ($settings['RETRIEVAL_TOP_K']) { $settings['RETRIEVAL_TOP_K'] } else { '5' }
         MAX_MODEL_CALLS_PER_CASE   = if ($settings['MAX_MODEL_CALLS_PER_CASE']) { $settings['MAX_MODEL_CALLS_PER_CASE'] } else { '3' }
@@ -171,7 +176,7 @@ function Invoke-AwsRedacted {
         $ErrorActionPreference = $prevEap
     }
     if ($exit -ne 0) {
-        $safe = $output -replace 'postgresql://[^"\s]*', 'postgresql://<redacted>'
+        $safe = $output -replace 'postgresql://[^"\s]*', 'postgresql://<redacted>' -replace 'CCDB1_[A-Za-z0-9_\-]+', 'CCDB1_<redacted>'
         throw "$What failed (exit $exit):`n$safe"
     }
     return $output

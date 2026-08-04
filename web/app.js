@@ -692,9 +692,99 @@ async function renderMemory() {
                 : el('span', { className: 'tag resolved' }, 'ok'))))))
         : el('div', { className: 'empty' }, 'No runs yet.')));
 
-  mount(root, head, kpis,
+  mount(root, head, kpis, analystPanel(),
     el('div', { className: 'cols' }, distPanel, donutPanel),
     citedPanel, recentPanel, runPanel);
+}
+
+/**
+ * "Ask the memory" — the read-only MCP analyst.
+ *
+ * Every query the model ran is shown, with the rows it got back. That is not
+ * decoration: the model writes this SQL itself, and it has been observed
+ * misreading its own correct results (a DESC/ASC reversal on a "worst" query).
+ * Showing the evidence is what makes the answer checkable rather than trusted.
+ */
+function analystPanel() {
+  const input = el('textarea', {
+    rows: 2,
+    placeholder: 'e.g. Which cause had the worst average outcome? How often do we reject hotel proposals?',
+  });
+  const out = el('div', {});
+  const ask = el('button', { className: 'btn primary' }, 'Ask');
+
+  const suggestions = [
+    'Which cause had the worst average outcome rating?',
+    'How many proposals has a human rejected?',
+    'What is the average delay for weather disruptions?',
+  ];
+
+  const run = async () => {
+    const question = input.value.trim();
+    if (question.length < 3) { toast('Ask a question first', true); return; }
+    ask.disabled = true;
+    ask.textContent = 'Querying…';
+    mount(out, el('div', { className: 'loading' }, 'the analyst is querying the memory layer'));
+    try {
+      const r = await call('/api/analyst', {
+        method: 'POST',
+        body: JSON.stringify({ question }),
+      });
+
+      const parts = [];
+      if (r.error) {
+        parts.push(el('div', { className: 'notice err' },
+          el('span', { className: 'ico' }, '!!'), r.error));
+      }
+      if (r.answer) {
+        parts.push(el('div', { className: 'notice info' },
+          el('span', { className: 'ico' }, '→'), el('span', {}, r.answer)));
+      }
+      for (const q of r.queries || []) {
+        parts.push(el('div', { className: `prec ${q.ok ? '' : 'bad'}` },
+          el('div', { className: 'top' },
+            el('span', { className: 'id' }, q.tool),
+            el('span', { className: 'meta' }, q.ok ? `${q.ms}ms` : q.detail)),
+          q.sql ? el('pre', { className: 'sql' }, q.sql) : null,
+          q.result ? el('pre', { className: 'rows' }, q.result) : null));
+      }
+      for (const refusal of r.refusals || []) {
+        parts.push(el('div', { className: 'notice warn' },
+          el('span', { className: 'ico' }, '⛔'), refusal));
+      }
+      parts.push(el('div', { className: 'muted-foot' },
+        `${r.turns} model turn${r.turns === 1 ? '' : 's'} · ${r.latencyMs}ms · ` +
+        `${r.promptTokens ?? '?'}/${r.completionTokens ?? '?'} tokens · read-only via MCP`));
+
+      mount(out, ...parts);
+    } catch (err) {
+      mount(out, el('div', { className: 'notice err' },
+        el('span', { className: 'ico' }, '!!'), `Failed — ${err.message}`));
+    } finally {
+      ask.disabled = false;
+      ask.textContent = 'Ask';
+    }
+  };
+
+  ask.onclick = run;
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) run();
+  });
+
+  const chips = el('div', { className: 'chips' },
+    ...suggestions.map((s) => {
+      const c = el('button', { className: 'chip' }, s);
+      c.onclick = () => { input.value = s; run(); };
+      return c;
+    }));
+
+  return el('div', { className: 'panel' },
+    el('header', {},
+      el('h2', {}, 'Ask the memory'),
+      el('span', { className: 'note' },
+        'plain English · answered by querying CockroachDB through the read-only MCP server'),
+      el('div', { className: 'right' }, ask)),
+    el('div', { className: 'body' }, input, chips, out));
 }
 
 /**

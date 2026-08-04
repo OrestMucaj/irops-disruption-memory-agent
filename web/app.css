@@ -587,6 +587,40 @@ textarea { resize: vertical; min-height: 70px; }
   text-transform: uppercase;
 }
 
+/* --------------------------------------------------------------- analyst -- */
+
+.chips { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 12px; }
+.chip {
+  appearance: none; cursor: pointer;
+  background: var(--panel-2);
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  color: var(--text-3);
+  font: 400 11.5px/1 var(--sans);
+  padding: 7px 13px;
+}
+.chip:hover { color: var(--text); border-color: var(--blue); }
+
+pre.sql, pre.rows {
+  margin: 6px 0 0;
+  padding: 9px 11px;
+  border-radius: 8px;
+  font: 11.5px/1.6 var(--mono);
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-x: auto;
+}
+pre.sql  { background: rgba(76,125,255,.08); border: 1px solid rgba(76,125,255,.22); color: #bcd0ff; }
+pre.rows { background: var(--panel-3); border: 1px solid var(--line); color: var(--text-2); }
+
+.muted-foot {
+  font: 11px/1.5 var(--mono);
+  color: var(--text-3);
+  margin-top: 10px;
+  padding-top: 9px;
+  border-top: 1px solid var(--line);
+}
+
 /* ------------------------------------------------------------ responsive -- */
 
 @media (max-width: 940px) {

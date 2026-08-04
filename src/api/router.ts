@@ -7,6 +7,7 @@ import { buildResolutionSummary } from '../domain/summary.js';
 import { runAgent } from '../agent/run.js';
 import { loadCase } from '../agent/retrieval.js';
 import { findCoverageGaps } from '../agent/schema.js';
+import { analystAvailable, runAnalyst } from '../mcp/analyst.js';
 import type { EmbeddingProvider, LLMProvider } from '../providers/index.js';
 
 /**
@@ -75,6 +76,11 @@ export async function handle(deps: ApiDeps, request: ApiRequest): Promise<ApiRes
     return memoryView(deps);
   }
 
+  // /api/analyst — the read-only MCP path (SPEC §7)
+  if (method === 'POST' && path === '/api/analyst') {
+    return askAnalyst(deps, request.body);
+  }
+
   // /api/cases/:id  and  /api/cases/:id/{run,resolve}
   if (segments[0] === 'api' && segments[1] === 'cases' && segments[2] !== undefined) {
     const caseId = segments[2];
@@ -109,6 +115,7 @@ async function handleHealth(deps: ApiDeps): Promise<ApiResponse> {
       embeddingModel: deps.embedder.modelId,
       llmProvider: deps.llm.name,
       llmModel: deps.llm.modelId,
+      analyst: analystAvailable(deps.config),
     });
   } catch (err) {
     return {
@@ -276,6 +283,52 @@ async function decideAction(deps: ApiDeps, actionId: string, body: unknown): Pro
   }
 
   return ok(row);
+}
+
+const analystSchema = z.object({
+  question: z.string().min(3).max(500),
+});
+
+/**
+ * Ask the memory layer a question in English.
+ *
+ * The model writes SQL and it runs through the Managed MCP Server, never
+ * through this app's read-write `pg` connection — see src/mcp/analyst.ts for
+ * why the two paths are separate and how read-only is enforced.
+ *
+ * Every query the model ran is returned to the caller and shown in the UI. An
+ * analyst that answers without showing its working is not auditable, and this
+ * one is answering from operational history.
+ */
+async function askAnalyst(deps: ApiDeps, body: unknown): Promise<ApiResponse> {
+  if (!analystAvailable(deps.config)) {
+    return {
+      status: 503,
+      body: {
+        error: 'The analyst is not configured. Set MCP_API_KEY and MCP_CLUSTER_ID.',
+        available: false,
+      },
+    };
+  }
+
+  const parsed = analystSchema.safeParse(body);
+  if (!parsed.success) return badRequest('invalid question', parsed.error.issues);
+
+  const result = await runAnalyst(deps.pool, deps.config, parsed.data.question);
+
+  // A failed analysis is a 200 with an error field, for the same reason the
+  // agent run is: the UI must show a visible error state rather than an empty
+  // panel and a console message.
+  return ok({
+    answer: result.answer,
+    queries: result.queries,
+    refusals: result.refusals,
+    turns: result.turns,
+    latencyMs: result.latencyMs,
+    promptTokens: result.promptTokens,
+    completionTokens: result.completionTokens,
+    error: result.error,
+  });
 }
 
 const resolveSchema = z.object({
