@@ -1,21 +1,20 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>IROPS Disruption Memory — Operations Console</title>
 <meta name="color-scheme" content="dark">
+<link rel="stylesheet" href="vendor/primeicons.css">
 <link rel="stylesheet" href="app.css">
 </head>
 <body>
 
-<div class="shell">
+<div id="app">
 
   <aside class="side">
     <div class="logo">
-      <span class="logochip">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
-      </span>
+      <span class="logochip"><i class="pi pi-database"></i></span>
       <div>
         <b>IROPS Memory</b>
         <small>Operations Console</small>
@@ -24,45 +23,498 @@
 
     <div class="navlabel">Main menu</div>
     <nav class="nav">
-      <button data-view="cases" class="on">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>
-        Disruptions <b id="tab-cases"></b>
+      <button :class="{ on: view === 'cases' || view === 'detail' }" @click="goCases">
+        <i class="pi pi-th-large"></i><span>Disruptions</span>
+        <b v-if="cases.length">{{ cases.length }}</b>
       </button>
-      <button data-view="memory">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M20 5v14c0 1.7-3.6 3-8 3s-8-1.3-8-3V5"/><path d="M20 12c0 1.7-3.6 3-8 3s-8-1.3-8-3"/></svg>
-        Memory <b id="tab-memory"></b>
+      <button :class="{ on: view === 'memory' }" @click="goMemory">
+        <i class="pi pi-database"></i><span>Memory</span>
+        <b v-if="memory">{{ memory.stats.embedded_cases }}</b>
       </button>
     </nav>
 
     <div class="sideend">
       <div class="navlabel">System</div>
-      <div class="sysbox" id="sysbox"><span class="dot"></span><div>connecting…</div></div>
+      <div class="sysbox">
+        <span class="dot" :class="health ? 'up' : 'down'"></span>
+        <div v-if="health">
+          <div>embed {{ health.embeddingModel }}</div>
+          <div>reason {{ health.llmModel }}</div>
+          <div v-if="health.analyst" class="sysok">MCP analyst online</div>
+        </div>
+        <div v-else>connecting…</div>
+      </div>
       <div class="synth">All data is synthetic</div>
     </div>
   </aside>
 
   <div class="mainwrap">
     <header class="topbar">
-      <div class="search">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="20" y1="20" x2="16.5" y2="16.5"/></svg>
-        <input id="q" type="search" placeholder="Search flight, sector or cause…" autocomplete="off">
-      </div>
+      <p-iconfield>
+        <p-inputicon class="pi pi-search"></p-inputicon>
+        <p-inputtext v-model="query" placeholder="Search flight, sector or cause…" @update:model-value="onSearch"></p-inputtext>
+      </p-iconfield>
       <div class="spacer"></div>
-      <span class="pillbadge">Synthetic demo data</span>
-      <div class="clock" id="clock">--:--:--<span>Z</span></div>
+      <p-tag severity="warn" value="Synthetic demo data" icon="pi pi-info-circle"></p-tag>
+      <div class="clock">{{ clock }}<span>Z</span></div>
     </header>
 
     <main>
-      <section id="view-cases"></section>
-      <section id="view-detail" hidden></section>
-      <section id="view-memory" hidden></section>
+      <!-- ========================================================= CASELOAD -->
+      <section v-if="view === 'cases'">
+        <div class="pagehead">
+          <div>
+            <h1>Operations overview</h1>
+            <div class="sub">Live disruption caseload — every resolved case becomes retrievable memory.</div>
+          </div>
+        </div>
+
+        <div class="kpis">
+          <div class="kpi" v-for="k in caseKpis" :key="k.label">
+            <span class="kchip" :class="k.tone"><i :class="k.icon"></i></span>
+            <div>
+              <div class="k">{{ k.label }}</div>
+              <div class="v">{{ k.value }}<small v-if="k.suffix">{{ k.suffix }}</small></div>
+              <div class="foot" v-if="k.foot">{{ k.foot }}</div>
+            </div>
+          </div>
+        </div>
+
+        <p-datatable :value="filteredCases" data-key="id" removable-sort
+                     paginator :rows="15" :rows-per-page-options="[15, 30, 100]"
+                     :global-filter-fields="['flight_no','origin','destination','cause','status']"
+                     v-model:filters="filters" filter-display="menu"
+                     :loading="loadingCases" striped-rows size="small"
+                     @row-click="onRowClick" :row-class="() => 'clickrow'"
+                     paginator-template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
+                     current-page-report-template="{first}–{last} of {totalRecords}">
+          <template #header>
+            <div class="tblhead">
+              <span class="tbltitle">Disruption caseload</span>
+              <p-selectbutton v-model="statusFilter" :options="statusOptions" option-label="label"
+                              option-value="value" @update:model-value="applyStatusFilter" :allow-empty="false"></p-selectbutton>
+            </div>
+          </template>
+          <template #empty><div class="empty">No disruptions match.</div></template>
+
+          <p-column field="flight_no" header="Flight" sortable style="width:8rem">
+            <template #body="{ data }"><span class="ident">{{ data.flight_no }}</span></template>
+          </p-column>
+          <p-column header="Sector" sortable sort-field="origin" style="width:9rem">
+            <template #body="{ data }">
+              <span class="ident">{{ data.origin }}</span>
+              <span class="dim"> → </span>
+              <span class="ident">{{ data.destination }}</span>
+            </template>
+          </p-column>
+          <p-column field="scheduled_dep" header="STD" sortable style="width:11rem">
+            <template #body="{ data }"><span class="dim">{{ zulu(data.scheduled_dep) }}</span></template>
+          </p-column>
+          <p-column field="cause" header="Cause" sortable style="width:8rem">
+            <template #body="{ data }"><p-tag :value="data.cause.replace('_','-')" severity="secondary"></p-tag></template>
+          </p-column>
+          <p-column field="delay_minutes" header="Delay" sortable data-type="numeric" style="width:7rem">
+            <template #body="{ data }">
+              <span :class="'sev-' + severity(data.delay_minutes)">{{ data.delay_minutes }}′</span>
+            </template>
+          </p-column>
+          <p-column field="pax_count" header="Pax" sortable data-type="numeric" style="width:5.5rem">
+            <template #body="{ data }"><span class="dim num">{{ data.pax_count }}</span></template>
+          </p-column>
+          <p-column field="misconnect_count" header="Misconnects" sortable data-type="numeric" style="width:8rem">
+            <template #body="{ data }">
+              <span class="num" :class="Number(data.misconnect_count) >= 20 ? 'sev-extreme' : Number(data.misconnect_count) > 0 ? 'sev-severe' : 'dim'">
+                {{ data.misconnect_count }}
+              </span>
+            </template>
+          </p-column>
+          <p-column field="priority_pax_count" header="Priority" sortable data-type="numeric" style="width:7rem">
+            <template #body="{ data }"><span class="dim num">{{ data.priority_pax_count }}</span></template>
+          </p-column>
+          <p-column field="status" header="Status" sortable style="width:8rem">
+            <template #body="{ data }"><p-tag :value="data.status" :severity="statusSeverity(data.status)"></p-tag></template>
+          </p-column>
+          <p-column header="Outcome" sortable sort-field="outcome_rating" style="width:9rem">
+            <template #body="{ data }">
+              <span v-if="data.outcome_rating !== null" class="score" :class="'s' + data.outcome_rating">
+                <i></i>{{ data.outcome_rating }}/5
+              </span>
+              <p-tag v-else-if="Number(data.pending_actions) > 0" severity="info"
+                     :value="data.pending_actions + ' to review'"></p-tag>
+              <span v-else class="dim">—</span>
+            </template>
+          </p-column>
+          <p-column style="width:3rem">
+            <template #body><i class="pi pi-angle-right dim"></i></template>
+          </p-column>
+        </p-datatable>
+      </section>
+
+      <!-- =========================================================== DETAIL -->
+      <section v-if="view === 'detail'">
+        <p-button label="All disruptions" icon="pi pi-arrow-left" text size="small" @click="goCases" class="crumb"></p-button>
+
+        <div v-if="!detail" class="empty">loading case…</div>
+        <template v-else>
+          <p-card class="casehead-card">
+            <template #content>
+              <div class="casehead">
+                <div>
+                  <div class="route">
+                    {{ detail.case.flightNo }}<em>·</em>{{ detail.case.origin }}<em>→</em>{{ detail.case.destination }}
+                  </div>
+                  <div class="sub">
+                    STD {{ zulu(detail.case.scheduledDep) }} · {{ detail.case.aircraftClass.replace('_','-') }} · case {{ short(detail.case.id) }}
+                  </div>
+                </div>
+                <div class="right">
+                  <p-tag :value="detail.case.status" :severity="statusSeverity(detail.case.status)"></p-tag>
+                </div>
+              </div>
+              <div class="facts">
+                <div class="fact" v-for="f in caseFacts" :key="f.k">
+                  <div class="k">{{ f.k }}</div><div class="v">{{ f.v }}</div>
+                </div>
+              </div>
+            </template>
+          </p-card>
+
+          <!-- 1 · passengers -->
+          <p-panel v-if="detail.passengers.length" class="step">
+            <template #header>
+              <span class="stepnum">1</span>
+              <span class="ptitle">Affected passengers</span>
+              <span class="pnote">{{ detail.passengers.length }} tracked · {{ missedCount }} missed · {{ atRiskCount }} at risk</span>
+            </template>
+            <p-datatable :value="detail.passengers" size="small" striped-rows removable-sort
+                         paginator :rows="10" :rows-per-page-options="[10, 25, 50]"
+                         paginator-template="PrevPageLink CurrentPageReport NextPageLink RowsPerPageDropdown"
+                         current-page-report-template="{first}–{last} of {totalRecords}">
+              <p-column field="paxRef" header="Reference" sortable>
+                <template #body="{ data }"><span class="ident">{{ data.paxRef }}</span></template>
+              </p-column>
+              <p-column field="priorityTier" header="Tier" sortable>
+                <template #body="{ data }">
+                  <p-tag :value="data.priorityTier" :severity="data.priorityTier === 'standard' ? 'secondary' : 'contrast'"></p-tag>
+                </template>
+              </p-column>
+              <p-column field="connectionStatus" header="Connection" sortable>
+                <template #body="{ data }">
+                  <p-tag :value="data.connectionStatus.replace('_',' ')" :severity="connSeverity(data.connectionStatus)"></p-tag>
+                </template>
+              </p-column>
+              <p-column field="connectionMinutes" header="Buffer" sortable data-type="numeric">
+                <template #body="{ data }">
+                  <span class="num">{{ data.connectionMinutes !== null ? data.connectionMinutes + '′' : '—' }}</span>
+                </template>
+              </p-column>
+              <p-column field="onwardFlight" header="Onward">
+                <template #body="{ data }"><span class="ident">{{ data.onwardFlight || '—' }}</span></template>
+              </p-column>
+              <p-column field="rebookedTo" header="Rebooked to">
+                <template #body="{ data }"><span class="ident">{{ data.rebookedTo || '—' }}</span></template>
+              </p-column>
+              <p-column header="Special handling">
+                <template #body="{ data }">
+                  <p-tag v-for="s in data.specialHandling" :key="s" :value="s.replace(/_/g,' ')"
+                         severity="warn" class="mini"></p-tag>
+                  <span v-if="!data.specialHandling.length" class="dim">—</span>
+                </template>
+              </p-column>
+            </p-datatable>
+          </p-panel>
+
+          <!-- 2 · agent -->
+          <p-panel class="step">
+            <template #header>
+              <span class="stepnum">2</span>
+              <span class="ptitle">Agent recommendation</span>
+              <span class="pnote">{{ runMeta }}</span>
+              <p-button class="hdrbtn" :label="detail.actions.length ? 'Refresh recommendations' : 'Get recommendations'"
+                        icon="pi pi-sparkles" :loading="running" size="small" @click="runAgent"></p-button>
+            </template>
+            <p-message v-if="detail.lastRun && detail.lastRun.error" severity="error" :closable="false">
+              {{ detail.lastRun.error }}
+            </p-message>
+            <div v-else class="pnote pad">Searches past disruptions for similar cases and proposes a plan citing them.</div>
+          </p-panel>
+
+          <div class="cols">
+            <!-- 3 · precedent -->
+            <p-panel class="step">
+              <template #header>
+                <span class="stepnum">3</span>
+                <span class="ptitle">Similar past disruptions</span>
+                <span class="pnote">what was done, and how it turned out</span>
+              </template>
+              <div v-if="!detail.precedents.length" class="empty">
+                Nothing retrieved yet — use “Get recommendations” above.
+              </div>
+              <div v-for="(p, i) in detail.precedents" :key="p.id" class="prec" :class="precTone(p.outcome_rating)">
+                <div class="top">
+                  <span class="id">{{ short(p.id) }}</span>
+                  <p-tag v-if="i === 0" value="closest match" severity="info" class="mini"></p-tag>
+                  <span class="meta">{{ p.flight_no }} · {{ p.cause.replace('_','-') }} · {{ p.delay_minutes }}′ · {{ zulu(p.scheduled_dep) }}</span>
+                  <span class="sim">
+                    <span class="dim">similarity</span>
+                    <p-progressbar :value="simPct(p)" :show-value="false" style="width:56px;height:5px"></p-progressbar>
+                  </span>
+                </div>
+                <div class="txt">{{ p.summary_text }}</div>
+                <div class="did">
+                  <span class="lbl">Did</span>
+                  <p-tag v-for="a in (p.actions_taken || [])" :key="a.action_type" :value="a.action_type"
+                         severity="secondary" class="mini"></p-tag>
+                  <span v-if="!(p.actions_taken || []).length" class="dim">nothing recorded</span>
+                  <span class="lbl gap">Outcome</span>
+                  <span v-if="p.outcome_rating !== null" class="score" :class="'s' + p.outcome_rating">
+                    <i></i>{{ p.outcome_rating }}/5
+                  </span>
+                  <span v-else class="dim">unrated</span>
+                </div>
+                <div v-if="p.outcome_notes" class="note">{{ p.outcome_notes }}</div>
+              </div>
+            </p-panel>
+
+            <!-- 4 · actions -->
+            <p-panel class="step">
+              <template #header>
+                <span class="stepnum">4</span>
+                <span class="ptitle">Proposed actions</span>
+                <span class="pnote">nothing happens without your approval</span>
+              </template>
+
+              <p-message v-if="detail.coverageGaps && detail.coverageGaps.length" severity="error" :closable="false">
+                <b>{{ detail.coverageGaps.length }} passenger(s) unhandled.</b>
+                Already missed their connection with no action to reaccommodate them:
+                <span class="ident">{{ detail.coverageGaps.join(', ') }}</span>. Review before approving.
+              </p-message>
+
+              <div v-if="!detail.actions.length" class="empty">
+                No recommendations yet — use “Get recommendations” above.
+              </div>
+
+              <div v-for="a in detail.actions" :key="a.id" class="act">
+                <div class="top">
+                  <span class="kind">{{ a.action_type }}</span>
+                  <span v-if="a.target_pax_ref" class="target">{{ a.target_pax_ref }}</span>
+                  <span v-else class="dim small">case-level</span>
+                  <p-tag :value="a.status" :severity="actionSeverity(a.status)"></p-tag>
+                  <span class="conf">
+                    <span class="dim">confidence {{ confWord(a.confidence) }}</span>
+                    <p-progressbar :value="Math.round(Number(a.confidence) * 100)" :show-value="false"
+                                   style="width:48px;height:5px"></p-progressbar>
+                  </span>
+                </div>
+                <div class="why">{{ a.rationale }}</div>
+                <div class="cites">
+                  <template v-if="a.precedent_case_ids && a.precedent_case_ids.length">
+                    <b>cites</b> {{ a.precedent_case_ids.map(short).join('  ') }}
+                  </template>
+                  <template v-else>cites nothing</template>
+                </div>
+                <div v-if="a.status === 'proposed'" class="ctl">
+                  <p-button label="Approve" icon="pi pi-check" severity="success" size="small"
+                            :disabled="deciding" @click="decide(a, 'approved')"></p-button>
+                  <p-button label="Approve with edit" icon="pi pi-pencil" severity="secondary" outlined size="small"
+                            :disabled="deciding" @click="decideEdit(a)"></p-button>
+                  <p-button label="Reject" icon="pi pi-times" severity="danger" outlined size="small"
+                            :disabled="deciding" @click="decide(a, 'rejected')"></p-button>
+                </div>
+                <p-message v-else-if="a.edited_payload && a.edited_payload.reviewer_note"
+                           severity="warn" :closable="false">
+                  <b>Reviewer edit —</b> {{ a.edited_payload.reviewer_note }}
+                </p-message>
+              </div>
+            </p-panel>
+          </div>
+
+          <!-- 5 · close -->
+          <p-panel class="step">
+            <template #header>
+              <span class="stepnum">5</span>
+              <span class="ptitle">{{ detail.resolution ? 'Resolution' : 'Close the loop' }}</span>
+              <span class="pnote">
+                {{ detail.resolution ? 'this outcome is now memory' : 'record what happened — it becomes memory for future disruptions' }}
+              </span>
+            </template>
+
+            <div v-if="detail.resolution">
+              <div class="resolved-head">
+                <span class="score" :class="'s' + detail.resolution.outcome_rating">
+                  <i></i>{{ detail.resolution.outcome_rating }}/5
+                </span>
+                <span class="dim">{{ zulu(detail.resolution.resolved_at) }}</span>
+              </div>
+              <p>{{ detail.resolution.outcome_notes }}</p>
+            </div>
+
+            <div v-else-if="detail.case.status !== 'resolved'" class="closeform">
+              <label class="field">Outcome notes</label>
+              <p-textarea v-model="outcomeNotes" rows="3" auto-resize
+                          placeholder="What actually happened? This becomes the precedent future disruptions retrieve."></p-textarea>
+              <label class="field">Outcome rating — 1 failed, 5 excellent</label>
+              <p-selectbutton v-model="outcomeRating" :options="[1,2,3,4,5]" :allow-empty="false"></p-selectbutton>
+              <p-button label="Resolve & write to memory" icon="pi pi-database"
+                        :loading="resolving" @click="resolveCase"></p-button>
+            </div>
+          </p-panel>
+        </template>
+      </section>
+
+      <!-- =========================================================== MEMORY -->
+      <section v-if="view === 'memory'">
+        <div class="pagehead">
+          <div>
+            <h1>Memory</h1>
+            <div class="sub">What the agent has learned — outcomes, citations, and every run it has made.</div>
+          </div>
+        </div>
+
+        <div v-if="!memory" class="empty">loading…</div>
+        <template v-else>
+          <div class="kpis">
+            <div class="kpi" v-for="k in memoryKpis" :key="k.label">
+              <span class="kchip" :class="k.tone"><i :class="k.icon"></i></span>
+              <div>
+                <div class="k">{{ k.label }}</div>
+                <div class="v">{{ k.value }}</div>
+                <div class="foot" v-if="k.foot">{{ k.foot }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- analyst -->
+          <p-panel class="step">
+            <template #header>
+              <span class="ptitle"><i class="pi pi-comments"></i> Ask the memory</span>
+              <span class="pnote">answered by querying CockroachDB through the read-only MCP server</span>
+              <p-button class="hdrbtn" label="Ask" icon="pi pi-send" size="small"
+                        :loading="asking" @click="askAnalyst()"></p-button>
+            </template>
+
+            <p-textarea v-model="question" rows="2" auto-resize
+                        placeholder="e.g. Which cause had the worst average outcome?"></p-textarea>
+            <div class="chips">
+              <p-chip v-for="s in suggestions" :key="s" :label="s" class="clickchip" @click="askAnalyst(s)"></p-chip>
+            </div>
+
+            <div v-if="analyst" class="analyst-out">
+              <p-message v-if="analyst.error" severity="error" :closable="false">{{ analyst.error }}</p-message>
+              <p-message v-if="analyst.answer" severity="success" :closable="false">{{ analyst.answer }}</p-message>
+              <div v-for="(q, i) in analyst.queries" :key="i" class="prec" :class="q.ok ? '' : 'bad'">
+                <div class="top">
+                  <span class="id">{{ q.tool }}</span>
+                  <span class="meta">{{ q.ok ? q.ms + 'ms' : q.detail }}</span>
+                </div>
+                <pre v-if="q.sql" class="sql">{{ q.sql }}</pre>
+                <pre v-if="q.result" class="rows">{{ q.result }}</pre>
+              </div>
+              <p-message v-for="(r, i) in analyst.refusals" :key="'r'+i" severity="warn" :closable="false">{{ r }}</p-message>
+              <div class="foot mono">
+                {{ analyst.turns }} model turn(s) · {{ analyst.latencyMs }}ms ·
+                {{ analyst.promptTokens }}/{{ analyst.completionTokens }} tokens · read-only via MCP
+              </div>
+            </div>
+          </p-panel>
+
+          <div class="cols">
+            <p-panel class="step">
+              <template #header><span class="ptitle">Outcome distribution</span></template>
+              <div v-for="b in outcomeBars" :key="b.n" class="bar">
+                <span class="barlabel">{{ b.n }} · {{ b.label }}</span>
+                <p-progressbar :value="b.pct" :show-value="false" :class="'bar-' + b.n" style="height:14px"></p-progressbar>
+                <span class="barval">{{ b.count }}</span>
+              </div>
+            </p-panel>
+
+            <p-panel class="step">
+              <template #header>
+                <span class="ptitle">Proposal decisions</span>
+                <span class="pnote">rejections are kept — an overrule is the strongest signal</span>
+              </template>
+              <div v-for="d in decisionBars" :key="d.label" class="bar">
+                <span class="barlabel">{{ d.label }}</span>
+                <p-progressbar :value="d.pct" :show-value="false" :class="d.cls" style="height:14px"></p-progressbar>
+                <span class="barval">{{ d.count }}</span>
+              </div>
+            </p-panel>
+          </div>
+
+          <p-panel class="step">
+            <template #header>
+              <span class="ptitle">Most-cited precedent</span>
+              <span class="pnote">which past cases the agent actually leans on</span>
+            </template>
+            <p-datatable :value="memory.mostCitedPrecedents" size="small" striped-rows removable-sort
+                         @row-click="e => openCase(e.data.id)" :row-class="() => 'clickrow'">
+              <template #empty><div class="empty">No citations yet.</div></template>
+              <p-column field="flight_no" header="Flight" sortable>
+                <template #body="{ data }"><span class="ident">{{ data.flight_no }}</span></template>
+              </p-column>
+              <p-column field="cause" header="Cause" sortable>
+                <template #body="{ data }"><p-tag :value="data.cause.replace('_','-')" severity="secondary"></p-tag></template>
+              </p-column>
+              <p-column field="delay_minutes" header="Delay" sortable data-type="numeric">
+                <template #body="{ data }"><span class="num dim">{{ data.delay_minutes }}′</span></template>
+              </p-column>
+              <p-column field="outcome_rating" header="Outcome" sortable data-type="numeric">
+                <template #body="{ data }">
+                  <span v-if="data.outcome_rating !== null" class="score" :class="'s' + data.outcome_rating">
+                    <i></i>{{ data.outcome_rating }}/5
+                  </span>
+                  <span v-else class="dim">—</span>
+                </template>
+              </p-column>
+              <p-column field="citations" header="Citations" sortable data-type="numeric">
+                <template #body="{ data }"><span class="num">{{ data.citations }}</span></template>
+              </p-column>
+            </p-datatable>
+          </p-panel>
+
+          <p-panel class="step">
+            <template #header>
+              <span class="ptitle">Agent runs</span>
+              <span class="pnote">every run is recorded, including failures</span>
+            </template>
+            <p-datatable :value="memory.recentRuns" size="small" striped-rows removable-sort
+                         paginator :rows="10"
+                         paginator-template="PrevPageLink CurrentPageReport NextPageLink"
+                         current-page-report-template="{first}–{last} of {totalRecords}">
+              <template #empty><div class="empty">No runs yet.</div></template>
+              <p-column field="created_at" header="Time" sortable>
+                <template #body="{ data }"><span class="dim">{{ zulu(data.created_at) }}</span></template>
+              </p-column>
+              <p-column field="model_id" header="Model" sortable>
+                <template #body="{ data }"><span class="ident">{{ data.model_id }}</span></template>
+              </p-column>
+              <p-column field="prompt_tokens" header="Prompt" sortable data-type="numeric">
+                <template #body="{ data }"><span class="num dim">{{ data.prompt_tokens ?? '—' }}</span></template>
+              </p-column>
+              <p-column field="completion_tokens" header="Completion" sortable data-type="numeric">
+                <template #body="{ data }"><span class="num dim">{{ data.completion_tokens ?? '—' }}</span></template>
+              </p-column>
+              <p-column field="latency_ms" header="Latency" sortable data-type="numeric">
+                <template #body="{ data }"><span class="num dim">{{ data.latency_ms !== null ? data.latency_ms + 'ms' : '—' }}</span></template>
+              </p-column>
+              <p-column header="Result">
+                <template #body="{ data }">
+                  <p-tag :value="data.error ? 'failed' : 'ok'" :severity="data.error ? 'danger' : 'success'"></p-tag>
+                </template>
+              </p-column>
+            </p-datatable>
+          </p-panel>
+        </template>
+      </section>
     </main>
   </div>
 
+  <p-toast position="bottom-center"></p-toast>
 </div>
 
-<div id="toast" class="toast" hidden></div>
-
+<script src="vendor/vue.global.prod.js"></script>
+<script src="vendor/primevue.umd.js"></script>
+<script src="vendor/primevue-theme-aura.js"></script>
 <!-- Written by scripts/deploy.ps1 with the Lambda Function URL. Absent locally,
      where the dev server synthesises an empty one and app.js falls back to
      same-origin /api. -->
