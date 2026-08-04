@@ -34,6 +34,68 @@ export function createPool(config: Config): pg.Pool {
   });
 }
 
+/**
+ * Runs a transaction, retrying serialization failures with exponential backoff
+ * and jitter.
+ *
+ * Added 2026-08-04 after applying the CockroachDB Agent Skill
+ * `designing-application-transactions`, which flagged this as a required
+ * pattern we did not have. Its guidance, verbatim: "Always implement retry
+ * logic for `40001` serialization errors."
+ *
+ * Why it matters here rather than in the abstract: CockroachDB defaults to
+ * SERIALIZABLE isolation, the strictest level, and resolves write conflicts by
+ * aborting one side with SQLSTATE `40001` and expecting the client to try
+ * again. Every explicit transaction in this app touches rows another request
+ * could touch at the same moment — resolving a case writes `disruption_cases`
+ * and `case_embeddings` together; an agent run upserts `case_embeddings` for a
+ * case someone else may be resolving. Two judges clicking at once during the
+ * judging window is enough. Without this the loser of that race saw a raw
+ * database error.
+ *
+ * What is deliberately NOT retried:
+ *  - `40003` ambiguous commit. The write may already have landed, and this
+ *    app's transactions are not idempotent — replaying could double-insert a
+ *    resolution. Surfacing it is correct.
+ *  - `23xxx` constraint violations. A CHECK or FK rejection is a bug or a bad
+ *    request; retrying just fails again more slowly.
+ */
+export async function withTransaction<T>(
+  pool: pg.Pool,
+  work: (client: pg.PoolClient) => Promise<T>,
+  options: { maxAttempts?: number; label?: string } = {},
+): Promise<T> {
+  const maxAttempts = options.maxAttempts ?? 4;
+  let backoffMs = 100;
+
+  for (let attempt = 1; ; attempt += 1) {
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      const result = await work(client);
+      await client.query('COMMIT');
+      return result;
+    } catch (err) {
+      await client.query('ROLLBACK').catch(() => { /* the original error wins */ });
+
+      const code = (err as { code?: string }).code;
+      if (code !== '40001' || attempt >= maxAttempts) throw err;
+
+      // Jitter matters: without it, contending clients retry in lockstep and
+      // collide again on exactly the same schedule.
+      const wait = backoffMs + Math.random() * 100;
+      console.warn(
+        `[db] serialization failure${options.label === undefined ? '' : ` in ${options.label}`}` +
+          ` (attempt ${attempt}/${maxAttempts}), retrying in ${Math.round(wait)}ms`,
+      );
+      await new Promise((resolve) => setTimeout(resolve, wait));
+      backoffMs = Math.min(backoffMs * 2, 2000);
+    } finally {
+      client.release();
+    }
+  }
+}
+
 /** Formats a vector for a `VECTOR(n)` column: pg sends it as a string literal. */
 export function toVectorLiteral(vector: readonly number[]): string {
   return `[${vector.join(',')}]`;

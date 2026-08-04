@@ -114,12 +114,62 @@ Reproduce it yourself: `npm run verify:schema`.
 | --- | --- |
 | **Distributed Vector Indexing** | The core retrieval path. Remove it and the product stops working. `VECTOR(1024)` columns with `vector_cosine_ops` and a `case_status` prefix column for hybrid filtering. |
 | **ccloud CLI** | Cluster provisioning, scripted and committed: [`scripts/provision-cluster.ps1`](scripts/provision-cluster.ps1). |
-| **Managed MCP Server** | _In progress._ Read-only analyst path. See [Honest status](#honest-status). |
-| **Agent Skills Repo** | _In progress._ |
+| **Managed MCP Server** | The **read-only analyst path**, at runtime. Ask the memory layer a question in English on the Memory view; the model writes SQL and it executes through the Managed MCP Server. See [How read-only is really enforced](#how-read-only-is-really-enforced). |
+| **Agent Skills Repo** | Applied to this codebase; three skills produced real changes. See [What the Agent Skills changed](#what-the-agent-skills-changed). |
 
-**Safety:** the MCP Server is used in **read-only** mode. All writes go through
-the application's own parameterised queries, never through an agent's tool
-surface.
+### How read-only is really enforced
+
+This is worth stating precisely, because the obvious phrasing would be wrong.
+
+The MCP analyst does **not** hold a read-only credential — there is no such
+thing. CockroachDB Cloud requires an MCP service account to hold **Cluster
+Operator or Cluster Admin**; no read-only role is accepted. We verified the
+consequence against the live server: `insert_rows`, `create_table` and
+`create_database` **are offered to our key**.
+
+Read-only is therefore a property of *this application*, enforced in three
+layers:
+
+1. **Tool allowlist** — [`src/mcp/analyst.ts`](src/mcp/analyst.ts) will only
+   dispatch `select_query`, `get_table_schema` and `list_tables`. Any other
+   tool is refused before it reaches the wire, even if the model asks for it
+   and the server would honour it.
+2. **Statement check** — every generated statement must be a `SELECT`/`WITH`,
+   with no chaining, no DDL/DML keywords, and no system schemas.
+3. **Server-side limits** — the MCP server independently enforces one statement
+   per call, a 20-second timeout, a 10 KiB response cap and blocked system
+   schemas.
+
+Verify layers 1 and 2 yourself: `node scripts/analyst-guardrails.mjs` exercises
+the boundary with the inputs a compromised model would produce — DDL, DML,
+statement chaining, chaining hidden behind comments, writing CTEs, system-schema
+access — 20 cases.
+
+The application's own writes never touch this path. They go over the ordinary
+Postgres connection as fixed, parameterised SQL that no model ever sees.
+
+### What the Agent Skills changed
+
+Installed from [cockroachlabs/cockroachdb-skills](https://github.com/cockroachlabs/cockroachdb-skills)
+and applied on 2026-08-04. Three produced real changes; the rest did not apply
+to a single-region demo and were not force-fitted.
+
+| Skill | What it found | What changed |
+| --- | --- | --- |
+| `designing-application-transactions` | No retry handling for `40001` serialization failures, in any of the three explicit transactions. CockroachDB defaults to SERIALIZABLE and expects the client to retry. | Added `withTransaction` in [`src/db.ts`](src/db.ts) — exponential backoff with jitter, applied to all three sites. Deliberately does **not** retry `40003` (ambiguous commit — our transactions are not idempotent) or `23xxx` (constraint violations). |
+| `cockroachdb-sql` (query & schema design) | `idx_cases_status_created` was on `(status, created_at DESC)` but the case-list query orders by `scheduled_dep` — so the index could never serve it. `EXPLAIN` showed a **full scan** on the hottest read. | [`migrations/002_query_alignment.sql`](migrations/002_query_alignment.sql) replaces it with `(status, scheduled_dep DESC) STORING (…)`. Plan went from `FULL SCAN` + a sort node to a `LIMITED SCAN` on the index with **no sort at all**. |
+| `auditing-table-statistics` | Optimizer statistics were stale: `disruption_cases` estimated at 52 rows (actual 84), `case_embeddings` at **0** (actual 84). | `ANALYZE` in migration 002, and the seed script now refreshes statistics after its bulk load — which is where the drift originates. |
+
+The statistics finding also retroactively justified an earlier decision: during
+M1 the optimizer recommended a covering index on `case_embeddings(case_status)`
+that would have replaced vector search with a scan. That was ignored on the
+grounds that the optimizer had no statistics on an empty table. `SHOW
+STATISTICS` confirms it — the recorded row count really was `0`.
+
+**Honest note:** at 84 rows none of these changes are measurable in wall-clock
+time. The index/query mismatch was a genuine defect regardless of scale, and the
+retry gap is a correctness issue that only appears under concurrency — which is
+exactly what a month of judging traffic provides.
 
 ## AWS services used
 
@@ -360,7 +410,15 @@ Things that are true but easy to overstate, recorded plainly:
   metric scores agreement on labels that are literally words in the summary
   text, which is what lexical matching is unbeatable at. Titan generalises to
   paraphrases the fake cannot see. See [NOTES.md](NOTES.md) §4A.4.
-- **Managed MCP Server and Agent Skills** are not yet integrated.
+- **The MCP analyst can be confidently wrong, and the UI is built for that.**
+  Asked which cause had the *worst* outcome, the model wrote a correct query,
+  ordered it `DESC`, and read the top row — reporting the best cause as the
+  worst. A prompt rule fixed that case. Nothing makes a model's arithmetic
+  reliable, so every query **and the rows it returned** are shown alongside the
+  answer. Treat the answer as a claim with its evidence attached, not a result.
+- **`Cluster Operator` is more privilege than the analyst needs**, and is the
+  minimum the platform allows for MCP. See
+  [How read-only is really enforced](#how-read-only-is-really-enforced).
 
 ---
 

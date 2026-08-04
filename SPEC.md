@@ -197,8 +197,8 @@ Three views, unstyled-but-clean:
 **CockroachDB tools (need ≥2; we target 3–4 for scoring):**
 
 - [x] **Distributed Vector Indexing** — core retrieval path. Load-bearing. **Working end-to-end on a free Basic cluster (v26.2.1) as of 2026-07-29.** The `EXPLAIN` shows `vector search ... prefix spans: [/'resolved' - /'resolved']`, i.e. the structured filter is pushed into the vector index rather than post-filtering an ANN result set. Reproduce: `node --env-file=.env scripts/db-check.mjs`.
-- [ ] **Managed MCP Server** — read-only analyst path. Must be able to answer "what did the agent actually do with it?" Options, in order of preference: (a) a runtime read-only query path where an agent answers ops questions over the memory layer via MCP, (b) documented dev-time use with Claude Code for schema design and query profiling. (a) scores better; verify feasibility early, fall back to (b) if auth makes runtime use impractical, and be honest about which in the README.
-- [ ] **Agent Skills Repo** — pull in relevant skills (schema design, query performance, observability) and document which ones were used and what they changed. Cheap to do, direct evidence of tool engagement.
+- [x] **Managed MCP Server** — **option (a) achieved 2026-08-04**: a runtime read-only analyst path, not the dev-time fallback. An ops lead asks the memory layer a question in English; the model writes SQL and it executes through the Managed MCP Server. Verified on the deployed Lambda. Read-only is enforced by our client's tool allowlist, because the platform requires Cluster Operator/Admin and offers no read-only role — the write tools are demonstrably offered to our key. Tested: `node scripts/analyst-guardrails.mjs`, 20/20. Must be able to answer "what did the agent actually do with it?" Options, in order of preference: (a) a runtime read-only query path where an agent answers ops questions over the memory layer via MCP, (b) documented dev-time use with Claude Code for schema design and query profiling. (a) scores better; verify feasibility early, fall back to (b) if auth makes runtime use impractical, and be honest about which in the README.
+- [x] **Agent Skills Repo** — **done 2026-08-04.** Three skills produced real changes, documented in the README with before/after evidence: `designing-application-transactions` (no `40001` retry handling anywhere — added), `cockroachdb-sql` (the case-list index was on the wrong column and could never serve its query — migration 002), `auditing-table-statistics` (stale row counts skewing plans — `ANALYZE`, plus a refresh in the seeder). Skills that did not apply to a single-region demo were not force-fitted.
 - [ ] **ccloud CLI** — provision the cluster and script it. Commit the provisioning script.
 
 **AWS (need ≥1; we use 2–3):**
@@ -252,9 +252,9 @@ Assume ~2–3 hours per weekday evening, more at weekends. Deadline Aug 18.
 - [x] **Exit criterion MET** — demo: `https://irops-memory-demo-21.s3.us-east-1.amazonaws.com/index.html`, API: `https://7p2mkku36rbgbj2chqcsers5qy0gkccu.lambda-url.us-east-1.on.aws`. Agent run verified through the deployed Lambda: 5 precedents, 4 actions, 4.5s.
 - **Share the HTTPS URL, not the `s3-website-` one.** S3's website endpoint does index-document routing but is HTTP-only (no TLS listener at all); the REST endpoint does HTTPS but has no index document, so the path must be explicit and the bare root 403s. Any judge whose browser forces HTTPS would see a connection error on the website endpoint. CloudFront would give both at once — deliberately not added, as one more thing to keep alive through judging.
 
-**M5 — MCP + Skills integration (1–2 evenings)**
-- Read-only MCP path working, or documented dev-time usage
-- Agent Skills applied and documented
+**M5 — MCP + Skills integration (1–2 evenings)** — ✅ **COMPLETE 2026-08-04**
+- [x] Read-only MCP path working — **option (a), the runtime path**, not the documented-usage fallback
+- [x] Agent Skills applied and documented, with before/after evidence for each change
 
 **M6 — Polish & submit (2 evenings, do not compress this)**
 - README rewritten for a judge who has 5 minutes
@@ -479,3 +479,20 @@ _Append dated entries below. Format: date — what was done — what's blocked �
   **Also:** README rewritten from the day-one skeleton into a real document — architecture, setup from zero with a verification command at each step, the `EXPLAIN` output proving hybrid retrieval is index-accelerated, cost reasoning, and an "Honest status" section covering vector indexing's Preview status, the heuristic provider not being an LLM, and why the retrieval benchmark flatters the fake embedder.
 
   **Next: M5 — MCP Server + Agent Skills**, then M6 polish, video and submission. Still open: whether a free Basic org can create a service-account API key (decides §7 MCP option a vs b).
+
+- 2026-08-04 (M5 complete) — **Runtime MCP analyst live; Agent Skills applied and they found real bugs.**
+
+  **§7 option (a) achieved.** A free Basic org *can* create service accounts and API keys — the last open question — so the analyst is a runtime path, not the weaker documented-dev-time fallback. Ask the memory layer a question in English on the Memory view; the model writes SQL and it runs through the Managed MCP Server. Verified on the deployed Lambda: *"There were 21 disruptions caused by weather, with an average delay of 146.24 minutes"*, 2 turns, 3.5s.
+
+  **Read-only is our code, not the credential — and that is the more interesting claim.** The platform requires an MCP service account to hold Cluster Operator or Admin; no read-only role exists. The smoke test confirmed the consequence: `insert_rows`, `create_table` and `create_database` are offered to our key. So the allowlist in `src/mcp/analyst.ts` is the actual boundary, backed by a SELECT-only statement check and the server's own limits. `node scripts/analyst-guardrails.mjs` exercises it with the inputs a compromised model would produce — 20/20 hold. Testing the enforcement function directly, rather than trying to coax a model into misbehaving, means the test cannot pass for the wrong reason.
+
+  **The analyst was confidently wrong, once, and that shaped the UI.** Asked which cause had the *worst* average outcome it wrote a correct query, ordered it `DESC`, and read the top row — reporting technical 3.89 as the worst when weather 3.42 was. The SQL was right; the reading of it was not. A prompt rule about superlatives fixed that case, but nothing makes a model's arithmetic reliable, so every query **and the rows it returned** are shown beside the answer. I only caught it by checking against the database instead of trusting the output.
+
+  **Agent Skills found two real defects**, both via `EXPLAIN` rather than code review:
+
+  1. `designing-application-transactions` — **no `40001` retry handling anywhere.** CockroachDB defaults to SERIALIZABLE and expects clients to retry; all three explicit transactions surfaced a raw error instead. Added `withTransaction` with backoff and jitter. Deliberately does not retry `40003` (our transactions are not idempotent) or `23xxx`.
+  2. `cockroachdb-sql` + `auditing-table-statistics` — **the case-list index was on the wrong column.** `idx_cases_status_created` used `created_at`; the query orders by `scheduled_dep`. `EXPLAIN` showed a FULL SCAN on the hottest read. Migration 002 fixes it and adds `STORING`; the plan went to a LIMITED SCAN on the index with the sort node gone entirely. Statistics were also stale — 52 estimated rows against 84 actual, and `case_embeddings` at **0** — which retroactively confirms the M1 decision to ignore an optimizer index recommendation on the grounds it had no statistics. It literally had none.
+
+  At 84 rows none of this is measurable in wall-clock time. The index mismatch was a defect regardless of scale; the retry gap is a correctness issue that only appears under the concurrency a month of judging provides.
+
+  **Next: M6 — polish, README pass for a judge with 5 minutes, architecture diagram, demo video, submission.** Outstanding: the database password still needs rotating after the deploy-error exposure.

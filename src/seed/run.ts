@@ -1,4 +1,4 @@
-import { createPool, toVectorLiteral } from '../db.js';
+import { createPool, toVectorLiteral, withTransaction } from '../db.js';
 import { loadConfig } from '../config.js';
 import { createEmbeddingProvider } from '../providers/index.js';
 import type { EmbeddingProvider } from '../providers/index.js';
@@ -114,6 +114,24 @@ async function main(): Promise<void> {
     }
 
     console.log(`\nseeded ${dataset.length} cases in ${((Date.now() - started) / 1000).toFixed(1)}s`);
+
+    // Refresh optimizer statistics after the bulk load.
+    //
+    // From the CockroachDB Agent Skill `auditing-table-statistics`: automatic
+    // statistics lag a bulk insert, and the optimizer plans against whatever it
+    // last measured. Observed here — after seeding 84 cases, SHOW STATISTICS
+    // still reported 52 rows for disruption_cases and 0 for case_embeddings,
+    // and an EXPLAIN taken in that state produced an index recommendation that
+    // would have replaced vector search with a scan.
+    //
+    // A seed script is exactly the place this drift originates, so it is also
+    // the place to correct it.
+    process.stdout.write('refreshing optimizer statistics ... ');
+    for (const table of ['disruption_cases', 'passengers', 'case_embeddings', 'resolutions']) {
+      await pool.query(`ANALYZE ${table}`);
+    }
+    console.log('done');
+
     await printSummary(pool);
   } finally {
     await pool.end();
@@ -137,10 +155,9 @@ async function insertCase(
     ? null
     : await embedder.embed(resolutionSummary);
 
-  const client = await pool.connect();
-  try {
-    await client.query('BEGIN');
-
+  // Retried on serialization failure for consistency with the rest of the app,
+  // though seeding is single-threaded and unlikely to contend.
+  await withTransaction(pool, async (client) => {
     await client.query(
       `INSERT INTO disruption_cases (
          id, flight_no, origin, destination, scheduled_dep, actual_dep,
@@ -209,14 +226,7 @@ async function insertCase(
         ],
       );
     }
-
-    await client.query('COMMIT');
-  } catch (err) {
-    await client.query('ROLLBACK').catch(() => {});
-    throw err;
-  } finally {
-    client.release();
-  }
+  }, { label: 'seed case' });
 }
 
 /** Distribution report, so the dataset can be eyeballed rather than trusted. */

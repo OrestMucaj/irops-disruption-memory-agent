@@ -1,7 +1,7 @@
 import type pg from 'pg';
 
 import type { Config } from '../config.js';
-import { toVectorLiteral } from '../db.js';
+import { toVectorLiteral, withTransaction } from '../db.js';
 import type { EmbeddingProvider, LLMProvider } from '../providers/index.js';
 
 import { SYSTEM_PROMPT, buildUserMessage } from './prompt.js';
@@ -204,10 +204,9 @@ interface PersistInput {
 }
 
 async function persist(pool: pg.Pool, input: PersistInput): Promise<void> {
-  const client = await pool.connect();
-  try {
-    await client.query('BEGIN');
-
+  // Retried on serialization failure. This transaction upserts
+  // case_embeddings, which a concurrent resolve of the same case also writes.
+  await withTransaction(pool, async (client) => {
     // Keep the case's own memory current. If the case facts changed since it
     // was last embedded, the stored vector is stale and would retrieve badly
     // once this case itself becomes precedent.
@@ -266,14 +265,7 @@ async function persist(pool: pg.Pool, input: PersistInput): Promise<void> {
         ],
       );
     }
-
-    await client.query('COMMIT');
-  } catch (err) {
-    await client.query('ROLLBACK').catch(() => {});
-    throw err;
-  } finally {
-    client.release();
-  }
+  }, { label: 'agent persist' });
 }
 
 // ---------------------------------------------------------------------------

@@ -2,7 +2,7 @@ import { z } from 'zod';
 import type pg from 'pg';
 
 import type { Config } from '../config.js';
-import { toVectorLiteral } from '../db.js';
+import { toVectorLiteral, withTransaction } from '../db.js';
 import { buildResolutionSummary } from '../domain/summary.js';
 import { runAgent } from '../agent/run.js';
 import { loadCase } from '../agent/retrieval.js';
@@ -395,10 +395,11 @@ async function resolveCase(deps: ApiDeps, caseId: string, body: unknown): Promis
     embedding = null;
   }
 
-  const client = await deps.pool.connect();
-  try {
-    await client.query('BEGIN');
-
+  // Retried on serialization failure (see withTransaction). This is the most
+  // contention-prone transaction in the app: it writes disruption_cases and
+  // case_embeddings together, and an agent run on the same case upserts
+  // case_embeddings too.
+  await withTransaction(deps.pool, async (client) => {
     await client.query(
       `INSERT INTO resolutions (case_id, actions_taken, outcome_notes, outcome_rating, embedding, model_id)
        VALUES ($1, $2, $3, $4, $5, $6)`,
@@ -420,14 +421,7 @@ async function resolveCase(deps: ApiDeps, caseId: string, body: unknown): Promis
       `UPDATE case_embeddings SET case_status = 'resolved' WHERE case_id = $1`,
       [caseId],
     );
-
-    await client.query('COMMIT');
-  } catch (err) {
-    await client.query('ROLLBACK').catch(() => {});
-    throw err;
-  } finally {
-    client.release();
-  }
+  }, { label: 'resolve case' });
 
   return ok({
     caseId,
