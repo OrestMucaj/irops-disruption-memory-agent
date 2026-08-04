@@ -417,14 +417,56 @@ So the analyst must instruct the model to always use LIMIT, keep result sets
 small, and never query system schemas — the server enforces all three anyway,
 but a model that knows the limits wastes fewer round trips.
 
-### 2.6 Still unverified ❌
+### 2.6 Verified against the live server ✅ (2026-08-04)
 
-- Whether a **free Basic org** can create a service account + API key at all.
-  The Authorization docs describe service accounts as org-level with no tier
-  caveat, and the quickstart mentions none — but only the console answers this.
-  This is the last fact deciding SPEC §7 option (a) vs (b).
-- Whether `Cluster Operator` suffices in practice for `select_query` on a
-  Basic cluster (quickstart lists it as sufficient; smoke test will confirm).
+Run `npm run check:mcp`. Confirmed on a **free Basic org**:
+
+- **Service accounts and API keys exist on the free tier.** No paid-plan gate.
+  This was the last fact deciding SPEC §7 option (a) vs (b).
+- **The handshake works exactly as documented.** `initialize` →
+  `notifications/initialized` → `tools/list` over streamable HTTP, with
+  `Authorization: Bearer` and `mcp-cluster-id`. Server identifies as
+  `cockroachdb-cloud 1.0.0`, protocol `2025-06-18`.
+- **All 12 tools are offered**, read and write alike:
+  `create_database`, `create_table`, `explain_query`, `get_cluster`,
+  `get_table_schema`, `insert_rows`, `list_clusters`, `list_databases`,
+  `list_tables`, `select_query`, `show_running_queries`, `show_statement`.
+
+⚠️ **The write tools are exposed to our key.** This is the concrete proof of
+what §2.5 predicted: because the platform requires Cluster Operator/Admin and
+offers no read-only role, `insert_rows` and friends are on the wire whether we
+want them or not. Read-only is a property of **our client**, not the credential.
+The analyst's allowlist is therefore load-bearing security, not decoration.
+
+**Real input schemas** (recorded so integration uses actual argument names —
+note `query`, NOT `sql`, which is what a reasonable guess would have used):
+
+```json
+select_query:      { "required": ["database", "query"],
+                     "properties": { "database", "query", "cluster_id" } }
+get_table_schema:  { "required": ["database", "table"],
+                     "properties": { "database", "table", "schema", "cluster_id" } }
+```
+
+`cluster_id` is described as "Required when the MCP config has no cluster_id;
+otherwise must be omitted" — we send the `mcp-cluster-id` header, so it must be
+omitted from arguments.
+
+### 2.7 RBAC gotcha worth knowing ⚠️
+
+Creating the service account and its API key is **not sufficient**. A key with
+no cluster-scoped role authenticates cleanly, lists tools cleanly, and then
+fails every data call with a bare `unauthorized`.
+
+The tell is `list_clusters` returning `{"rows":[]}` — an empty list rather than
+an error. The account is valid and can query; it simply has visibility of
+nothing. `scripts/mcp-check.mjs` runs org-scope before cluster-scope precisely
+to surface this distinction, because otherwise "bad key" and "no role" produce
+identical symptoms.
+
+**Fix:** Access Management → Service Accounts → the account → assign
+**Cluster Operator** scoped to the *cluster*, not the organization. The role
+applies to an existing key; regenerating is unnecessary.
 
 ---
 

@@ -94,25 +94,56 @@ try {
 
   console.log('\n=== read the memory layer via MCP ===');
 
-  const dbTool = info.tools.find((t) => t.name === 'list_databases');
-  if (dbTool) {
-    show('list_databases', await client.callTool('list_databases', argsFor(dbTool, {})));
+  /* Progressive, from least to most privileged. Connecting proves the API key
+     is valid; it proves nothing about cluster access, and the two failures look
+     identical from the outside ("unauthorized"). Running the ladder in order
+     tells you WHICH grant is missing instead of just that something is. */
+  const attempt = async (label, name, values) => {
+    const tool = info.tools.find((t) => t.name === name);
+    if (!tool) return { ok: false, why: `${name} not offered` };
+    try {
+      const text = await client.callTool(name, argsFor(tool, values));
+      show(label, text);
+      return { ok: true, text };
+    } catch (err) {
+      console.log(`\n--- ${label} ---\n  FAILED: ${err.message}`);
+      return { ok: false, why: err.message };
+    }
+  };
+
+  const orgLevel = await attempt('list_clusters (organization scope)', 'list_clusters', {});
+  const dbLevel = await attempt('list_databases (cluster scope)', 'list_databases', {});
+
+  if (!dbLevel.ok) {
+    console.log('\nFAIL — the key authenticates but cannot read this cluster.');
+    console.log('\nDiagnosis:');
+    if (orgLevel.ok) {
+      console.log('  The service account can see the ORGANIZATION but not the CLUSTER.');
+      console.log('  It is missing a cluster-scoped role.');
+    } else {
+      console.log('  The service account has no effective roles at all yet.');
+    }
+    console.log('\nFix, in the CockroachDB Cloud console:');
+    console.log('  Access Management -> Service Accounts -> irops-analyst -> Roles');
+    console.log('  Assign:  Cluster Operator');
+    console.log('  Scoped to the CLUSTER "irops-memory" (not the organization).');
+    console.log('  Per the MCP docs a service account needs Cluster Operator or Cluster');
+    console.log('  Admin on the target cluster; org-level membership alone is not enough.');
+    console.log('\n  If the key was created BEFORE the role was assigned, the role still');
+    console.log('  applies to the same key — no need to regenerate it. Just re-run this.');
+    process.exit(1);
   }
 
-  const schemaTool = info.tools.find((t) => t.name === 'get_table_schema');
-  if (schemaTool) {
-    show('get_table_schema · case_embeddings',
-      await client.callTool('get_table_schema',
-        argsFor(schemaTool, { database: 'defaultdb', table: 'case_embeddings' })));
-  }
-
-  const selectTool = info.tools.find((t) => t.name === 'select_query');
-  if (!selectTool) throw new Error('select_query is not offered — the analyst path cannot work');
+  await attempt('get_table_schema · case_embeddings', 'get_table_schema',
+    { database: 'defaultdb', table: 'case_embeddings' });
 
   const sql =
-    "SELECT case_status, count(*)::INT AS cases FROM case_embeddings GROUP BY case_status ORDER BY cases DESC LIMIT 10";
-  show(`select_query · ${sql}`,
-    await client.callTool('select_query', argsFor(selectTool, { sql, database: 'defaultdb' })));
+    'SELECT case_status, count(*)::INT AS cases FROM case_embeddings GROUP BY case_status ORDER BY cases DESC LIMIT 10';
+  const query = await attempt(`select_query · ${sql}`, 'select_query', { sql, database: 'defaultdb' });
+  if (!query.ok) {
+    console.log('\nFAIL — schema reads work but SELECT does not. The analyst path needs select_query.');
+    process.exit(1);
+  }
 
   console.log('\nPASS — the Managed MCP Server reads the memory layer with a service-account key.');
   console.log('SPEC §7 option (a) is confirmed feasible.');
