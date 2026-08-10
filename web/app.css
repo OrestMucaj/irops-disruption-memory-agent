@@ -395,12 +395,153 @@ main { padding: 20px 22px 40px; max-width: 1560px; width: 100%; margin: 0 auto; 
   margin: 5px auto 14px; max-width: 46ch; line-height: 1.55;
 }
 
-/* --------------------------------------------------------------- analyst -- */
+/* --------------------------------------------------- ask the memory (chat) -- */
+/* A floating assistant, reachable from every view — the question arrives while
+   you are looking at a case, not while you are looking at the stats page. */
 
-.chips { display: flex; gap: 7px; flex-wrap: wrap; margin: 10px 0 4px; }
-.clickchip { cursor: pointer; font-size: 11.5px; }
-.clickchip:hover { background: var(--p-primary-color); color: var(--p-primary-contrast-color); }
-.analyst-out { margin-top: 12px; }
+.chatfab {
+  position: fixed; right: 22px; bottom: 22px; z-index: 900;
+  width: 54px; height: 54px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; appearance: none; border: none;
+  background: linear-gradient(135deg, var(--p-primary-500), var(--p-violet-500));
+  color: #fff; font-size: 21px;
+  box-shadow: 0 10px 26px -8px rgb(0 0 0 / .8), 0 0 0 1px rgb(255 255 255 / .06) inset;
+  transition: transform .16s ease, box-shadow .16s ease;
+}
+.chatfab:hover { transform: translateY(-2px); box-shadow: 0 14px 32px -8px rgb(0 0 0 / .9); }
+.chatfab.on { background: var(--p-surface-700); }
+
+/* One quiet pulse until it has been used once, then never again. */
+.fabping {
+  position: absolute; top: 3px; right: 3px;
+  width: 11px; height: 11px; border-radius: 50%;
+  background: var(--good); border: 2px solid var(--shell-bg);
+  animation: fabping 2.4s ease-out infinite;
+}
+@keyframes fabping {
+  0%, 60%, 100% { transform: scale(1); opacity: 1; }
+  30% { transform: scale(1.35); opacity: .75; }
+}
+
+.chatwin {
+  position: fixed; right: 22px; bottom: 88px; z-index: 899;
+  width: 430px; max-width: calc(100vw - 44px);
+  height: 620px; max-height: calc(100vh - 130px);
+  display: flex; flex-direction: column;
+  background: var(--p-content-background);
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 16px; overflow: hidden;
+  box-shadow: 0 26px 60px -18px rgb(0 0 0 / .95);
+}
+
+.chathead {
+  display: flex; align-items: center; gap: 10px; flex: none;
+  padding: 12px 10px 12px 14px;
+  border-bottom: 1px solid var(--line);
+  background: var(--p-surface-800);
+}
+.chatid { display: flex; flex-direction: column; margin-right: auto; min-width: 0; }
+.chatid b { font-size: 13.5px; font-weight: 650; }
+.chatid small { font-size: 10.5px; color: var(--p-text-muted-color); }
+
+.chatav {
+  width: 30px; height: 30px; flex: none; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center; font-size: 13px;
+  background: linear-gradient(135deg, var(--p-primary-500), var(--p-violet-500)); color: #fff;
+}
+.chatav.sm { width: 24px; height: 24px; border-radius: 7px; font-size: 11px; }
+.chatav.big { width: 46px; height: 46px; border-radius: 14px; font-size: 20px; margin: 0 auto 12px; }
+
+.chatbody {
+  flex: 1; min-height: 0; overflow-y: auto;
+  padding: 14px; display: flex; flex-direction: column; gap: 12px;
+}
+
+.chatempty { text-align: center; margin: auto 0; padding: 8px 4px; }
+.chatempty .bt { font-size: 14px; font-weight: 650; }
+.chatempty .bs {
+  font-size: 12px; line-height: 1.6; color: var(--p-text-muted-color);
+  margin: 6px auto 14px; max-width: 34ch;
+}
+.suggwrap { display: flex; flex-direction: column; gap: 7px; }
+.sugg {
+  appearance: none; cursor: pointer; text-align: left;
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 11px; border-radius: 10px;
+  background: var(--p-surface-800); border: 1px solid var(--line);
+  color: var(--p-text-color); font: 12px/1.4 inherit;
+}
+.sugg:hover { border-color: var(--accent); background: var(--p-surface-700); }
+.sugg i { font-size: 10px; color: var(--accent); flex: none; }
+
+.msg { display: flex; gap: 9px; font-size: 12.5px; line-height: 1.55; }
+.msg.user {
+  align-self: flex-end; max-width: 86%;
+  background: var(--p-primary-color); color: var(--p-primary-contrast-color);
+  padding: 9px 13px; border-radius: 14px 14px 4px 14px;
+}
+.msg.bot { align-items: flex-start; }
+.botbody { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.botsay {
+  background: var(--p-surface-800); border: 1px solid var(--line);
+  padding: 10px 13px; border-radius: 14px 14px 14px 4px;
+  white-space: pre-wrap;
+}
+
+.thinking {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 12px; color: var(--p-text-muted-color);
+}
+.thinking i {
+  width: 5px; height: 5px; border-radius: 50%; background: var(--accent);
+  animation: blink 1.2s ease-in-out infinite;
+}
+.thinking i:nth-child(2) { animation-delay: .2s; }
+.thinking i:nth-child(3) { animation-delay: .4s; margin-right: 5px; }
+@keyframes blink { 0%, 80%, 100% { opacity: .25; } 40% { opacity: 1; } }
+
+/* The SQL is the evidence, so it is shown by default rather than hidden behind
+   a click — but it collapses, because five statements bury a one-line answer. */
+.qwrap { border-top: 1px dashed var(--line); padding-top: 8px; }
+.qtoggle {
+  appearance: none; background: none; border: none; cursor: pointer;
+  display: flex; align-items: center; gap: 6px; padding: 0;
+  color: var(--p-text-color); font: 500 11px/1.4 inherit;
+}
+.qtoggle:hover { color: var(--accent); }
+.qtoggle > i { font-size: 9px; }
+.qlist { display: flex; flex-direction: column; gap: 7px; margin-top: 7px; }
+.q { border-left: 2px solid var(--p-surface-600); padding-left: 8px; }
+.q.bad { border-left-color: var(--critical); }
+.qh { display: flex; gap: 8px; font: 10px/1.4 var(--mono); margin-bottom: 4px; }
+.chatwin pre.sql, .chatwin pre.rows { font-size: 10.5px; padding: 7px 9px; }
+
+.chatfoot {
+  flex: none; display: flex; align-items: flex-end; gap: 8px;
+  padding: 10px 12px 6px; border-top: 1px solid var(--line);
+  background: var(--p-surface-800);
+}
+.chatinput { flex: 1; max-height: 120px; font-size: 12.5px !important; resize: none; }
+.chatnote {
+  flex: none; padding: 0 12px 9px; background: var(--p-surface-800);
+  font-size: 10px; color: var(--p-text-muted-color); text-align: center;
+}
+
+/* The sticky decision bar spans main's width, so its Reject-all button runs
+   into the floating chat button on anything but a very wide screen. main is
+   capped at 1560 and centred in (viewport - 236px sidebar), so the bar's right
+   edge only clears the button's left edge from 1905px up — below that the bar
+   reserves room for it. Derived, not eyeballed: at 1900px the gap is 2px. */
+@media (max-width: 1920px) { .decisionbar { padding-right: 72px; } }
+
+@media (max-width: 560px) {
+  .chatwin {
+    right: 10px; left: 10px; bottom: 80px;
+    width: auto; max-width: none; max-height: calc(100vh - 108px);
+  }
+  .chatfab { right: 14px; bottom: 14px; }
+}
 
 pre.sql, pre.rows {
   margin: 6px 0 0; padding: 9px 11px; border-radius: 8px;

@@ -17,7 +17,7 @@
 'use strict';
 
 const API = (window.API_BASE || '').replace(/\/+$/, '');
-const { createApp, ref, computed, onMounted } = Vue;
+const { createApp, ref, computed, onMounted, nextTick } = Vue;
 
 async function call(path, options) {
   const res = await fetch(`${API}${path}`, {
@@ -86,8 +86,15 @@ const app = createApp({
 
     const memory = ref(null);
     const question = ref('');
-    const analyst = ref(null);
     const asking = ref(false);
+
+    /* The analyst is a floating assistant rather than a panel inside Memory:
+       the question you want to ask usually arrives while you are looking at a
+       case ("has weather ever gone well for us?"), and making that require a
+       trip to another view is how a feature goes unused. */
+    const chatOpen = ref(false);
+    const chatLog = ref([]);
+    const chatBox = ref(null);
 
     const toast = PrimeVue.useToast();
     const notify = (severityLevel, summary, detailText) =>
@@ -530,21 +537,46 @@ const app = createApp({
       'What is the average delay for weather disruptions?',
     ];
 
+    function scrollChat() {
+      const el = chatBox.value;
+      if (el) el.scrollTop = el.scrollHeight;
+    }
+    function toggleChat() {
+      chatOpen.value = !chatOpen.value;
+      if (chatOpen.value) nextTick(scrollChat);
+    }
+    function closeChat() { chatOpen.value = false; }
+    function clearChat() { chatLog.value = []; }
+    function toggleSql(message) { message.showSql = !message.showSql; }
+
+    /* Reads as a conversation, but each question is answered independently —
+       the analyst holds no history, so the transcript is a record of what was
+       asked, not context the model can lean on. Said plainly in the UI rather
+       than implied away, because a chat window invites the opposite belief. */
     async function askAnalyst(preset) {
       if (preset) question.value = preset;
       const q = question.value.trim();
       if (q.length < 3) { notify('warn', 'Ask a question first', ''); return; }
+
+      chatOpen.value = true;
+      chatLog.value = [...chatLog.value, { role: 'user', text: q }];
+      question.value = '';
       asking.value = true;
-      analyst.value = null;
+      await nextTick(); scrollChat();
+
       try {
-        analyst.value = await call('/api/analyst', {
+        const r = await call('/api/analyst', {
           method: 'POST',
           body: JSON.stringify({ question: q }),
         });
+        chatLog.value = [...chatLog.value, { role: 'bot', showSql: true, ...r }];
       } catch (err) {
-        notify('error', 'Analyst failed', err.message);
+        chatLog.value = [...chatLog.value, {
+          role: 'bot', showSql: false, answer: null, queries: [], refusals: [], error: err.message,
+        }];
       } finally {
         asking.value = false;
+        await nextTick(); scrollChat();
       }
     }
 
@@ -597,7 +629,8 @@ const app = createApp({
       precedentOpen, openPrecedent, closePrecedent, openPrecedentCase,
       outcomeWord, rankWord, precedentRank,
       memory, memoryKpis, outcomeBars, decisionBars,
-      question, analyst, asking, suggestions,
+      question, asking, suggestions,
+      chatOpen, chatLog, chatBox, toggleChat, closeChat, clearChat, toggleSql, scrollChat,
       goCases, goMemory, openCase, onRowClick, onSearch, applyStatusFilter, scrollToClose,
       runAgent, decide, bulkDecide, resolveCase, askAnalyst,
       zulu, short, severity, statusSeverity, connSeverity, actionSeverity,

@@ -482,40 +482,6 @@
             </div>
           </div>
 
-          <!-- analyst -->
-          <p-panel class="step">
-            <template #header>
-              <span class="ptitle"><i class="pi pi-comments"></i> Ask the memory</span>
-              <span class="pnote">answered by querying CockroachDB through the read-only MCP server</span>
-              <p-button class="hdrbtn" label="Ask" icon="pi pi-send" size="small"
-                        :loading="asking" @click="askAnalyst()"></p-button>
-            </template>
-
-            <p-textarea v-model="question" rows="2" auto-resize
-                        placeholder="e.g. Which cause had the worst average outcome?"></p-textarea>
-            <div class="chips">
-              <p-chip v-for="s in suggestions" :key="s" :label="s" class="clickchip" @click="askAnalyst(s)"></p-chip>
-            </div>
-
-            <div v-if="analyst" class="analyst-out">
-              <p-message v-if="analyst.error" severity="error" :closable="false">{{ analyst.error }}</p-message>
-              <p-message v-if="analyst.answer" severity="success" :closable="false">{{ analyst.answer }}</p-message>
-              <div v-for="(q, i) in analyst.queries" :key="i" class="prec" :class="q.ok ? '' : 'bad'">
-                <div class="top">
-                  <span class="id">{{ q.tool }}</span>
-                  <span class="meta">{{ q.ok ? q.ms + 'ms' : q.detail }}</span>
-                </div>
-                <pre v-if="q.sql" class="sql">{{ q.sql }}</pre>
-                <pre v-if="q.result" class="rows">{{ q.result }}</pre>
-              </div>
-              <p-message v-for="(r, i) in analyst.refusals" :key="'r'+i" severity="warn" :closable="false">{{ r }}</p-message>
-              <div class="foot mono">
-                {{ analyst.turns }} model turn(s) · {{ analyst.latencyMs }}ms ·
-                {{ analyst.promptTokens }}/{{ analyst.completionTokens }} tokens · read-only via MCP
-              </div>
-            </div>
-          </p-panel>
-
           <div class="cols">
             <p-panel class="step">
               <template #header><span class="ptitle">Outcome distribution</span></template>
@@ -672,6 +638,93 @@
       <p-button label="Close" text size="small" @click="closePrecedent"></p-button>
     </template>
   </p-dialog>
+
+  <!-- ===================================================== ASK THE MEMORY ===
+       A floating assistant rather than a panel inside Memory. The question an
+       ops lead wants to ask usually arrives while they are looking at a case,
+       and making that require a trip to another view is how a feature goes
+       unused. Reachable from every view. -->
+  <button class="chatfab" :class="{ on: chatOpen }" @click="toggleChat"
+          :aria-label="chatOpen ? 'Close the memory assistant' : 'Ask the memory'">
+    <i :class="chatOpen ? 'pi pi-chevron-down' : 'pi pi-comments'"></i>
+    <span v-if="!chatOpen && !chatLog.length" class="fabping"></span>
+  </button>
+
+  <div v-show="chatOpen" class="chatwin">
+    <div class="chathead">
+      <span class="chatav"><i class="pi pi-database"></i></span>
+      <span class="chatid">
+        <b>Ask the memory</b>
+        <small>read-only SQL over CockroachDB via MCP</small>
+      </span>
+      <p-button v-if="chatLog.length" icon="pi pi-eraser" text rounded size="small"
+                v-tooltip.bottom="'Clear the transcript'" @click="clearChat"></p-button>
+      <p-button icon="pi pi-times" text rounded size="small"
+                v-tooltip.bottom="'Close'" @click="closeChat"></p-button>
+    </div>
+
+    <div class="chatbody" ref="chatBox">
+      <div v-if="!chatLog.length" class="chatempty">
+        <span class="chatav big"><i class="pi pi-database"></i></span>
+        <div class="bt">Ask about the disruption history</div>
+        <div class="bs">
+          Answered by running read-only SQL against CockroachDB through the MCP server.
+          Every statement and the rows it returned are shown with the answer, so you can
+          check the reasoning rather than trust it.
+        </div>
+        <div class="suggwrap">
+          <button v-for="s in suggestions" :key="s" class="sugg" @click="askAnalyst(s)">
+            <i class="pi pi-arrow-up-right"></i>{{ s }}
+          </button>
+        </div>
+      </div>
+
+      <template v-for="(m, i) in chatLog" :key="i">
+        <div v-if="m.role === 'user'" class="msg user">{{ m.text }}</div>
+        <div v-else class="msg bot">
+          <span class="chatav sm"><i class="pi pi-database"></i></span>
+          <div class="botbody">
+            <p-message v-if="m.error" severity="error" :closable="false">{{ m.error }}</p-message>
+            <div v-if="m.answer" class="botsay">{{ m.answer }}</div>
+            <p-message v-for="(r, j) in (m.refusals || [])" :key="'r'+j" severity="warn" :closable="false">{{ r }}</p-message>
+
+            <div v-if="(m.queries || []).length" class="qwrap">
+              <button class="qtoggle" @click="toggleSql(m)">
+                <i :class="m.showSql ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"></i>
+                {{ m.queries.length }} quer{{ m.queries.length === 1 ? 'y' : 'ies' }}
+                <span class="dim">· {{ m.latencyMs }}ms · {{ m.turns }} model turn(s) · read-only via MCP</span>
+              </button>
+              <div v-show="m.showSql" class="qlist">
+                <div v-for="(q, k) in m.queries" :key="k" class="q" :class="q.ok ? '' : 'bad'">
+                  <div class="qh">
+                    <span class="mono">{{ q.tool }}</span>
+                    <span class="dim">{{ q.ok ? q.ms + 'ms' : q.detail }}</span>
+                  </div>
+                  <pre v-if="q.sql" class="sql">{{ q.sql }}</pre>
+                  <pre v-if="q.result" class="rows">{{ q.result }}</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <div v-if="asking" class="msg bot">
+        <span class="chatav sm"><i class="pi pi-database"></i></span>
+        <div class="botbody">
+          <div class="thinking"><i></i><i></i><i></i> querying CockroachDB…</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chatfoot">
+      <p-textarea v-model="question" rows="1" auto-resize class="chatinput"
+                  placeholder="Ask about the disruption history…"
+                  @keydown.enter.exact.prevent="askAnalyst()"></p-textarea>
+      <p-button icon="pi pi-send" rounded :loading="asking" :disabled="asking" @click="askAnalyst()"></p-button>
+    </div>
+    <div class="chatnote">Each question is answered on its own — the analyst keeps no conversation history.</div>
+  </div>
 
   <p-toast position="bottom-center"></p-toast>
 </div>
