@@ -199,11 +199,11 @@ Three views, unstyled-but-clean:
 - [x] **Distributed Vector Indexing** — core retrieval path. Load-bearing. **Working end-to-end on a free Basic cluster (v26.2.1) as of 2026-07-29.** The `EXPLAIN` shows `vector search ... prefix spans: [/'resolved' - /'resolved']`, i.e. the structured filter is pushed into the vector index rather than post-filtering an ANN result set. Reproduce: `node --env-file=.env scripts/db-check.mjs`.
 - [x] **Managed MCP Server** — **option (a) achieved 2026-08-04**: a runtime read-only analyst path, not the dev-time fallback. An ops lead asks the memory layer a question in English; the model writes SQL and it executes through the Managed MCP Server. Verified on the deployed Lambda. Read-only is enforced by our client's tool allowlist, because the platform requires Cluster Operator/Admin and offers no read-only role — the write tools are demonstrably offered to our key. Tested: `node scripts/analyst-guardrails.mjs`, 20/20. Must be able to answer "what did the agent actually do with it?" Options, in order of preference: (a) a runtime read-only query path where an agent answers ops questions over the memory layer via MCP, (b) documented dev-time use with Claude Code for schema design and query profiling. (a) scores better; verify feasibility early, fall back to (b) if auth makes runtime use impractical, and be honest about which in the README.
 - [x] **Agent Skills Repo** — **done 2026-08-04.** Three skills produced real changes, documented in the README with before/after evidence: `designing-application-transactions` (no `40001` retry handling anywhere — added), `cockroachdb-sql` (the case-list index was on the wrong column and could never serve its query — migration 002), `auditing-table-statistics` (stale row counts skewing plans — `ANALYZE`, plus a refresh in the seeder). Skills that did not apply to a single-region demo were not force-fitted.
-- [ ] **ccloud CLI** — provision the cluster and script it. Commit the provisioning script.
+- [x] **ccloud CLI** — **done 2026-07-29.** The cluster was provisioned with `ccloud` and the run is scripted and committed as [`scripts/provision-cluster.ps1`](scripts/provision-cluster.ps1). Recorded in NOTES §1: the Windows zip ships the binary without a `.exe` extension, so the install snippet in the official docs fails its final copy step — verified by magic bytes (`0x4D 0x5A`, a PE header) and handled by renaming on install.
 
 **AWS (need ≥1; we use 2–3):**
 
-- [ ] **Amazon Bedrock** — reasoning + embeddings. *Scoring, not qualifying — see below.*
+- [x] **Amazon Bedrock** — **live since 2026-08-03.** Titan Text Embeddings V2 (`amazon.titan-embed-text-v2:0`, 1024-dim) for retrieval and Nova Lite (`amazon.nova-lite-v1:0`, Converse API with `toolConfig`) for both the planning agent and the MCP analyst's tool loop. Confirmed on the deployed Function URL: `/api/health` reports `embeddingProvider: bedrock`, `llmProvider: bedrock`.
 - [x] **AWS Lambda** — agent execution. Function URL, no API Gateway or ALB. Deployed 2026-08-03.
 - [x] **Amazon S3** — static frontend hosting. Deployed 2026-08-03.
 
@@ -211,12 +211,15 @@ Three views, unstyled-but-clean:
 
 **Submission artifacts:**
 
-- [ ] Public repo, MIT or Apache-2.0, license visible in GitHub About sidebar
-- [ ] README: what it is, architecture diagram, setup instructions that actually work from zero, which CockroachDB tools were used and how, which AWS services and how
-- [ ] Working public demo URL
-- [ ] Demo video < 3 minutes, public on YouTube or Vimeo, **showing the CockroachDB memory layer at work**, no copyrighted music
-- [ ] Architecture diagram (optional but cheap — do it)
+- [ ] Public repo, MIT or Apache-2.0, license visible in GitHub About sidebar — **LICENSE (MIT) is committed; the repo still needs pushing to a public remote.**
+- [x] README: what it is, architecture diagram, setup instructions that actually work from zero, which CockroachDB tools were used and how, which AWS services and how — **rewritten 2026-08-17** with a "judging in 5 minutes" path at the top.
+- [x] Working public demo URL — https://irops-memory-demo-21.s3.us-east-1.amazonaws.com/index.html
+- [ ] Demo video < 3 minutes, public on YouTube or Vimeo, **showing the CockroachDB memory layer at work**, no copyrighted music — **shot list written**, see [SUBMISSION.md](SUBMISSION.md). Needs recording.
+- [x] Architecture diagram — two mermaid diagrams in the README (the memory loop, and the wiring). Both verified to parse with the mermaid parser, not eyeballed.
 - [ ] Tool feedback section (optional, but sponsors read it and it costs 10 minutes)
+
+See **[SUBMISSION.md](SUBMISSION.md)** for the links to paste, the video shot
+list, the morning-of pre-flight checks, and what to claim versus what not to.
 
 ---
 
@@ -543,3 +546,50 @@ Verified locally and on the live HTTPS deployment. Committed `d0abe6a`.
 **Next: M6 — README pass for a judge with 5 minutes, architecture diagram, demo
 video (<3 min), submission checklist.** Outstanding: the database password
 still needs rotating after the deploy-error exposure.
+
+### 2026-08-17 — Outcome-note quality, then M6 (README, diagrams, submission pack)
+
+**Asked whether the synthetic data was good enough for judging.** Measured it
+rather than guessed. The structure held up — 69 routes, 24 airports, delay
+shapes that match operational intuition per cause (ATC clears: avg 60′ max 71′;
+engineering does not: avg 202′ max 352′), and outcome ratings that genuinely
+vary by cause. The weakness was elsewhere and worse: **81 resolutions carried
+13 distinct outcome notes, three of them fifteen times each.**
+
+That is the string a reviewer reads when they open a retrieved precedent — the
+moment the memory claim either lands or dies. Two precedents side by side read
+identically. Notes are now composed from each case's own facts
+(`src/domain/outcome-notes.ts`); distinct strings went 13 → 62. The failure
+notes were left alone, being already specific and already the ones that surface
+on the low-rated precedent a reviewer most needs.
+
+Re-seeding would have minted new case ids and discarded every embedding and
+agent run, so `src/seed/refresh-notes.ts` rewrote the prose in place, matching
+the five boilerplate strings exactly. **No re-embedding was needed** — worth
+recording because it is not obvious: the vector search runs over
+`case_embeddings.embedding`; `resolutions.outcome_notes` is joined in purely as
+display text, and `resolutions.embedding` appears in no `<=>` query at all.
+
+**Decided against "more realistic" data.** Real IROPS data does not exist
+publicly — BTS has flights but no passenger or connection layer, and manifests
+are PII. Swapping synthetic flight numbers for real ones would have invalidated
+every embedding to make half the data marginally more real. The cause mix stays
+deliberately balanced rather than BTS-realistic, because a realistic
+distribution leaves too few cases per cause for retrieval to retrieve; that is
+now stated in the README so it reads as a choice rather than an oversight.
+
+**M6.** README gained a "judging in 5 minutes" path at the top (live link, five
+numbered things to click) and two mermaid diagrams — the memory loop, and the
+wiring showing that model-authored SQL and application SQL take different
+roads. Both diagrams were **parsed with the real mermaid parser**, not
+eyeballed; a broken diagram is the first thing a judge would see. Stale claims
+fixed (`web/` is no longer "no framework"). Honest status gained the
+`passengers`-is-a-sample caveat and today's analyst failure.
+
+New **[SUBMISSION.md](SUBMISSION.md)**: links to paste, a 2:45 shot list, the
+morning-of pre-flight checks (all passing as of writing), and an explicit
+what-to-claim / what-not-to-claim section.
+
+**Remaining: record the video, push the repo public, rotate the database
+password.** The rotation needs a full `deploy.ps1` run, not `-CodeOnly` — the
+Lambda environment is only rewritten on a full deploy.

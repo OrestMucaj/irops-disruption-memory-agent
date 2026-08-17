@@ -6,6 +6,38 @@ handling of the next one.
 
 Built for the **CockroachDB × AWS Hackathon — "Build with Agentic Memory."**
 
+### ▶ [Open the live demo](https://irops-memory-demo-21.s3.us-east-1.amazonaws.com/index.html)
+
+Nothing to install, no login. All data is synthetic.
+
+<table>
+<tr><td><b>Judging in 5 minutes?</b> Do this:</td></tr>
+<tr><td>
+
+1. **Open flight ZZ1137** from the caseload — 190′ late, 23 misconnecting.
+2. Look at **Recommended plan**. Each group cites past disruptions as chips like
+   `ZZ4381 · 5/5 · worked`. **Click one.** That is a real case the agent
+   retrieved by vector similarity, with the outcome it actually produced.
+3. Hit **Approve all 13**, then open **Evidence → Agent run** to see the model,
+   token counts and the exact case ids the plan was built from.
+4. Click the **chat bubble, bottom right**, and ask *"which cause had the worst
+   average outcome rating?"* The answer arrives with the SQL it ran, executed
+   read-only through CockroachDB's Managed MCP Server.
+5. Resolve a case with an outcome note — it is embedded and becomes retrievable
+   precedent for the next disruption. That is the loop closing.
+
+</td></tr>
+</table>
+
+| | |
+|---|---|
+| **Live demo** | https://irops-memory-demo-21.s3.us-east-1.amazonaws.com/index.html |
+| **API health** | https://7p2mkku36rbgbj2chqcsers5qy0gkccu.lambda-url.us-east-1.on.aws/api/health |
+| **CockroachDB** | Vector index (C-SPANN) with a **prefix column**, SERIALIZABLE txns, Managed MCP Server, Agent Skills |
+| **AWS** | Lambda Function URL, Bedrock (Titan Embeddings V2 + Nova Lite), S3 |
+| **Stack** | TypeScript / Node 22, Vue 3 + PrimeVue, no bundler |
+| **Data** | 84 synthetic disruptions, 81 resolved outcomes — [provenance](#data-provenance) |
+
 ---
 
 ## The problem
@@ -54,28 +86,91 @@ infrastructure references — arranged into a network that deliberately does not
 reproduce any actual carrier's route structure.
 
 The provenance rules are documented at the top of
-[`src/seed/domain.ts`](src/domain/vocabulary.ts).
+[`src/domain/vocabulary.ts`](src/domain/vocabulary.ts).
+
+Outcome notes — the free text a desk writes when it closes a case, and the
+string a reviewer reads on a retrieved precedent — are composed from each
+case's own facts in
+[`src/domain/outcome-notes.ts`](src/domain/outcome-notes.ts) rather than picked
+from a bank of stock sentences. The first version did pick from a bank, and 81
+resolutions ended up sharing 13 distinct strings; two precedents opened side by
+side read identically, which is precisely the moment the memory claim is
+supposed to land.
+
+The cause mix is deliberately **balanced rather than realistic**. Real
+on-time-performance data has weather as a single-digit percentage of primary
+causes; here it is 25%, because a realistic distribution would leave too few
+cases per cause for retrieval to have anything to retrieve. Delay *shapes* are
+kept plausible per cause — ATC restrictions clear (avg 60′, max 71′),
+engineering does not (avg 202′, max 352′).
 
 ---
 
 ## Architecture
 
+### The memory loop
+
+The claim is that handling improves because of what was recorded, so the loop
+has to close. Step 6 is the whole product — it is what makes step 2 useful next
+time.
+
+```mermaid
+flowchart LR
+    A["<b>1 · Disruption</b><br/>flight is late<br/>connections at risk"]
+    B["<b>2 · Retrieve</b><br/>embed the case<br/>vector search over<br/>resolved precedent"]
+    C["<b>3 · Propose</b><br/>typed actions<br/>each citing the<br/>cases it leaned on"]
+    D["<b>4 · Human decides</b><br/>approve · edit · reject<br/><i>the overrule is kept</i>"]
+    E["<b>5 · Outcome</b><br/>what actually<br/>happened, rated 1-5"]
+    F["<b>6 · Becomes memory</b><br/>embedded, indexed,<br/>retrievable"]
+
+    A --> B --> C --> D --> E --> F
+    F -. "next disruption retrieves this" .-> B
+
+    style F fill:#1a4d3a,stroke:#2ea36b,color:#e8f5ee
+    style D fill:#4d3a1a,stroke:#c08a2e,color:#f5eee8
 ```
-Browser ──────────► S3 static website (three views, no framework)
-   │
-   │ HTTPS
-   ▼
-AWS Lambda (Function URL) ── agent orchestration
-   │                    │
-   │                    └──► Amazon Bedrock
-   │                           • Titan Text Embeddings V2 (1024-dim)
-   │                           • Nova Lite (reasoning, Converse API)
-   ▼
-CockroachDB Cloud (Basic, free tier)
-   ├─ transactional tables: disruption_cases, passengers,
-   │                        proposed_actions, resolutions, agent_runs
-   └─ vector index on case + resolution embeddings (C-SPANN)
+
+### The wiring
+
+```mermaid
+flowchart TB
+    UI["<b>Ops console</b><br/>Vue 3 + PrimeVue<br/><i>no bundler, no build step</i>"]
+
+    subgraph AWS["AWS"]
+        S3[("<b>S3</b><br/>static site")]
+        L["<b>Lambda</b> · Function URL<br/>agent orchestration<br/><i>no API Gateway, no VPC</i>"]
+        EMB["<b>Bedrock</b><br/>Titan Text Embeddings V2<br/>1024-dim"]
+        LLM["<b>Bedrock</b><br/>Nova Lite<br/>Converse API + tool use"]
+    end
+
+    subgraph CRDB["CockroachDB Cloud · Basic (free tier)"]
+        TX[("<b>Transactional tables</b><br/>disruption_cases · passengers<br/>proposed_actions · resolutions<br/>agent_runs")]
+        VEC[("<b>case_embeddings</b><br/>VECTOR(1024) · C-SPANN index<br/><b>prefix column: case_status</b>")]
+        MCP["<b>Managed MCP Server</b><br/>read-only analyst path"]
+    end
+
+    UI -->|"served from"| S3
+    UI -->|"HTTPS · fetch"| L
+    L -->|"embed case summary"| EMB
+    L -->|"propose actions"| LLM
+    L -->|"state reads + writes<br/>SERIALIZABLE, 40001 retry"| TX
+    L -->|"hybrid vector search<br/>filter pushed into the index"| VEC
+    L -->|"model-authored SQL<br/>never touches the pg pool"| MCP
+    MCP --> TX
+    TX -. "same transaction:<br/>state and embedding commit together" .- VEC
+
+    style VEC fill:#1a3a4d,stroke:#2e8ac0,color:#e8f0f5
+    style MCP fill:#3a1a4d,stroke:#8a2ec0,color:#f0e8f5
 ```
+
+Two things in that second diagram are the technical argument:
+
+- **`prefix column: case_status`** — the structured filter is pushed *into* the
+  vector index rather than applied to its output. Proof below.
+- **The model-authored SQL takes a different road.** Application queries use the
+  `pg` pool; anything the LLM writes goes through MCP, which is a governed
+  gateway with per-call RBAC and one statement per call. The two paths never
+  meet.
 
 No API Gateway, no ALB, no VPC — see [Cost](#cost) for why.
 
@@ -410,12 +505,20 @@ Things that are true but easy to overstate, recorded plainly:
   metric scores agreement on labels that are literally words in the summary
   text, which is what lexical matching is unbeatable at. Titan generalises to
   paraphrases the fake cannot see. See [NOTES.md](NOTES.md) §4A.4.
+- **`passengers` holds a capped sample of each manifest**, 3–30 rows against
+  cases carrying up to 285 passengers, to keep a free-tier cluster small. The
+  UI says "25 tracked" for exactly this reason. `disruption_cases` carries the
+  authoritative totals (`pax_count`, `misconnect_count`, `priority_pax_count`),
+  and any aggregate over `passengers` is a sample statistic.
 - **The MCP analyst can be confidently wrong, and the UI is built for that.**
-  Asked which cause had the *worst* outcome, the model wrote a correct query,
-  ordered it `DESC`, and read the top row — reporting the best cause as the
-  worst. A prompt rule fixed that case. Nothing makes a model's arithmetic
-  reliable, so every query **and the rows it returned** are shown alongside the
-  answer. Treat the answer as a claim with its evidence attached, not a result.
+  Two real failures, both caught by reading the rows shown with the answer:
+  asked which cause had the *worst* outcome it ordered `DESC` and read the top
+  row, reporting the best cause as the worst; asked which case caused the most
+  trouble it ranked by counting `passengers` rows — the sampled table above —
+  and returned a case with 62 misconnections ahead of one with 113. Prompt
+  rules fixed both. Nothing makes a model's arithmetic reliable, so every query
+  **and the rows it returned** are shown alongside the answer. Treat the answer
+  as a claim with its evidence attached, not a result.
 - **`Cluster Operator` is more privilege than the analyst needs**, and is the
   minimum the platform allows for MCP. See
   [How read-only is really enforced](#how-read-only-is-really-enforced).
@@ -434,7 +537,7 @@ Things that are true but easy to overstate, recorded plainly:
 | `src/agent/` | Retrieval, prompt, validation, orchestration |
 | `src/providers/` | Embedding and LLM providers behind one interface |
 | `src/api/` | Transport-agnostic HTTP router + Lambda and local adapters |
-| `web/` | Three views, no framework, no build step |
+| `web/` | Ops console — Vue 3 + PrimeVue from vendored UMD, no bundler, no build step |
 | `scripts/` | Provisioning, migration, verification, deployment |
 
 ## License
