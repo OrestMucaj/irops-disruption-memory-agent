@@ -525,6 +525,131 @@ Things that are true but easy to overstate, recorded plainly:
 
 ---
 
+## Tool feedback
+
+Written for the sponsors. Everything here was hit during this build and is
+recorded with the evidence in [NOTES.md](NOTES.md); nothing is second-hand.
+
+### CockroachDB — what earned its place
+
+**Prefix columns on a vector index are the best feature here and the most
+undersold.** Hybrid retrieval is usually a compromise: ANN first, filter after,
+hope enough survives. A prefix column pushes the structured filter *into* the
+index as a span, and `EXPLAIN` proves it rather than implying it:
+
+```
+• vector search
+    table: case_embeddings@idx_case_embeddings_status_vec
+    prefix spans: [/'resolved' - /'resolved']
+```
+
+This is the single most important line in this project's design, and it is
+documented as one bullet among many in the Vector Indexes page. It deserves to
+be a headline with a worked hybrid-search example.
+
+**Vectors and rows in one transaction removes a whole class of bug.** The state
+write and the embedding write commit together. No ETL, no drift between what
+the agent remembers and what happened. That argument sells itself; there just
+isn't a doc page making it.
+
+**Agent Skills found three real defects, not style nits.**
+`designing-application-transactions` caught that nothing anywhere retried
+`40001` — a correctness bug that only shows up under the concurrency a month of
+judging supplies. `cockroachdb-sql` caught an index on `created_at` serving a
+query that orders by `scheduled_dep`, i.e. a FULL SCAN on the hottest read.
+`auditing-table-statistics` caught stale stats — 52 estimated rows against 84
+actual, and `case_embeddings` at **0**, which retroactively explained why an
+earlier optimizer index recommendation had looked odd. That is a genuinely
+strong showing.
+
+### CockroachDB — what cost time
+
+**The MCP Server has no read-only role, and the docs read as though it does.**
+The documentation describes read-only mode and an `mcp:read` scope. In practice
+a service account needs **Cluster Operator** (org-scoped is not enough — it must
+be scoped to the cluster), and with that role **all 12 tools are on the wire**,
+`insert_rows` and `create_table` included. Read-only became a property of *our
+client's allowlist*, not of the credential. For a hackathon whose brief asks
+people to use MCP safely, a true read-only role would be the highest-value thing
+you could ship. Verified live: `npm run check:mcp`.
+
+**The unauthorized failure mode is silent.** A key with no cluster-scoped role
+authenticates cleanly, lists tools cleanly, then fails every data call with a
+bare `unauthorized`. The tell is `list_clusters` returning `{"rows":[]}` — an
+empty list, not an error — so "bad key" and "no role" are indistinguishable
+without knowing to look. An error naming the missing role would have saved an
+hour.
+
+**Two official pages disagree on whether vector indexing must be enabled.** The
+Vector Indexes page instructs `SET CLUSTER SETTING feature.vector_index.enabled
+= true`; the Cluster Settings reference lists it as default `true`. The
+reference is correct on v26.2.1 — the setting is already on and no `SET` is
+needed. Related: v25.2 shipped the feature described as Preview, and we could
+find no statement that it has reached GA, so this README declines to claim one.
+A dated status line on the feature page would settle both.
+
+**A Postgres-compatibility edge worth documenting.** A comma-joined
+set-returning function scopes its alias differently than an explicit `JOIN`, so
+mixing the two fails with `no data source matches prefix`. Moving `unnest()`
+into a CTE fixed it. Minor, but it cost a debugging cycle because the error
+points at the alias rather than the construct.
+
+**`ccloud` on Windows ships a binary with no `.exe` extension**, so the install
+snippet in the docs fails on its final copy. Confirmed it really is the
+executable by its magic bytes (`0x4D 0x5A`, a PE header) and renamed it on
+install — see [`scripts/provision-cluster.ps1`](scripts/provision-cluster.ps1).
+A one-line fix in the docs.
+
+### AWS — what earned its place
+
+**Lambda Function URLs are the right primitive for this.** No API Gateway, no
+ALB, no VPC, scale-to-zero, and the deploy stays a zip upload. For a demo that
+must stay reachable for a month on a free tier, that is exactly the shape
+needed.
+
+**Bedrock's Converse API made tool use portable.** One `toolConfig` shape drove
+both the planning agent and the MCP analyst's loop, with `stopReason` cleanly
+distinguishing `tool_use` from `max_tokens`. Titan Text Embeddings V2 at 1024
+dimensions was a drop-in — `normalize` defaults to true, which is the behaviour
+cosine similarity wants.
+
+### AWS — what cost time
+
+**A Function URL returns 403 with a textbook-correct resource policy.** Since
+October 2025 the invoke permission requires **both** `lambda:InvokeFunctionUrl`
+*and* `lambda:InvokeFunction`. The docs are explicit that this applies "even if
+the function URL uses the `NONE` auth type" — but that sentence is easy to miss,
+and every older tutorial grants one permission. The 403 body says nothing about
+which permission is absent.
+
+**Setting CORS in two places produces a browser-only failure.** With headers on
+both the handler and the Function URL config, the response carries duplicate
+`Access-Control-Allow-Origin` and browsers reject it — while `curl` reports a
+perfectly healthy 200. "Works in curl, fails in browser, no useful console
+message" is a bad afternoon. Letting the Function URL own CORS fixed it.
+
+**`AllowMethods` rejects `OPTIONS`** because members are capped at 6 characters.
+The error is about string length, which is a confusing way to learn that
+preflight is handled for you and must not be listed.
+
+**S3 static hosting makes you choose between HTTPS and index documents.** The
+website endpoint does index-document routing but is HTTP-only; the REST endpoint
+serves HTTPS but has no index-document concept, so the URL must end in
+`/index.html` and the bare root 403s. Any browser upgrading HTTP to HTTPS breaks
+the first one. CloudFront solves it at the cost of another component to keep
+alive through judging.
+
+**The AWS CLI echoes an unparseable payload — including its secrets.** Feeding
+it a JSON file written by PowerShell's `Set-Content -Encoding utf8` fails,
+because that emits a BOM and the CLI cannot parse it (`Expected: '=', received:
+'<BOM>'` — a cryptic way to say "byte order mark"). The CLI then **printed the
+offending payload to the console, connection string and password included.**
+Two fixes worth making upstream: don't echo request payloads on parse failure,
+and name the BOM in the error. Our side now writes with
+`[System.IO.File]::WriteAllText` and routes all CLI output through a redactor.
+
+---
+
 ## Repository map
 
 | Path | What it is |

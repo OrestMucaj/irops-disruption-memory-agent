@@ -216,7 +216,7 @@ Three views, unstyled-but-clean:
 - [x] Working public demo URL — https://irops-memory-demo-21.s3.us-east-1.amazonaws.com/index.html
 - [ ] Demo video < 3 minutes, public on YouTube or Vimeo, **showing the CockroachDB memory layer at work**, no copyrighted music — **shot list written**, see [SUBMISSION.md](SUBMISSION.md). Needs recording.
 - [x] Architecture diagram — two mermaid diagrams in the README (the memory loop, and the wiring). Both verified to parse with the mermaid parser, not eyeballed.
-- [ ] Tool feedback section (optional, but sponsors read it and it costs 10 minutes)
+- [x] Tool feedback section — **written 2026-08-17.** In the README, split into what earned its place and what cost time, for both sponsors. Every item was hit during this build with evidence in NOTES.md; the headline item (MCP exposes write tools because the platform offers no read-only role) was re-verified live at the time of writing via `npm run check:mcp`.
 
 See **[SUBMISSION.md](SUBMISSION.md)** for the links to paste, the video shot
 list, the morning-of pre-flight checks, and what to claim versus what not to.
