@@ -6,7 +6,7 @@ handling of the next one.
 
 Built for the **CockroachDB × AWS Hackathon — "Build with Agentic Memory."**
 
-### ▶ [Open the live demo](https://irops-memory-demo-21.s3.us-east-1.amazonaws.com/index.html)
+### ▶ [Open the live demo](https://irops-memory-demo-21.s3.us-east-1.amazonaws.com/index.html) · 🎬 [Watch the 3-minute demo](https://www.youtube.com/watch?v=9s4SiUE9Bvw)
 
 Nothing to install, no login. All data is synthetic.
 
@@ -31,6 +31,7 @@ Nothing to install, no login. All data is synthetic.
 
 | | |
 |---|---|
+| **Demo video** | https://www.youtube.com/watch?v=9s4SiUE9Bvw |
 | **Live demo** | https://irops-memory-demo-21.s3.us-east-1.amazonaws.com/index.html |
 | **API health** | https://7p2mkku36rbgbj2chqcsers5qy0gkccu.lambda-url.us-east-1.on.aws/api/health |
 | **CockroachDB** | Vector index (C-SPANN) with a **prefix column**, SERIALIZABLE txns, Managed MCP Server, Agent Skills |
