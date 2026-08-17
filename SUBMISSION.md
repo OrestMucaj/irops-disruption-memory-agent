@@ -9,9 +9,9 @@ Everything needed to submit, in one place. Deadline **18 Aug 2026**.
 | Field | Value |
 |---|---|
 | **Live demo** | `https://irops-memory-demo-21.s3.us-east-1.amazonaws.com/index.html` |
-| **Repository** | *(push and paste the URL)* |
+| **Repository** | https://github.com/OrestMucaj/irops-disruption-memory-agent |
 | **API health check** | `https://7p2mkku36rbgbj2chqcsers5qy0gkccu.lambda-url.us-east-1.on.aws/api/health` |
-| **Video** | *(upload to YouTube or Vimeo as **Public**, then paste the link)* |
+| **Video** | *(upload to YouTube or Vimeo as **Public**, then paste the link here)* |
 
 > The `/index.html` suffix is required — see the [Live demo](README.md#live-demo)
 > note. Test the exact string you paste, in a private window, before submitting.
