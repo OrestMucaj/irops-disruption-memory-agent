@@ -21,6 +21,7 @@ import type {
   PriorityTier,
 } from '../domain/vocabulary.js';
 import { Rng } from './random.js';
+import { composeOutcomeNote } from '../domain/outcome-notes.js';
 import type {
   GeneratedCase,
   ResolutionAction,
@@ -419,7 +420,7 @@ function generateResolution(
 
   const notes = failures.length > 0
     ? failures.join(' ')
-    : successNote(rng, ideal);
+    : successNote(disruption, taken, missedCount, rating);
 
   const resolvedAt = new Date(
     (disruption.actualDep ?? disruption.scheduledDep).getTime() + rng.int(60, 2880) * 60_000,
@@ -486,19 +487,23 @@ function overreachNote(action: ActionType): string {
   }
 }
 
-function successNote(rng: Rng, ideal: ReadonlySet<ActionType>): string {
-  const notes = [
-    'Handled to plan; affected passengers were reaccommodated without escalation.',
-    'Early action held the majority of connections and complaint volume was low.',
-    'Standard playbook applied and the recovery ran without incident.',
-  ];
-  if (ideal.has('hotel')) {
-    notes.push('Accommodation was arranged before the transfer desk backed up, which kept the operation orderly.');
-  }
-  if (ideal.has('prioritise')) {
-    notes.push('Triage by connection risk meant the tightest connections were worked first and most were saved.');
-  }
-  return rng.pick(notes);
+/* Composed from the case's own facts rather than picked from a bank — see the
+   header of domain/outcome-notes.ts for why a five-string bank was a defect. */
+function successNote(
+  disruption: SyntheticCase,
+  taken: ReadonlySet<ActionType>,
+  missed: number,
+  rating: number,
+): string {
+  return composeOutcomeNote(disruption.id, {
+    cause: disruption.cause,
+    delayMinutes: disruption.delayMinutes,
+    paxCount: disruption.paxCount,
+    misconnectCount: missed,
+    priorityPaxCount: disruption.priorityPaxCount,
+    actionsTaken: [...taken],
+    outcomeRating: rating,
+  });
 }
 
 function affectedCountFor(
