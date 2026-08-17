@@ -11,10 +11,12 @@ Everything needed to submit, in one place. Deadline **18 Aug 2026**.
 | **Live demo** | `https://irops-memory-demo-21.s3.us-east-1.amazonaws.com/index.html` |
 | **Repository** | *(push and paste the URL)* |
 | **API health check** | `https://7p2mkku36rbgbj2chqcsers5qy0gkccu.lambda-url.us-east-1.on.aws/api/health` |
-| **Video** | *(upload **Public** — not unlisted, see below — then paste the link)* |
+| **Video** | *(upload to YouTube or Vimeo as **Public**, then paste the link)* |
 
 > The `/index.html` suffix is required — see the [Live demo](README.md#live-demo)
 > note. Test the exact string you paste, in a private window, before submitting.
+
+---
 
 ---
 
@@ -35,93 +37,6 @@ Everything needed to submit, in one place. Deadline **18 Aug 2026**.
 
 ---
 
-## Publishing the video
-
-**Visibility: Public.** SPEC §7 records the rule as "public on YouTube or
-Vimeo". Unlisted is viewable by link but is not public, and that is not a
-distinction worth arguing with a judge about.
-
-**Title** — matches the README H1 so a judge can connect video, Devpost entry
-and repo without effort. 58 characters, so YouTube will not truncate it:
-
-```
-IROPS Disruption Memory Agent — CockroachDB × AWS Hackathon
-```
-
-**Description** — lead with what it is, then the links, then the tool list, then
-timestamps. Starting the list at `0:00` with three or more entries makes them
-clickable chapters, so a judge short of time can jump straight to the precedent
-moment rather than scrubbing for it. Adjust the times to the final cut:
-
-```
-0:00 The problem
-0:27 84 past disruptions, 81 with recorded outcomes
-0:52 The plan, and the past case it cites
-1:57 Nothing happens without a human
-2:07 Every run is recorded
-2:19 Asking the memory in English, answered with SQL
-2:36 Closing the loop
-```
-
-Confirm the runtime on the **uploaded** file rather than the editor timeline,
-and state plainly in the description that all data is synthetic.
-
----
-
-## Video — 2:45 shot list
-
-Record at 1440×900 or wider so the sidebar and the plan fit without scrolling.
-Have ZZ1137 open in a second tab so no step waits on a page load.
-
-**Camera: intro only, then full screen.** The opening is narration over a static
-KPI row, so the screen is not earning its pixels there and a face costs nothing.
-Everything from 0:20 is small text a judge has to read — precedent chips, SQL in
-a 430px panel, token counts — so no picture-in-picture over the demo. A
-bottom-right bubble would sit directly on the chat window at 1:55. If you want
-PiP regardless, put it **bottom-left**: the sidebar is static and bottom-right is
-spoken for.
-
-**Audio matters more than video.** Record close to the mic in a soft room and
-listen back to ten seconds *before* recording the whole thing. No music
-(copyright rule).
-
-| Time | Shot | Say |
-|---|---|---|
-| 0:00–0:15 | **Camera** — talking head | "An airline ops desk handles every disruption from scratch. The knowledge of what actually worked last time lives in people's heads and leaves when they do. This stores the judgement, not just the records." |
-| 0:15–0:20 | Cut to full screen — caseload view, KPI row | "84 past disruptions, 81 with recorded outcomes." |
-| 0:20–0:40 | Click **ZZ1137** — 190′ late, 23 misconnecting | "A real disruption: 147 passengers, 23 misconnecting. The agent has already searched past disruptions." |
-| 0:40–1:15 | **Recommended plan** — hover the grouped cards, then click a precedent chip | "Twelve rebookings as one decision, not twelve. Each group cites the past disruptions it leaned on — this one is ZZ4381, which scored 5 out of 5. Click it and you see what that desk actually did and how it turned out." |
-| 1:15–1:35 | **Approve all** → sticky bar turns green | "Nothing happens without a human. Approve, edit, or reject — and the rejections are kept, because an overrule is the strongest signal in the dataset." |
-| 1:35–1:55 | **Evidence → Agent run** tab | "Every run is recorded: the model, the tokens, and the exact case ids the plan was built from. Including failures." |
-| 1:55–2:20 | **Chat bubble** → ask *"which cause had the worst average outcome rating?"* | "The analyst answers by writing SQL that runs read-only through CockroachDB's Managed MCP Server. You see the statement and the rows it returned — the answer comes with its evidence attached." |
-| 2:20–2:45 | **Close the loop** → resolve with an outcome note → back to Memory view | "Record what happened, and it is embedded in the same transaction as the state write. It is now precedent the next disruption will retrieve. That is the loop closing." |
-
-**Do not** narrate the architecture. Show the loop closing; the README carries
-the wiring.
-
----
-
-## Immediately after recording — restore the demo state
-
-Recording chunk 3 approves all of ZZ1137's pending actions. Judges following the
-README's five-minute tour would then arrive at a case with nothing left to
-approve, which is the wrong first impression.
-
-```bash
-npm run demo:reset
-```
-
-That restores the exact plan the video shows — same actions, same ZZ4381
-citation — so a judge who watches the video and then opens the demo sees the
-same case. Better than re-running the agent, which would produce a different
-plan than the one on film.
-
-Confirm with `npm run demo:status` that it reads `13 proposed` before you
-submit.
-
-> And do **not** resolve ZZ1137 at any point. It is one-way: the case ends, the
-> plan disappears, and no re-take of chunks 1 or 2 is possible.
-
 ---
 
 ## Pre-flight checks
@@ -136,18 +51,22 @@ curl -s https://7p2mkku36rbgbj2chqcsers5qy0gkccu.lambda-url.us-east-1.on.aws/api
 - [ ] Health returns `200` with `analyst: true`
 - [ ] Demo URL loads in a **private window** (no cache, no logged-in state)
 - [ ] Icons render — no empty squares (fonts live in `web/vendor/fonts/`)
-- [ ] ZZ1137 shows grouped actions with precedent chips **and a pending count**
-      (re-run the agent if recording consumed them)
+- [ ] ZZ1137 shows grouped actions, precedent chips, and a pending count in the
+      sticky bar (use **Re-run agent** on the case if it shows none)
 - [ ] Chat bubble answers a question and shows its SQL
 - [ ] A case can still be resolved end to end
 - [ ] `npm run verify:schema` still prints the `prefix spans` line
 - [ ] README renders on GitHub — **both mermaid diagrams draw**
+
+---
 
 ## Repo hygiene
 
 - [ ] `.env` is not committed (`git check-ignore .env` prints the path)
 - [ ] `git status` clean, everything pushed
 - [ ] LICENSE present (MIT)
+
+---
 
 ## Security — checked, and deliberately deferred
 
@@ -178,6 +97,8 @@ demo link, not a data breach.
       ```
       **Omit `-CodeOnly`** — environment variables are only rewritten on a full
       deploy.
+
+---
 
 ---
 
