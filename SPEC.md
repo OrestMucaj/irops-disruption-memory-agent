@@ -214,7 +214,7 @@ Three views, unstyled-but-clean:
 - [ ] Public repo, MIT or Apache-2.0, license visible in GitHub About sidebar — **LICENSE (MIT) is committed; the repo still needs pushing to a public remote.**
 - [x] README: what it is, architecture diagram, setup instructions that actually work from zero, which CockroachDB tools were used and how, which AWS services and how — **rewritten 2026-08-17** with a "judging in 5 minutes" path at the top.
 - [x] Working public demo URL — https://irops-memory-demo-21.s3.us-east-1.amazonaws.com/index.html
-- [ ] Demo video < 3 minutes, public on YouTube or Vimeo, **showing the CockroachDB memory layer at work**, no copyrighted music — **shot list written**, see [SUBMISSION.md](SUBMISSION.md). Needs recording.
+- [x] Demo video < 3 minutes, public on YouTube or Vimeo, **showing the CockroachDB memory layer at work**, no copyrighted music — **recorded 2026-08-17**. Needs uploading and the link pasting into Devpost.
 - [x] Architecture diagram — two mermaid diagrams in the README (the memory loop, and the wiring). Both verified to parse with the mermaid parser, not eyeballed.
 - [x] Tool feedback section — **written 2026-08-17.** In the README, split into what earned its place and what cost time, for both sponsors. Every item was hit during this build with evidence in NOTES.md; the headline item (MCP exposes write tools because the platform offers no read-only role) was re-verified live at the time of writing via `npm run check:mcp`.
 
@@ -586,9 +586,9 @@ eyeballed; a broken diagram is the first thing a judge would see. Stale claims
 fixed (`web/` is no longer "no framework"). Honest status gained the
 `passengers`-is-a-sample caveat and today's analyst failure.
 
-New **[SUBMISSION.md](SUBMISSION.md)**: links to paste, a 2:45 shot list, the
-morning-of pre-flight checks (all passing as of writing), and an explicit
-what-to-claim / what-not-to-claim section.
+New **[SUBMISSION.md](SUBMISSION.md)**: the links to paste, the one-paragraph
+description, the morning-of pre-flight checks (all passing as of writing), and
+an explicit what-to-claim / what-not-to-claim section.
 
 **Remaining: record the video, push the repo public, rotate the database
 password.** The rotation needs a full `deploy.ps1` run, not `-CodeOnly` — the

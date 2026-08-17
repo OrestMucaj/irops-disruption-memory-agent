@@ -418,8 +418,9 @@
                       <div class="fact"><div class="k">Completion tok</div><div class="v">{{ detail.lastRun.completion_tokens ?? '—' }}</div></div>
                     </div>
                     <div class="foot">
-                      Every run is written to <span class="mono">agent_runs</span>, including failures — the
-                      retrieved case ids above are what the plan on this page was built from.
+                      Every run is written to <span class="mono">agent_runs</span>, including failures. The
+                      {{ (detail.lastRun.retrieved_case_ids || []).length }} cases this plan was built from are listed
+                      under <b>Retrieved precedent</b>.
                     </div>
                   </template>
                 </p-tabpanel>

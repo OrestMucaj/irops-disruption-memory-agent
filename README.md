@@ -18,7 +18,7 @@ Nothing to install, no login. All data is synthetic.
 2. Look at **Recommended plan**. Each group cites past disruptions as chips like
    `ZZ4381 · 5/5 · worked`. **Click one.** That is a real case the agent
    retrieved by vector similarity, with the outcome it actually produced.
-3. Hit **Approve all 13**, then open **Evidence → Agent run** to see the model,
+3. Hit **Approve all** in the bar at the bottom, then open **Evidence → Agent run** to see the model,
    token counts and the exact case ids the plan was built from.
 4. Click the **chat bubble, bottom right**, and ask *"which cause had the worst
    average outcome rating?"* The answer arrives with the SQL it ran, executed
