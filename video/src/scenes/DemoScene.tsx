@@ -11,7 +11,7 @@ import { C, FONT, MONO } from '../theme';
 /**
  * The product walkthrough, built entirely from captured console states.
  *
- * Every shot is the real app in a real state (video/capture/capture.cjs). The
+ * Every shot is the live demo in a real state (video/capture/capture.cjs). The
  * camera, cursor and spotlights only direct attention; each cut lands on the
  * word that describes it.
  */
@@ -48,7 +48,7 @@ export const DemoScene: React.FC = () => {
   const clickChip = c('s07-precedent', 'precedent') + 3;
   const desk = c('s07-precedent', 'desk');
   const turned = c('s07-precedent', 'turned');
-  const cases = c('s07-precedent', 'Cases');
+  const mixed = c('s07-precedent', 'Mixed');
   const e7 = sec('s07-precedent', 'end');
 
   const s8 = sec('s08-approve');
@@ -59,7 +59,8 @@ export const DemoScene: React.FC = () => {
   const e8 = sec('s08-approve', 'end');
 
   const s9 = sec('s09-audit');
-  const planner = c('s09-audit', 'planner,');
+  const model = c('s09-audit', 'model,');
+  const tokens = c('s09-audit', 'token');
   const latency = c('s09-audit', 'latency,');
   const exact = c('s09-audit', 'exact');
   const e9 = sec('s09-audit', 'end');
@@ -75,13 +76,13 @@ export const DemoScene: React.FC = () => {
     { from: s6 - 4, shot: '07-plan-clean', fade: 10 },
     { from: open + 2, shot: '08-chip-hover', fade: 5 },
     { from: clickChip + 3, shot: '09-precedent', fade: 9 },
-    { from: cases - 2, shot: '11-retrieved-low', fade: 10 },
+    { from: mixed - 2, shot: '10-retrieved', fade: 10 },
     { from: s8 - 4, shot: '12-review-items', fade: 10 },
     { from: every + 2, shot: '13-approve-hover', fade: 5 },
     { from: clickApprove + 3, shot: '14-approving', fade: 5 },
     { from: recorded, shot: '15-approved', fade: 8 },
     { from: s9 - 4, shot: '16-agent-run', fade: 10 },
-    { from: exact, shot: '10-retrieved', fade: 10 },
+    { from: exact, shot: '10b-retrieved-after', fade: 10 },
   ];
 
   // --- camera ----------------------------------------------------------------
@@ -91,23 +92,23 @@ export const DemoScene: React.FC = () => {
     { at: zz - 8, view: rowView, dur: 30 },
     { at: clickRow + 2, view: frameRect({ x: 258, y: 120, w: 1160, h: 420 }, 0.98), dur: 22 },
     { at: proposes + 2, view: frameRect({ x: 258, y: 180, w: 1160, h: 470 }, 0.98), dur: 22 },
-    { at: cites - 6, view: frameRect({ x: 274, y: 300, w: 720, h: 190 }, 0.95), dur: 24 },
+    { at: cites - 6, view: frameRect({ x: 274, y: 262, w: 720, h: 190 }, 0.95), dur: 24 },
     { at: s6 - 2, view: frameRect({ x: 274, y: 236, w: 820, h: 130 }, 0.95), dur: 22 },
-    { at: s7 - 2, view: frameRect({ x: 274, y: 290, w: 900, h: 220 }, 0.95), dur: 18 },
+    { at: s7 - 2, view: frameRect({ x: 274, y: 250, w: 900, h: 220 }, 0.95), dur: 18 },
     { at: clickChip + 2, view: frameRect(box('09-precedent', 'dialog'), 0.96), dur: 22 },
-    { at: cases - 2, view: frameRect({ x: 274, y: 300, w: 960, h: 240 }, 0.96), dur: 20 },
+    { at: mixed - 2, view: frameRect({ x: 274, y: 420, w: 960, h: 220 }, 0.96), dur: 20 },
     // The sticky decision bar is the last strip of the capture, so these views
     // sit on the image's bottom edge; captions lift for this beat (Captions.tsx).
     { at: s8 - 4, view: { x: 300, y: 191, w: 1100, h: 619 }, dur: 22 },
     { at: every - 8, view: { x: 360, y: 135, w: 1200, h: 675 }, dur: 24 },
-    { at: s9 - 4, view: frameRect({ x: 274, y: 330, w: 760, h: 120 }, 0.95), dur: 22 },
+    { at: s9 - 4, view: frameRect({ x: 274, y: 300, w: 1128, h: 150 }, 0.97), dur: 22 },
     { at: exact - 2, view: frameRect({ x: 274, y: 60, w: 1128, h: 560 }, 0.98), dur: 22 },
   ];
 
   // --- cursor ----------------------------------------------------------------
   const row = centre(box('01-caseload', 'row'));
   const recs = centre(box('03-detail-empty', 'getRecs'));
-  const chip = centre(box('07-plan-clean', 'rebookChip'));
+  const chip = centre(box('07-plan-clean', 'chip'));
   const approve = centre(box('13-approve-hover', 'approveAll'));
   const cursors = [
     {
@@ -136,7 +137,9 @@ export const DemoScene: React.FC = () => {
   ];
 
   // --- spotlights ------------------------------------------------------------
-  const latencyRect: Rect = { x: 843, y: 363, w: 181, h: 49 };
+  const prompt = box('16-agent-run', 'promptTok');
+  const completion = box('16-agent-run', 'completionTok');
+  const tokenRect: Rect = { x: prompt.x, y: prompt.y, w: completion.x + completion.w - prompt.x, h: prompt.h };
   const spots: Spot[] = [
     { from: zz + 4, to: ninety - 2, rect: box('01-caseload', 'row'), pad: 4 },
     { from: ninety, to: twentyThree - 2, rect: box('01-caseload', 'delay'), label: '190 min late', tone: C.red, side: 'bottom', pad: 4 },
@@ -144,9 +147,9 @@ export const DemoScene: React.FC = () => {
     {
       from: cites,
       to: e5 + 6,
-      rect: box('06-plan', 'rebookChip'),
+      rect: box('06-plan', 'chip'),
       label: 'Cites a past case and its outcome',
-      sub: 'ZZ1467 · rated 3/5 · mixed',
+      sub: 'ZZ4381 · rated 5/5 · worked',
       side: 'bottom',
       pad: 6,
     },
@@ -155,20 +158,20 @@ export const DemoScene: React.FC = () => {
       to: e6,
       rect: box('07-plan-clean', 'gap'),
       label: 'Coverage check, enforced in code',
-      sub: 'Missed connections with no action are flagged',
+      sub: 'A missed connection with no action is flagged',
       tone: C.red,
       side: 'bottom',
       pad: 4,
       dim: 0.5,
     },
     { from: desk, to: turned - 2, rect: box('09-precedent', 'did'), pad: 6 },
-    { from: turned, to: cases - 6, rect: box('09-precedent', 'outcome'), label: 'How it turned out', tone: C.amber, side: 'bottom', pad: 6 },
+    { from: turned, to: mixed - 6, rect: box('09-precedent', 'outcome'), label: 'How it turned out', side: 'bottom', pad: 6 },
     {
-      from: cases + 8,
+      from: mixed + 8,
       to: e7 + 8,
-      rect: box('11-retrieved-low', 'prec3'),
-      label: 'Rated 1/5, retrieved as a warning',
-      tone: C.red,
+      rect: box('10-retrieved', 'prec2'),
+      label: 'Rated 3/5: what went wrong comes back too',
+      tone: C.amber,
       side: 'top',
       pad: 4,
     },
@@ -181,19 +184,18 @@ export const DemoScene: React.FC = () => {
       side: 'left',
       pad: 6,
     },
-    { from: recorded + 4, to: e8 + 16, rect: box('15-approved', 'decisionbar'), label: 'Every decision recorded', side: 'top', pad: 4, dim: 0.42 },
+    { from: recorded + 4, to: e8 + 16, rect: box('15-approved', 'decisionbar'), label: 'All 21 decisions recorded', side: 'top', pad: 4, dim: 0.42 },
     {
-      from: planner,
-      to: latency - 2,
+      from: model,
+      to: tokens - 2,
       rect: box('16-agent-run', 'model'),
-      label: 'Offline stand-in planner',
-      sub: 'Amazon Nova Lite on Bedrock in production',
-      tone: C.amber,
+      label: 'Amazon Nova Lite on Bedrock',
       side: 'bottom',
       pad: 4,
     },
-    { from: latency, to: exact - 6, rect: latencyRect, pad: 4 },
-    { from: exact + 6, to: e9 + 22, rect: box('10-retrieved', 'tabPrec'), label: 'The 5 cases this plan was built from', side: 'bottom', pad: 4, dim: 0.3 },
+    { from: tokens, to: latency - 2, rect: tokenRect, label: 'Real token counts, every run', side: 'bottom', pad: 4 },
+    { from: latency, to: exact - 6, rect: box('16-agent-run', 'latency'), pad: 4 },
+    { from: exact + 6, to: e9 + 22, rect: box('10b-retrieved-after', 'tabPrec'), label: 'The 5 cases this plan was built from', side: 'bottom', pad: 4, dim: 0.3 },
   ];
 
   // --- window framing at the start --------------------------------------------
@@ -249,7 +251,7 @@ export const DemoScene: React.FC = () => {
       </AbsoluteFill>
 
       <Kicker n="01" title="Product walkthrough" from={0} />
-      <Disclosure text="Local build · offline stand-ins for the Bedrock models · all data synthetic" from={zz} />
+      <Disclosure text="Recorded on the live demo · all data synthetic" from={zz} />
 
       {[clickRow, clickRecs, clickChip, clickApprove].map((at) => (
         <Sequence key={at} from={at - 1} durationInFrames={10}>

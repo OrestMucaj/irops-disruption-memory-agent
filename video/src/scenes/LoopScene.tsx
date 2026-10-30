@@ -16,8 +16,7 @@ import {
 } from 'lucide-react';
 
 import zz1137Summary from '../../public/captures/data/zz1137-summary.json';
-import before from '../../public/captures/data/neighbours-before.json';
-import after from '../../public/captures/data/neighbours-after.json';
+import neighbours from '../../public/captures/data/neighbours.json';
 import { Disclosure, Kicker, LogoChip, Backdrop } from '../components/Chrome';
 import { Crop } from '../components/Crop';
 import { cue, cueSection } from '../timeline';
@@ -246,7 +245,7 @@ export const LoopScene: React.FC = () => {
       </AbsoluteFill>
 
       <Kicker n="02" title="The memory loop" from={0} />
-      <Disclosure text="Local build · all data synthetic" from={T[6]} />
+      <Disclosure text="Recorded on the live demo · all data synthetic" from={T[6]} />
 
       <Sequence from={back - 2} durationInFrames={24}>
         <Audio src={staticFile('sfx/confirm.wav')} volume={0.28} />
@@ -333,14 +332,14 @@ const CentreCard: React.FC<{ kind: 'summary' | 'embedding' | 'retrieval' | 'plan
   if (kind === 'plan') {
     return (
       <div style={style}>
-        <CardLabel tone={C.violet}>Proposed for ZZ1137</CardLabel>
+        <CardLabel tone={C.violet}>Proposed for ZZ1137 · Nova Lite</CardLabel>
         <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
-          {['rebook × 8', 'notify × 1'].map((t) => (
+          {['rebook × 20', 'notify × 1'].map((t) => (
             <span key={t} style={{ fontFamily: MONO, fontSize: 28, padding: '8px 16px', borderRadius: 10, background: C.surface2, color: C.text }}>{t}</span>
           ))}
         </div>
         <span style={{ fontSize: 26, color: C.text }}>
-          each citing <span style={{ fontFamily: MONO, color: C.amber }}>ZZ1467 · 3/5</span>
+          citing <span style={{ fontFamily: MONO, color: C.emerald }}>ZZ4381 · 5/5 · worked</span>
         </span>
         <span style={{ fontSize: 22, color: C.muted }}>status: proposed — nothing has run</span>
       </div>
@@ -380,7 +379,7 @@ const InsetSequence: React.FC<{ record: number; transaction: number; search: num
       </div>
       <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 26, opacity: doneIn }}>
         <InsetLabel text="One transaction: outcome + embedding, status → resolved" />
-        <Crop shot="19-resolved" rect={{ x: 258, y: 596, w: 1160, h: 196 }} width={1720} />
+        <Crop shot="19-resolved" rect={{ x: 258, y: 600, w: 1160, h: 186 }} width={1720} />
       </div>
       <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', opacity: listIn }}>
         <NeighbourList back={back} />
@@ -398,8 +397,8 @@ const ROW_H = 84;
 const NeighbourList: React.FC<{ back: number }> = ({ back }) => {
   const frame = useCurrentFrame();
   const t = interpolate(frame, [back - 6, back + 14], [0, 1], { ...clamp, easing: Easing.inOut(Easing.cubic) });
-  const beforeRows = before as Neighbour[];
-  const afterRows = after as Neighbour[];
+  const beforeRows = neighbours.before as Neighbour[];
+  const afterRows = neighbours.after as Neighbour[];
   const flights = Array.from(new Set([...beforeRows, ...afterRows].map((r) => r.flight_no)));
   const rowFor = (f: string) => afterRows.find((r) => r.flight_no === f) ?? beforeRows.find((r) => r.flight_no === f)!;
 
@@ -407,17 +406,17 @@ const NeighbourList: React.FC<{ back: number }> = ({ back }) => {
     <div style={{ width: 1460, padding: '30px 38px', borderRadius: 22, background: 'rgba(14,14,17,0.97)', border: `1px solid ${C.line}`, boxShadow: '0 40px 100px rgba(0,0,0,0.6)' }}>
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 6 }}>
         <span style={{ fontSize: 42, fontWeight: 800, color: C.text }}>
-          Nearest resolved cases to <span style={{ fontFamily: MONO, color: C.blue }}>ZZ1467</span>
+          Nearest resolved cases to <span style={{ fontFamily: MONO, color: C.blue }}>{neighbours.flight_no}</span>
         </span>
-        <span style={{ fontSize: 28, color: C.muted }}>weather · 122′</span>
+        <span style={{ fontSize: 28, color: C.muted }}>{neighbours.cause} · {neighbours.delay_minutes}′</span>
       </div>
-      <div style={{ fontFamily: MONO, fontSize: 24, color: C.dim, marginBottom: 20 }}>case_status = 'resolved' · ORDER BY embedding {'<=>'} · LIMIT 5 · live query on this build</div>
+      <div style={{ fontFamily: MONO, fontSize: 24, color: C.dim, marginBottom: 20 }}>case_status = 'resolved' · ORDER BY embedding {'<=>'} · LIMIT 5 · read-only via MCP on the live cluster</div>
       <div style={{ position: 'relative', height: ROW_H * 5 }}>
         {flights.map((f) => {
           const bi = beforeRows.findIndex((r) => r.flight_no === f);
           const ai = afterRows.findIndex((r) => r.flight_no === f);
           const r = rowFor(f);
-          const fromY = bi === -1 ? 2 * ROW_H : bi * ROW_H;
+          const fromY = bi === -1 ? ai * ROW_H : bi * ROW_H;
           const toY = ai === -1 ? 5 * ROW_H : ai * ROW_H;
           const y = fromY + (toY - fromY) * t;
           const hero = f === 'ZZ1137';

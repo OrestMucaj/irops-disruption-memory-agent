@@ -12,8 +12,8 @@ import { C, FONT, MONO } from '../theme';
  *  1. one database for state and memory, written in one transaction
  *     (the statements are the ones resolveCase runs, in order);
  *  2. the case_status prefix column filtering inside the vector index — the
- *     EXPLAIN lines (src/data/explain.json) are lifted from this build's own
- *     `npm run verify:schema` output;
+ *     EXPLAIN lines (src/data/explain.json) are lifted from
+ *     `scripts/verify-schema.mjs` run against the live cluster;
  *  3. the AWS shape that lets it scale to zero.
  */
 
@@ -184,7 +184,7 @@ const PrefixIndex: React.FC<{ start: number; inside: number }> = ({ start, insid
           </div>
         </div>
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: 2, color: C.dim, marginBottom: 14 }}>EXPLAIN · THIS BUILD</div>
+          <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: 2, color: C.dim, marginBottom: 14 }}>EXPLAIN · LIVE CLUSTER</div>
           <div style={{ padding: '22px 26px', borderRadius: 16, background: '#050506', border: `1px solid ${C.surface2}`, fontFamily: MONO, fontSize: 24, lineHeight: 1.75 }}>
             {EXPLAIN.map((l, i) => {
               const last = /prefix spans/.test(l);
@@ -195,7 +195,7 @@ const PrefixIndex: React.FC<{ start: number; inside: number }> = ({ start, insid
               );
             })}
           </div>
-          <div style={{ marginTop: 16, fontSize: 21, color: C.dim }}>CockroachDB v26.2.1 · vector indexes are a Preview feature</div>
+          <div style={{ marginTop: 16, fontSize: 21, color: C.dim }}>CockroachDB Cloud v26.2.9 · vector indexes are a Preview feature</div>
         </div>
       </div>
     </AbsoluteFill>

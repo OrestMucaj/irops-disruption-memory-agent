@@ -395,107 +395,117 @@
  {
   "id": "s05-plan",
   "scene": "demo",
-  "text": "One click: the agent embeds the case, finds similar past disruptions, and proposes a plan that cites its precedents.",
+  "text": "One click: the agent embeds the case, finds similar past disruptions, and Nova Lite proposes a plan that cites its precedents.",
   "file": "voiceover/s05-plan.mp3",
-  "tempo": 1.1,
+  "tempo": 1,
   "speechStart": 0,
-  "speechEnd": 7.894545454545454,
-  "audioDuration": 7.941224,
+  "speechEnd": 8.034,
+  "audioDuration": 8.071837,
   "words": [
    {
     "text": "One",
     "start": 0,
-    "end": 0.2318181818181818
+    "end": 0.221
    },
    {
     "text": "click:",
-    "start": 0.27454545454545454,
-    "end": 0.6645454545454544
+    "start": 0.255,
+    "end": 0.662
    },
    {
     "text": "the",
-    "start": 0.8972727272727272,
-    "end": 1.0027272727272727
+    "start": 0.766,
+    "end": 0.882
    },
    {
     "text": "agent",
-    "start": 1.0663636363636364,
-    "end": 1.3718181818181816
+    "start": 0.94,
+    "end": 1.242
    },
    {
     "text": "embeds",
-    "start": 1.4245454545454543,
-    "end": 1.8572727272727272
+    "start": 1.3,
+    "end": 1.695
    },
    {
     "text": "the",
-    "start": 1.8999999999999997,
-    "end": 1.9736363636363634
+    "start": 1.741,
+    "end": 1.811
    },
    {
     "text": "case,",
-    "start": 2.016363636363636,
-    "end": 2.438181818181818
+    "start": 1.846,
+    "end": 2.252
    },
    {
     "text": "finds",
-    "start": 2.638181818181818,
-    "end": 3.0081818181818183
+    "start": 2.368,
+    "end": 2.74
    },
    {
     "text": "similar",
-    "start": 3.102727272727272,
-    "end": 3.472727272727272
+    "start": 2.786,
+    "end": 3.146
    },
    {
     "text": "past",
-    "start": 3.535454545454545,
-    "end": 3.789090909090909
+    "start": 3.204,
+    "end": 3.483
    },
    {
     "text": "disruptions,",
-    "start": 3.830909090909091,
-    "end": 4.506363636363636
+    "start": 3.518,
+    "end": 4.238
    },
    {
     "text": "and",
-    "start": 4.612727272727272,
-    "end": 4.749090909090909
+    "start": 4.377,
+    "end": 4.54
+   },
+   {
+    "text": "Nova",
+    "start": 4.644,
+    "end": 4.923
+   },
+   {
+    "text": "Lite",
+    "start": 4.981,
+    "end": 5.236
    },
    {
     "text": "proposes",
-    "start": 4.802727272727273,
-    "end": 5.288181818181818
+    "start": 5.283,
+    "end": 5.793
    },
    {
     "text": "a",
-    "start": 5.340909090909091,
-    "end": 5.371818181818181
+    "start": 5.84,
+    "end": 5.863
    },
    {
     "text": "plan",
-    "start": 5.425454545454545,
-    "end": 5.720909090909091
+    "start": 5.921,
+    "end": 6.235
    },
    {
     "text": "that",
-    "start": 5.7736363636363635,
-    "end": 5.8999999999999995
+    "start": 6.293,
+    "end": 6.42
    },
    {
     "text": "cites",
-    "start": 5.952727272727272,
-    "end": 6.248181818181818
+    "start": 6.478,
+    "end": 6.769
    },
    {
     "text": "its",
-    "start": 6.343636363636363,
-    "end": 6.511818181818182
+    "start": 6.827,
+    "end": 6.954
    },
    {
     "text": "precedents.",
-    "start": 6.575454545454544,
-    "end": 7.894545454545454
+    "start": 7.001,
+    "end": 8.034
    }
   ]
  },
@@ -584,137 +594,137 @@
  {
   "id": "s07-precedent",
   "scene": "demo",
-  "text": "Open a precedent to see what the desk did last time, and how it turned out. Cases that went badly come back too, as warnings.",
+  "text": "Open a precedent to see what the desk did last time, and how it turned out. Mixed results come back too, with what went wrong.",
   "file": "voiceover/s07-precedent.mp3",
   "tempo": 1,
   "speechStart": 0,
-  "speechEnd": 8.359,
-  "audioDuration": 8.385306,
+  "speechEnd": 8.591,
+  "audioDuration": 8.620408,
   "words": [
    {
     "text": "Open",
     "start": 0,
-    "end": 0.325
+    "end": 0.279
    },
    {
     "text": "a",
-    "start": 0.383,
-    "end": 0.406
+    "start": 0.325,
+    "end": 0.348
    },
    {
     "text": "precedent",
-    "start": 0.464,
-    "end": 0.975
+    "start": 0.418,
+    "end": 0.906
    },
    {
     "text": "to",
-    "start": 1.045,
-    "end": 1.126
+    "start": 0.94,
+    "end": 0.998
    },
    {
     "text": "see",
-    "start": 1.196,
-    "end": 1.347
+    "start": 1.068,
+    "end": 1.219
    },
    {
     "text": "what",
-    "start": 1.393,
-    "end": 1.556
+    "start": 1.254,
+    "end": 1.382
    },
    {
     "text": "the",
-    "start": 1.602,
-    "end": 1.672
+    "start": 1.416,
+    "end": 1.486
    },
    {
     "text": "desk",
-    "start": 1.741,
-    "end": 2.043
+    "start": 1.533,
+    "end": 1.8
    },
    {
     "text": "did",
-    "start": 2.125,
-    "end": 2.31
+    "start": 1.869,
+    "end": 2.032
    },
    {
     "text": "last",
-    "start": 2.392,
-    "end": 2.647
+    "start": 2.101,
+    "end": 2.345
    },
    {
     "text": "time,",
-    "start": 2.682,
-    "end": 3.1
+    "start": 2.392,
+    "end": 2.786
    },
    {
     "text": "and",
-    "start": 3.228,
-    "end": 3.379
+    "start": 2.937,
+    "end": 3.088
    },
    {
     "text": "how",
-    "start": 3.437,
-    "end": 3.541
+    "start": 3.146,
+    "end": 3.251
    },
    {
     "text": "it",
-    "start": 3.587,
-    "end": 3.669
+    "start": 3.309,
+    "end": 3.379
    },
    {
     "text": "turned",
-    "start": 3.692,
-    "end": 3.947
+    "start": 3.413,
+    "end": 3.669
    },
    {
     "text": "out.",
-    "start": 4.005,
-    "end": 4.377
+    "start": 3.727,
+    "end": 4.075
    },
    {
-    "text": "Cases",
-    "start": 4.76,
-    "end": 5.132
+    "text": "Mixed",
+    "start": 4.679,
+    "end": 4.946
    },
    {
-    "text": "that",
-    "start": 5.178,
-    "end": 5.283
-   },
-   {
-    "text": "went",
-    "start": 5.317,
-    "end": 5.48
-   },
-   {
-    "text": "badly",
-    "start": 5.538,
-    "end": 5.944
+    "text": "results",
+    "start": 4.992,
+    "end": 5.352
    },
    {
     "text": "come",
-    "start": 6.002,
-    "end": 6.188
+    "start": 5.41,
+    "end": 5.573
    },
    {
     "text": "back",
-    "start": 6.223,
-    "end": 6.42
+    "start": 5.608,
+    "end": 5.805
    },
    {
     "text": "too,",
-    "start": 6.49,
-    "end": 6.966
+    "start": 5.863,
+    "end": 6.304
    },
    {
-    "text": "as",
-    "start": 7.14,
-    "end": 7.303
+    "text": "with",
+    "start": 6.548,
+    "end": 6.722
    },
    {
-    "text": "warnings.",
-    "start": 7.384,
-    "end": 8.359
+    "text": "what",
+    "start": 6.757,
+    "end": 6.885
+   },
+   {
+    "text": "went",
+    "start": 6.931,
+    "end": 7.082
+   },
+   {
+    "text": "wrong.",
+    "start": 7.117,
+    "end": 8.591
    }
   ]
  },
@@ -828,117 +838,117 @@
  {
   "id": "s09-audit",
   "scene": "demo",
-  "text": "Every run is logged: the planner, here an offline stand-in for Nova Lite, its latency, and the exact cases it retrieved.",
+  "text": "Every run is logged: the model, here Amazon Nova Lite, its token counts and latency, and the exact cases it retrieved.",
   "file": "voiceover/s09-audit.mp3",
   "tempo": 1.1,
   "speechStart": 0,
-  "speechEnd": 8.654545454545454,
-  "audioDuration": 8.698776,
+  "speechEnd": 9.329999999999998,
+  "audioDuration": 9.377959,
   "words": [
    {
     "text": "Every",
     "start": 0,
-    "end": 0.3272727272727272
+    "end": 0.33818181818181814
    },
    {
     "text": "run",
-    "start": 0.4009090909090909,
+    "start": 0.4118181818181818,
     "end": 0.6545454545454544
    },
    {
     "text": "is",
-    "start": 0.7281818181818182,
-    "end": 0.8763636363636362
+    "start": 0.7172727272727273,
+    "end": 0.8545454545454544
    },
    {
     "text": "logged:",
-    "start": 0.9499999999999998,
-    "end": 1.477272727272727
+    "start": 0.9290909090909091,
+    "end": 1.4354545454545453
    },
    {
     "text": "the",
-    "start": 1.7418181818181817,
-    "end": 1.8263636363636362
+    "start": 1.699090909090909,
+    "end": 1.7727272727272725
    },
    {
-    "text": "planner,",
-    "start": 1.8681818181818182,
-    "end": 2.3645454545454543
+    "text": "model,",
+    "start": 1.8263636363636362,
+    "end": 2.29
    },
    {
     "text": "here",
-    "start": 2.628181818181818,
-    "end": 2.8709090909090906
+    "start": 2.5227272727272725,
+    "end": 2.839090909090909
    },
    {
-    "text": "an",
-    "start": 2.9027272727272724,
-    "end": 2.9654545454545453
-   },
-   {
-    "text": "offline",
-    "start": 3.0181818181818176,
-    "end": 3.3563636363636364
-   },
-   {
-    "text": "stand-in",
-    "start": 3.3881818181818177,
-    "end": 3.7681818181818176
-   },
-   {
-    "text": "for",
-    "start": 3.820909090909091,
-    "end": 3.9154545454545455
+    "text": "Amazon",
+    "start": 3.102727272727272,
+    "end": 3.5045454545454544
    },
    {
     "text": "Nova",
-    "start": 3.9681818181818183,
-    "end": 4.18
+    "start": 3.5572727272727267,
+    "end": 3.7681818181818176
    },
    {
     "text": "Lite,",
-    "start": 4.2327272727272724,
-    "end": 4.59090909090909
+    "start": 3.820909090909091,
+    "end": 4.221818181818182
    },
    {
     "text": "its",
-    "start": 4.696363636363636,
-    "end": 4.844545454545454
+    "start": 4.453636363636363,
+    "end": 4.622727272727272
    },
    {
-    "text": "latency,",
-    "start": 4.8972727272727266,
-    "end": 5.488181818181817
+    "text": "token",
+    "start": 4.675454545454545,
+    "end": 4.970909090909091
+   },
+   {
+    "text": "counts",
+    "start": 5.0236363636363635,
+    "end": 5.350909090909091
    },
    {
     "text": "and",
+    "start": 5.393636363636363,
+    "end": 5.54090909090909
+   },
+   {
+    "text": "latency,",
     "start": 5.636363636363636,
-    "end": 5.783636363636363
+    "end": 6.28
+   },
+   {
+    "text": "and",
+    "start": 6.449090909090909,
+    "end": 6.586363636363636
    },
    {
     "text": "the",
-    "start": 5.836363636363636,
-    "end": 5.91090909090909
+    "start": 6.639090909090909,
+    "end": 6.712727272727273
    },
    {
     "text": "exact",
-    "start": 5.963636363636363,
-    "end": 6.332727272727272
+    "start": 6.7763636363636355,
+    "end": 7.187272727272727
    },
    {
     "text": "cases",
-    "start": 6.385454545454545,
-    "end": 6.754545454545454
+    "start": 7.24,
+    "end": 7.609999999999999
    },
    {
     "text": "it",
-    "start": 6.829090909090908,
-    "end": 6.923636363636363
+    "start": 7.683636363636363,
+    "end": 7.779090909090908
    },
    {
     "text": "retrieved.",
-    "start": 6.9763636363636365,
-    "end": 8.654545454545454
+    "start": 7.831818181818181,
+    "end": 9.329999999999998
    }
   ]
  },
@@ -1361,147 +1371,234 @@
  {
   "id": "s13-analyst",
   "scene": "analyst",
-  "text": "You can also question the memory in plain English: the model writes SQL and runs it through CockroachDB's managed MCP server, read-only by the app's own guardrails.",
+  "text": "You can also question the memory in plain English. Nova Lite writes the SQL and runs it through CockroachDB's managed MCP server, read-only by the app's own guardrails.",
   "file": "voiceover/s13-analyst.mp3",
-  "tempo": 1,
+  "tempo": 1.01,
   "speechStart": 0,
-  "speechEnd": 10.913,
-  "audioDuration": 10.945306,
+  "speechEnd": 11.402970297029702,
+  "audioDuration": 11.441633,
   "words": [
    {
     "text": "You",
     "start": 0,
-    "end": 0.139
+    "end": 0.1495049504950495
    },
    {
     "text": "can",
-    "start": 0.186,
-    "end": 0.29
+    "start": 0.19504950495049506,
+    "end": 0.3099009900990099
    },
    {
     "text": "also",
-    "start": 0.337,
-    "end": 0.546
+    "start": 0.3445544554455445,
+    "end": 0.5742574257425742
    },
    {
     "text": "question",
-    "start": 0.627,
-    "end": 0.998
+    "start": 0.6435643564356436,
+    "end": 1
    },
    {
     "text": "the",
-    "start": 1.045,
-    "end": 1.115
+    "start": 1.0574257425742575,
+    "end": 1.1267326732673266
    },
    {
     "text": "memory",
-    "start": 1.184,
-    "end": 1.544
+    "start": 1.195049504950495,
+    "end": 1.5633663366336634
    },
    {
     "text": "in",
-    "start": 1.614,
-    "end": 1.695
+    "start": 1.620792079207921,
+    "end": 1.700990099009901
    },
    {
     "text": "plain",
-    "start": 1.776,
-    "end": 2.067
+    "start": 1.7821782178217822,
+    "end": 2.0574257425742575
    },
    {
-    "text": "English:",
-    "start": 2.159,
-    "end": 2.728
+    "text": "English.",
+    "start": 2.149504950495049,
+    "end": 2.6782178217821784
    },
    {
-    "text": "the",
-    "start": 2.995,
-    "end": 3.088
+    "text": "Nova",
+    "start": 2.9425742574257425,
+    "end": 3.2534653465346532
    },
    {
-    "text": "model",
-    "start": 3.146,
-    "end": 3.402
+    "text": "Lite",
+    "start": 3.3336633663366335,
+    "end": 3.60990099009901
    },
    {
     "text": "writes",
-    "start": 3.437,
-    "end": 3.68
-   },
-   {
-    "text": "SQL",
-    "start": 3.727,
-    "end": 4.133
-   },
-   {
-    "text": "and",
-    "start": 4.249,
-    "end": 4.412
-   },
-   {
-    "text": "runs",
-    "start": 4.47,
-    "end": 4.679
-   },
-   {
-    "text": "it",
-    "start": 4.725,
-    "end": 4.783
-   },
-   {
-    "text": "through",
-    "start": 4.807,
-    "end": 5.016
-   },
-   {
-    "text": "CockroachDB's",
-    "start": 5.05,
-    "end": 6.06
-   },
-   {
-    "text": "managed",
-    "start": 6.177,
-    "end": 6.641
-   },
-   {
-    "text": "MCP",
-    "start": 6.734,
-    "end": 7.21
-   },
-   {
-    "text": "server,",
-    "start": 7.372,
-    "end": 7.872
-   },
-   {
-    "text": "read-only",
-    "start": 8.185,
-    "end": 8.673
-   },
-   {
-    "text": "by",
-    "start": 8.742,
-    "end": 8.858
+    "start": 3.6554455445544556,
+    "end": 4
    },
    {
     "text": "the",
-    "start": 8.916,
-    "end": 8.998
+    "start": 4.0574257425742575,
+    "end": 4.138613861386139
+   },
+   {
+    "text": "SQL",
+    "start": 4.184158415841584,
+    "end": 4.598019801980198
+   },
+   {
+    "text": "and",
+    "start": 4.667326732673268,
+    "end": 4.804950495049504
+   },
+   {
+    "text": "runs",
+    "start": 4.897029702970297,
+    "end": 5.149504950495049
+   },
+   {
+    "text": "it",
+    "start": 5.196039603960396,
+    "end": 5.264356435643564
+   },
+   {
+    "text": "through",
+    "start": 5.299009900990099,
+    "end": 5.54059405940594
+   },
+   {
+    "text": "CockroachDB's",
+    "start": 5.586138613861387,
+    "end": 6.632673267326733
+   },
+   {
+    "text": "managed",
+    "start": 6.7247524752475245,
+    "end": 7.196039603960396
+   },
+   {
+    "text": "MCP",
+    "start": 7.253465346534653,
+    "end": 7.794059405940594
+   },
+   {
+    "text": "server,",
+    "start": 7.954455445544555,
+    "end": 8.437623762376237
+   },
+   {
+    "text": "read-only",
+    "start": 8.701980198019802,
+    "end": 9.218811881188119
+   },
+   {
+    "text": "by",
+    "start": 9.276237623762375,
+    "end": 9.39108910891089
+   },
+   {
+    "text": "the",
+    "start": 9.448514851485148,
+    "end": 9.529702970297029
    },
    {
     "text": "app's",
-    "start": 9.067,
-    "end": 9.323
+    "start": 9.598019801980199,
+    "end": 9.886138613861386
    },
    {
     "text": "own",
-    "start": 9.404,
-    "end": 9.671
+    "start": 9.966336633663367,
+    "end": 10.218811881188119
    },
    {
     "text": "guardrails.",
-    "start": 9.764,
-    "end": 10.913
+    "start": 10.3,
+    "end": 11.402970297029702
+   }
+  ]
+ },
+ {
+  "id": "s13b-answer",
+  "scene": "analyst",
+  "text": "The answer arrives with the query and the rows behind it: weather, at 3.45.",
+  "file": "voiceover/s13b-answer.mp3",
+  "tempo": 1.1,
+  "speechStart": 0,
+  "speechEnd": 5.699090909090908,
+  "audioDuration": 5.720816,
+  "words": [
+   {
+    "text": "The",
+    "start": 0,
+    "end": 0.14818181818181816
+   },
+   {
+    "text": "answer",
+    "start": 0.2218181818181818,
+    "end": 0.5172727272727272
+   },
+   {
+    "text": "arrives",
+    "start": 0.5809090909090908,
+    "end": 1.0027272727272727
+   },
+   {
+    "text": "with",
+    "start": 1.0445454545454544,
+    "end": 1.1927272727272726
+   },
+   {
+    "text": "the",
+    "start": 1.2245454545454544,
+    "end": 1.2872727272727271
+   },
+   {
+    "text": "query",
+    "start": 1.33,
+    "end": 1.689090909090909
+   },
+   {
+    "text": "and",
+    "start": 1.7627272727272727,
+    "end": 1.8999999999999997
+   },
+   {
+    "text": "the",
+    "start": 1.9418181818181817,
+    "end": 2.0054545454545454
+   },
+   {
+    "text": "rows",
+    "start": 2.0581818181818177,
+    "end": 2.3118181818181816
+   },
+   {
+    "text": "behind",
+    "start": 2.3645454545454543,
+    "end": 2.66
+   },
+   {
+    "text": "it:",
+    "start": 2.7227272727272727,
+    "end": 2.997272727272727
+   },
+   {
+    "text": "weather,",
+    "start": 3.3454545454545452,
+    "end": 3.789090909090909
+   },
+   {
+    "text": "at",
+    "start": 3.9790909090909086,
+    "end": 4.127272727272727
+   },
+   {
+    "text": "3.45.",
+    "start": 4.200909090909091,
+    "end": 5.699090909090908
    }
   ]
  },

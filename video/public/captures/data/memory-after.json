@@ -6,8 +6,8 @@
       "cause": "weather",
       "delay_minutes": "190",
       "outcome_rating": 4,
-      "outcome_notes": "Rebooked the 8 flagged passengers onto the evening wave, then worked the remaining misconnections at the transfer desk by connection buffer. Most onward journeys recovered the same day.",
-      "resolved_at": "2026-10-30T10:51:29.391Z",
+      "outcome_notes": "Rebooked the misconnecting passengers onto the evening wave and worked the remaining transfers by connection buffer. Most onward journeys recovered the same day.",
+      "resolved_at": "2026-10-30T12:14:56.354Z",
       "embedded": true
     },
     {
@@ -123,11 +123,27 @@
   ],
   "mostCitedPrecedents": [
     {
+      "id": "ee75da89-6805-4558-8024-bb9b861871f2",
+      "citations": "21",
+      "flight_no": "ZZ4381",
+      "cause": "weather",
+      "delay_minutes": "128",
+      "outcome_rating": 5
+    },
+    {
       "id": "1c3d3ae7-9116-4a5c-afbd-b828805de718",
-      "citations": "9",
+      "citations": "1",
       "flight_no": "ZZ1467",
       "cause": "weather",
       "delay_minutes": "122",
+      "outcome_rating": 3
+    },
+    {
+      "id": "f1b7b6cf-b3de-49c8-8bd3-4b41f1bb325e",
+      "citations": "1",
+      "flight_no": "ZZ4137",
+      "cause": "weather",
+      "delay_minutes": "130",
       "outcome_rating": 3
     }
   ],
@@ -136,21 +152,21 @@
     "resolved_cases": "81",
     "embedded_cases": "84",
     "embedded_resolutions": "81",
-    "total_proposals": "9",
-    "approved": "9",
+    "total_proposals": "21",
+    "approved": "21",
     "rejected": "0",
     "edited": "0"
   },
   "recentRuns": [
     {
-      "id": "e0b88e52-edc0-4cd7-adcd-bc3a999f2079",
+      "id": "77e1ac61-2fc7-4a6b-93ff-c72d1bf12eef",
       "case_id": "f2cc7ca4-1530-4705-a1ba-940d5d7dc72e",
-      "model_id": "heuristic-playbook-v1",
-      "prompt_tokens": "2177",
-      "completion_tokens": "532",
-      "latency_ms": "58",
+      "model_id": "amazon.nova-lite-v1:0",
+      "prompt_tokens": "2565",
+      "completion_tokens": "2521",
+      "latency_ms": "6834",
       "error": null,
-      "created_at": "2026-10-30T10:50:58.428Z"
+      "created_at": "2026-10-30T12:14:10.640Z"
     }
   ]
 }

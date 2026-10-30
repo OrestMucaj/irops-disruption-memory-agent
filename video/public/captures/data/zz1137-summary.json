@@ -1,5 +1,5 @@
 {
   "summary_text": "Midday departure with limited same-day recovery options. Weather disruption causing a severe delay. Significant misconnections at a major hub. Delayed 190 minutes. Medium passenger load of 147 passengers, 23 misconnecting, 21 already missed and 2 at risk. 11 priority passengers affected. Same-day reaccommodation is still possible but options are thinning. 3 passengers require special handling assistance. Narrow-body aircraft. Flight ZZ1137 CDG to OSL.",
   "case_status": "resolved",
-  "model_id": "fake-hash-v1"
+  "model_id": "amazon.titan-embed-text-v2:0"
 }

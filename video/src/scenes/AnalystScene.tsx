@@ -1,119 +1,125 @@
 import React from 'react';
-import { AbsoluteFill, Easing, interpolate, useCurrentFrame } from 'remotion';
-import { ListChecks, ServerCog, ShieldCheck, Terminal } from 'lucide-react';
+import { AbsoluteFill, interpolate, Sequence, staticFile, useCurrentFrame } from 'remotion';
+import { Audio } from '@remotion/media';
+import { ListChecks, ServerCog, ShieldCheck } from 'lucide-react';
 
-import { box } from '../captures';
-import { Backdrop, Disclosure, Kicker } from '../components/Chrome';
-import { Crop } from '../components/Crop';
-import { cue } from '../timeline';
+import { box, centre, frameRect } from '../captures';
+import { Kicker } from '../components/Chrome';
+import { CamKey, ScreenCamera, ShotKey, Spot } from '../components/ScreenCamera';
+import { cue, cueSection } from '../timeline';
 import { C, FONT, MONO } from '../theme';
 
 /**
- * Ask the memory. The chat panel is the real console UI; the three layers are
- * the read-only enforcement in src/mcp/analyst.ts plus the MCP server's own
- * limits; the terminal line is the real output of scripts/analyst-guardrails.mjs.
- * The analyst itself needs CockroachDB Cloud's Managed MCP Server, so no
- * answer is shown — the badge says so.
+ * Ask the memory, on the live demo: the question goes in, Nova Lite writes
+ * the SQL, it runs through CockroachDB's Managed MCP Server, and the answer
+ * comes back with the query and the rows it read. The three read-only layers
+ * are src/mcp/analyst.ts's allowlist and statement check plus the server's
+ * own limits.
  */
 
-const c = (w: string, edge: 'start' | 'end' = 'start') => cue('analyst', 's13-analyst', w, edge);
+const c = (id: string, w: string, edge: 'start' | 'end' = 'start') => cue('analyst', id, w, edge);
 const clamp = { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' } as const;
 
 const LAYERS = [
   { icon: ListChecks, t: 'Tool allowlist', s: 'select_query · get_table_schema · list_tables' },
-  { icon: ShieldCheck, t: 'Statement check', s: 'SELECT / WITH only · no chaining · no DDL or DML · no system schemas' },
-  { icon: ServerCog, t: 'MCP server limits', s: 'one statement per call · 20 s timeout · 10 KiB response cap' },
+  { icon: ShieldCheck, t: 'Statement check', s: 'SELECT / WITH only · no chaining · no DDL or DML' },
+  { icon: ServerCog, t: 'MCP server limits', s: 'one statement per call · 20 s timeout · 10 KiB cap' },
 ];
 
 export const AnalystScene: React.FC = () => {
   const frame = useCurrentFrame();
-  const english = c('English:');
-  const writes = c('writes');
-  const mcp = c('MCP');
-  const readOnly = c('read-only');
-  const guard = c('guardrails.');
+  const english = c('s13-analyst', 'English.', 'end');
+  const click = english + 4;
+  const sql = c('s13-analyst', 'SQL');
+  const mcp = c('s13-analyst', 'MCP');
+  const readOnly = c('s13-analyst', 'read-only');
+  const s13b = cueSection('analyst', 's13b-answer');
+  const answer = c('s13b-answer', 'answer');
+  const rows = c('s13b-answer', 'rows');
+  const end = cueSection('analyst', 's13b-answer', 'end');
 
-  const chatIn = interpolate(frame, [6, 26], [0, 1], { ...clamp, easing: Easing.out(Easing.cubic) });
-  const layerAt = [writes, readOnly, guard - 6];
+  const shots: ShotKey[] = [
+    { from: 0, shot: '21-chat' },
+    { from: click + 3, shot: '22-chat-thinking', fade: 5 },
+    { from: click + 66, shot: '23-chat-answer', fade: 8 },
+  ];
+
+  const chatView = frameRect(box('21-chat', 'chatwin'), 1.0);
+  // Answer at the top, returned rows well clear of the captions.
+  const closeView = { x: 640, y: 203, w: 800, h: 450 };
+  const cams: CamKey[] = [
+    { at: 0, view: chatView },
+    { at: s13b - 10, view: closeView, dur: 26 },
+  ];
+
+  const sugg = centre(box('21-chat', 'sugg'));
+  const cursors = [
+    {
+      from: 8,
+      to: click + 14,
+      keys: [
+        { at: 10, x: sugg.x - 220, y: sugg.y + 160 },
+        { at: click - 6, x: sugg.x - 60, y: sugg.y, dur: 24 },
+        { at: click, x: sugg.x - 60, y: sugg.y, dur: 1, click: true },
+      ],
+    },
+  ];
+
+  const spots: Spot[] = [
+    { from: sql, to: mcp - 4, rect: box('24-chat-sql', 'sql'), label: 'SQL written by Nova Lite', side: 'left', pad: 6, dim: 0.45 },
+    { from: mcp, to: s13b - 12, rect: box('23-chat-answer', 'qtoggle'), label: '1 query · read-only via MCP', side: 'left', pad: 6, dim: 0.45 },
+    { from: answer, to: rows - 4, rect: box('23-chat-answer', 'answer'), pad: 6 },
+    { from: rows, to: end + 20, rect: box('24-chat-sql', 'rows'), label: 'The rows behind the answer', side: 'left', pad: 6, dim: 0.5 },
+  ];
+
+  const panel = interpolate(frame, [readOnly - 6, readOnly + 8, s13b - 14, s13b - 2], [0, 1, 1, 0], clamp);
 
   return (
     <AbsoluteFill>
-      <Backdrop />
-      <AbsoluteFill style={{ flexDirection: 'row', alignItems: 'center', padding: '120px 120px 170px', gap: 90 }}>
-        <div style={{ perspective: 1800, opacity: chatIn }}>
-          <div style={{ transform: `rotateY(${8 - chatIn * 4}deg) translateX(${(1 - chatIn) * -40}px)` }}>
-            <Crop shot="21-chat" rect={box('21-chat', 'chatwin')} width={600} style={{ borderRadius: 24 }} />
-          </div>
-        </div>
+      <ScreenCamera shots={shots} cams={cams} cursors={cursors} spots={spots} />
 
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 22, fontFamily: FONT }}>
-          <div style={{ opacity: interpolate(frame, [english - 4, english + 10], [0, 1], clamp) }}>
-            <div style={{ fontSize: 60, fontWeight: 800, color: C.text, letterSpacing: -1.2, lineHeight: 1.1 }}>
-              Plain-English questions,
-              <br />
-              <span style={{ color: C.emerald }}>model-written SQL</span>
-            </div>
-            <div style={{ display: 'flex', gap: 14, marginTop: 20, opacity: interpolate(frame, [mcp - 4, mcp + 8], [0, 1], clamp) }}>
-              <Chip text="CockroachDB Managed MCP Server" tone={C.violet} />
-              <Chip text="never touches the app's pg pool" tone={C.blue} />
-            </div>
-          </div>
-
-          {LAYERS.map((l, i) => {
-            const o = interpolate(frame, [layerAt[i] - 4, layerAt[i] + 10], [0, 1], clamp);
-            const Icon = l.icon;
-            return (
-              <div
-                key={l.t}
-                style={{
-                  opacity: o,
-                  translate: `${(1 - o) * 30}px 0`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 20,
-                  padding: '18px 24px',
-                  borderRadius: 16,
-                  background: 'rgba(24,24,27,0.95)',
-                  border: `1px solid ${C.line}`,
-                }}
-              >
-                <span style={{ fontFamily: MONO, fontWeight: 700, fontSize: 24, color: C.bg, background: C.emerald, borderRadius: 8, padding: '4px 11px' }}>{i + 1}</span>
-                <Icon size={36} color={C.emerald} strokeWidth={2.2} />
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  <span style={{ fontSize: 32, fontWeight: 700, color: C.text }}>{l.t}</span>
-                  <span style={{ fontSize: 24, color: C.muted }}>{l.s}</span>
+      {panel > 0 && (
+        <AbsoluteFill style={{ opacity: panel, background: 'linear-gradient(90deg, rgba(9,9,11,0.94) 0%, rgba(9,9,11,0.9) 52%, transparent 66%)' }}>
+          <div style={{ position: 'absolute', left: 100, top: 230, width: 900, display: 'flex', flexDirection: 'column', gap: 20, fontFamily: FONT }}>
+            <div style={{ fontSize: 54, fontWeight: 800, color: C.text, letterSpacing: -1.2 }}>Read-only, enforced by the app</div>
+            {LAYERS.map((l, i) => {
+              const o = interpolate(frame, [readOnly + i * 6, readOnly + 10 + i * 6], [0, 1], clamp);
+              const Icon = l.icon;
+              return (
+                <div
+                  key={l.t}
+                  style={{
+                    opacity: o,
+                    translate: `${(1 - o) * -24}px 0`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 20,
+                    padding: '18px 24px',
+                    borderRadius: 16,
+                    background: 'rgba(24,24,27,0.95)',
+                    border: `1px solid ${C.line}`,
+                  }}
+                >
+                  <span style={{ fontFamily: MONO, fontWeight: 700, fontSize: 24, color: C.bg, background: C.emerald, borderRadius: 8, padding: '4px 11px' }}>{i + 1}</span>
+                  <Icon size={36} color={C.emerald} strokeWidth={2.2} />
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    <span style={{ fontSize: 32, fontWeight: 700, color: C.text }}>{l.t}</span>
+                    <span style={{ fontSize: 24, color: C.muted }}>{l.s}</span>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-
-          <div
-            style={{
-              opacity: interpolate(frame, [guard + 2, guard + 14], [0, 1], clamp),
-              display: 'flex',
-              alignItems: 'center',
-              gap: 16,
-              padding: '16px 22px',
-              borderRadius: 14,
-              background: '#050506',
-              border: `1px solid ${C.surface2}`,
-              fontFamily: MONO,
-              fontSize: 25,
-            }}
-          >
-            <Terminal size={28} color={C.dim} />
-            <span style={{ color: C.dim }}>node scripts/analyst-guardrails.mjs</span>
-            <span style={{ color: C.emerald, fontWeight: 700, marginLeft: 'auto' }}>All 20 guardrail cases held.</span>
+              );
+            })}
           </div>
-        </div>
-      </AbsoluteFill>
+        </AbsoluteFill>
+      )}
 
       <Kicker n="03" title="Ask the memory" from={0} />
-      <Disclosure text="Needs CockroachDB Cloud's Managed MCP Server, so no live answer in this local recording" from={0} />
+      <Sequence from={click - 1} durationInFrames={10}>
+        <Audio src={staticFile('sfx/click.wav')} volume={0.55} />
+      </Sequence>
+      <Sequence from={click + 66} durationInFrames={24}>
+        <Audio src={staticFile('sfx/confirm.wav')} volume={0.22} />
+      </Sequence>
     </AbsoluteFill>
   );
 };
-
-const Chip: React.FC<{ text: string; tone: string }> = ({ text, tone }) => (
-  <span style={{ padding: '10px 18px', borderRadius: 12, border: `1px solid ${tone}88`, background: `${tone}18`, color: C.text, fontSize: 25, fontWeight: 600 }}>{text}</span>
-);

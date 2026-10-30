@@ -67,7 +67,7 @@
     {
       "id": "s05-plan",
       "scene": "demo",
-      "text": "One click: the agent embeds the case, finds similar past disruptions, and proposes a plan that cites its precedents.",
+      "text": "One click: the agent embeds the case, finds similar past disruptions, and Nova Lite proposes a plan that cites its precedents.",
       "speed": 1.1
     },
     {
@@ -79,7 +79,7 @@
     {
       "id": "s07-precedent",
       "scene": "demo",
-      "text": "Open a precedent to see what the desk did last time, and how it turned out. Cases that went badly come back too, as warnings.",
+      "text": "Open a precedent to see what the desk did last time, and how it turned out. Mixed results come back too, with what went wrong.",
       "speed": 1.0
     },
     {
@@ -91,7 +91,7 @@
     {
       "id": "s09-audit",
       "scene": "demo",
-      "text": "Every run is logged: the planner, here an offline stand-in for Nova Lite, its latency, and the exact cases it retrieved.",
+      "text": "Every run is logged: the model, here Amazon Nova Lite, its token counts and latency, and the exact cases it retrieved.",
       "speed": 1.1
     },
     {
@@ -115,8 +115,14 @@
     {
       "id": "s13-analyst",
       "scene": "analyst",
-      "text": "You can also question the memory in plain English: the model writes SQL and runs it through CockroachDB's managed MCP server, read-only by the app's own guardrails.",
+      "text": "You can also question the memory in plain English. Nova Lite writes the SQL and runs it through CockroachDB's managed MCP server, read-only by the app's own guardrails.",
       "speed": 1.05
+    },
+    {
+      "id": "s13b-answer",
+      "scene": "analyst",
+      "text": "The answer arrives with the query and the rows behind it: weather, at 3.45.",
+      "speed": 1.0
     },
     {
       "id": "s14-db",

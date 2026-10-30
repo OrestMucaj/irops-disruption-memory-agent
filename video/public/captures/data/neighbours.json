@@ -1,0 +1,79 @@
+{
+  "flight_no": "ZZ4381",
+  "cause": "weather",
+  "delay_minutes": "128",
+  "before": [
+    {
+      "flight_no": "ZZ4913",
+      "cause": "weather",
+      "delay_minutes": 153,
+      "outcome_rating": 3,
+      "distance": "0.1094"
+    },
+    {
+      "flight_no": "ZZ2638",
+      "cause": "crew",
+      "delay_minutes": 140,
+      "outcome_rating": 2,
+      "distance": "0.1255"
+    },
+    {
+      "flight_no": "ZZ1467",
+      "cause": "weather",
+      "delay_minutes": 122,
+      "outcome_rating": 3,
+      "distance": "0.1255"
+    },
+    {
+      "flight_no": "ZZ4445",
+      "cause": "crew",
+      "delay_minutes": 141,
+      "outcome_rating": 5,
+      "distance": "0.1294"
+    },
+    {
+      "flight_no": "ZZ4137",
+      "cause": "weather",
+      "delay_minutes": 130,
+      "outcome_rating": 3,
+      "distance": "0.1432"
+    }
+  ],
+  "after": [
+    {
+      "flight_no": "ZZ1137",
+      "cause": "weather",
+      "delay_minutes": 190,
+      "outcome_rating": 4,
+      "distance": "0.0815"
+    },
+    {
+      "flight_no": "ZZ4913",
+      "cause": "weather",
+      "delay_minutes": 153,
+      "outcome_rating": 3,
+      "distance": "0.1094"
+    },
+    {
+      "flight_no": "ZZ2638",
+      "cause": "crew",
+      "delay_minutes": 140,
+      "outcome_rating": 2,
+      "distance": "0.1255"
+    },
+    {
+      "flight_no": "ZZ1467",
+      "cause": "weather",
+      "delay_minutes": 122,
+      "outcome_rating": 3,
+      "distance": "0.1255"
+    },
+    {
+      "flight_no": "ZZ4445",
+      "cause": "crew",
+      "delay_minutes": 141,
+      "outcome_rating": 5,
+      "distance": "0.1294"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "answer": "The cause with the worst average outcome rating is \"weather\" with an average rating of 3.45.",
+  "meta": "1 query · 2049ms · 2 model turn(s) · read-only via MCP",
+  "queries": [
+    {
+      "head": "select_query214ms",
+      "sql": "SELECT cause, ROUND(AVG(outcome_rating), 2) AS avg_outcome_rating FROM disruption_cases dc JOIN resolutions r ON dc.id = r.case_id GROUP BY cause ORDER BY avg_outcome_rating ASC LIMIT 200",
+      "rows": "{\"rows\":[{\"cause\":\"weather\",\"avg_outcome_rating\":3.45},{\"cause\":\"atc\",\"avg_outcome_rating\":3.63},{\"cause\":\"crew\",\"avg_outcome_rating\":3.63},{\"cause\":\"knock_on\",\"avg_outcome_rating\":3.67},{\"cause\":\"technical\",\"avg_outcome_rating\":3.89}]}"
+    }
+  ]
+}
