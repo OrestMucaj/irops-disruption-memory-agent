@@ -1,0 +1,6 @@
+[
+ "\u2022 vector search",
+ "table: case_embeddings@idx_case_embeddings_status_vec",
+ "target count: 5",
+ "prefix spans: [/'resolved' - /'resolved']"
+]

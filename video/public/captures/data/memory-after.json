@@ -1,0 +1,156 @@
+{
+  "recentResolutions": [
+    {
+      "id": "f2cc7ca4-1530-4705-a1ba-940d5d7dc72e",
+      "flight_no": "ZZ1137",
+      "cause": "weather",
+      "delay_minutes": "190",
+      "outcome_rating": 4,
+      "outcome_notes": "Rebooked the 8 flagged passengers onto the evening wave, then worked the remaining misconnections at the transfer desk by connection buffer. Most onward journeys recovered the same day.",
+      "resolved_at": "2026-10-30T10:51:29.391Z",
+      "embedded": true
+    },
+    {
+      "id": "9f69fd03-2812-4446-b5a5-6d56c78c6ff2",
+      "flight_no": "ZZ3043",
+      "cause": "technical",
+      "delay_minutes": "259",
+      "outcome_rating": 3,
+      "outcome_notes": "No triage was applied, so passengers were handled first-come-first-served and several priority passengers missed onward options.",
+      "resolved_at": "2026-07-24T15:54:00.000Z",
+      "embedded": true
+    },
+    {
+      "id": "225a90d4-4d08-475c-9390-56d66cee96ff",
+      "flight_no": "ZZ1085",
+      "cause": "weather",
+      "delay_minutes": "145",
+      "outcome_rating": 2,
+      "outcome_notes": "No triage was applied, so passengers were handled first-come-first-served and several priority passengers missed onward options.",
+      "resolved_at": "2026-07-23T22:27:00.000Z",
+      "embedded": true
+    },
+    {
+      "id": "b28b7db8-88cd-4152-b346-5c77ca8db004",
+      "flight_no": "ZZ1176",
+      "cause": "technical",
+      "delay_minutes": "237",
+      "outcome_rating": 4,
+      "outcome_notes": "Pushed all 53 misconnections onto the next available wave after a 237-minute technical delay. Most connections held and the desk stayed ahead of the queue.",
+      "resolved_at": "2026-07-23T19:11:00.000Z",
+      "embedded": true
+    },
+    {
+      "id": "285b1cd6-b4cf-4e13-965b-fcbc51cdcaf1",
+      "flight_no": "ZZ4469",
+      "cause": "crew",
+      "delay_minutes": "89",
+      "outcome_rating": 4,
+      "outcome_notes": "Pushed all 12 misconnections onto the next available wave after 89 minutes lost sourcing a legal crew. Most connections held and the desk stayed ahead of the queue.",
+      "resolved_at": "2026-07-22T22:30:00.000Z",
+      "embedded": true
+    },
+    {
+      "id": "2b47cee4-6c6e-48c5-a3f9-ef17a1d9aeb2",
+      "flight_no": "ZZ2852",
+      "cause": "crew",
+      "delay_minutes": "180",
+      "outcome_rating": 3,
+      "outcome_notes": "Rebooked what could be rebooked and put the remaining 87 passengers up overnight after 180 minutes lost sourcing a legal crew. Acceptable outcome; the queue built before it cleared.",
+      "resolved_at": "2026-07-21T14:25:00.000Z",
+      "embedded": true
+    },
+    {
+      "id": "b5b071ec-d6f2-44d4-9d2e-1eb4369e8eb9",
+      "flight_no": "ZZ3225",
+      "cause": "technical",
+      "delay_minutes": "274",
+      "outcome_rating": 5,
+      "outcome_notes": "Rebooked the 16 misconnecting passengers onto later services after the 274-minute defect rectification. The recovery closed out clean.",
+      "resolved_at": "2026-07-15T07:57:00.000Z",
+      "embedded": true
+    },
+    {
+      "id": "8cc917fd-2a19-44c5-b792-ac805e2ebddd",
+      "flight_no": "ZZ1509",
+      "cause": "crew",
+      "delay_minutes": "96",
+      "outcome_rating": 5,
+      "outcome_notes": "Pushed all 6 misconnections onto the next available wave after 96 minutes lost sourcing a legal crew. Every connection held, including all 13 priority passengers.",
+      "resolved_at": "2026-06-27T08:28:00.000Z",
+      "embedded": true
+    },
+    {
+      "id": "d873a60e-fceb-4bbe-83ab-eb5d0169522b",
+      "flight_no": "ZZ1912",
+      "cause": "technical",
+      "delay_minutes": "352",
+      "outcome_rating": 4,
+      "outcome_notes": "Pushed all 48 misconnections onto the next available wave after 352 minutes on stand waiting for engineering. Most connections held and the desk stayed ahead of the queue.",
+      "resolved_at": "2026-06-26T16:50:00.000Z",
+      "embedded": true
+    },
+    {
+      "id": "7299ada7-caed-4768-b578-d526fc5e24d1",
+      "flight_no": "ZZ220",
+      "cause": "atc",
+      "delay_minutes": "71",
+      "outcome_rating": 3,
+      "outcome_notes": "A full triage exercise was run for a handful of affected passengers, delaying simpler handling.",
+      "resolved_at": "2026-06-22T06:04:00.000Z",
+      "embedded": true
+    },
+    {
+      "id": "f9fe4046-83ae-4ea3-a3ec-627d969b642e",
+      "flight_no": "ZZ3665",
+      "cause": "crew",
+      "delay_minutes": "86",
+      "outcome_rating": 4,
+      "outcome_notes": "Rebooked the 3 misconnecting passengers onto later services after a 86-minute crew rotation gap. Most connections held and the desk stayed ahead of the queue.",
+      "resolved_at": "2026-06-16T15:10:00.000Z",
+      "embedded": true
+    },
+    {
+      "id": "c8d96fd9-5dd4-4003-8152-7e22b7dfa074",
+      "flight_no": "ZZ217",
+      "cause": "weather",
+      "delay_minutes": "110",
+      "outcome_rating": 5,
+      "outcome_notes": "Rebooked the 26 misconnecting passengers onto later services after a 110-minute wait for the front to clear. Nothing was left on the ground and no complaints were logged.",
+      "resolved_at": "2026-06-13T16:12:00.000Z",
+      "embedded": true
+    }
+  ],
+  "mostCitedPrecedents": [
+    {
+      "id": "1c3d3ae7-9116-4a5c-afbd-b828805de718",
+      "citations": "9",
+      "flight_no": "ZZ1467",
+      "cause": "weather",
+      "delay_minutes": "122",
+      "outcome_rating": 3
+    }
+  ],
+  "stats": {
+    "total_cases": "84",
+    "resolved_cases": "81",
+    "embedded_cases": "84",
+    "embedded_resolutions": "81",
+    "total_proposals": "9",
+    "approved": "9",
+    "rejected": "0",
+    "edited": "0"
+  },
+  "recentRuns": [
+    {
+      "id": "e0b88e52-edc0-4cd7-adcd-bc3a999f2079",
+      "case_id": "f2cc7ca4-1530-4705-a1ba-940d5d7dc72e",
+      "model_id": "heuristic-playbook-v1",
+      "prompt_tokens": "2177",
+      "completion_tokens": "532",
+      "latency_ms": "58",
+      "error": null,
+      "created_at": "2026-10-30T10:50:58.428Z"
+    }
+  ]
+}

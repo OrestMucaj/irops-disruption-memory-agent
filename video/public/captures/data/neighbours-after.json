@@ -1,0 +1,37 @@
+[
+  {
+    "flight_no": "ZZ725",
+    "cause": "weather",
+    "delay_minutes": "207",
+    "outcome_rating": 3,
+    "distance": "0.0824"
+  },
+  {
+    "flight_no": "ZZ1124",
+    "cause": "crew",
+    "delay_minutes": "130",
+    "outcome_rating": 1,
+    "distance": "0.1111"
+  },
+  {
+    "flight_no": "ZZ1137",
+    "cause": "weather",
+    "delay_minutes": "190",
+    "outcome_rating": 4,
+    "distance": "0.1124"
+  },
+  {
+    "flight_no": "ZZ1591",
+    "cause": "weather",
+    "delay_minutes": "199",
+    "outcome_rating": 4,
+    "distance": "0.1176"
+  },
+  {
+    "flight_no": "ZZ4749",
+    "cause": "technical",
+    "delay_minutes": "84",
+    "outcome_rating": 3,
+    "distance": "0.1293"
+  }
+]

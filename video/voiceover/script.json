@@ -1,0 +1,146 @@
+{
+  "voiceId": "dXtC3XhB9GtPusIpNtQx",
+  "voiceName": "Hale - Smooth, Confident and Persuasive",
+  "model": "eleven_multilingual_v2",
+  "settings": {
+    "stability": 0.5,
+    "similarity_boost": 0.8,
+    "style": 0.2,
+    "use_speaker_boost": true,
+    "speed": 1.0
+  },
+  "pronunciations": [
+    [
+      "IROPS",
+      "eye-rops"
+    ],
+    [
+      "ZZ1137",
+      "zee-zee eleven thirty-seven"
+    ],
+    [
+      "CockroachDB's",
+      "Cockroach D-B's"
+    ],
+    [
+      "CockroachDB",
+      "Cockroach D-B"
+    ],
+    [
+      "MCP",
+      "M-C-P"
+    ],
+    [
+      "SQL",
+      "sequel"
+    ],
+    [
+      "S3",
+      "S-three"
+    ]
+  ],
+  "sections": [
+    {
+      "id": "s01-hook",
+      "scene": "hook",
+      "text": "When a flight is disrupted, every minute counts. What if every disruption you'd already solved could help solve the next one?",
+      "speed": 1.0
+    },
+    {
+      "id": "s02-problem",
+      "scene": "intro",
+      "text": "Ops desks handle disruptions every day. Systems keep the records, but not the judgement: what actually worked last time.",
+      "speed": 1.05
+    },
+    {
+      "id": "s03-reveal",
+      "scene": "intro",
+      "text": "Meet the IROPS Disruption Memory Agent. Every resolved disruption becomes precedent for the next one.",
+      "speed": 1.05
+    },
+    {
+      "id": "s04-console",
+      "scene": "demo",
+      "text": "Here's the console. Flight ZZ1137: a hundred and ninety minutes late, twenty-three passengers misconnecting.",
+      "speed": 1.1
+    },
+    {
+      "id": "s05-plan",
+      "scene": "demo",
+      "text": "One click: the agent embeds the case, finds similar past disruptions, and proposes a plan that cites its precedents.",
+      "speed": 1.1
+    },
+    {
+      "id": "s06-guardrail",
+      "scene": "demo",
+      "text": "Code checks the plan too: stranded passengers left uncovered are flagged before anyone approves.",
+      "speed": 1.05
+    },
+    {
+      "id": "s07-precedent",
+      "scene": "demo",
+      "text": "Open a precedent to see what the desk did last time, and how it turned out. Cases that went badly come back too, as warnings.",
+      "speed": 1.0
+    },
+    {
+      "id": "s08-approve",
+      "scene": "demo",
+      "text": "Nothing executes automatically. Each action is a proposal a person approves, edits or rejects, and every decision is recorded.",
+      "speed": 1.1
+    },
+    {
+      "id": "s09-audit",
+      "scene": "demo",
+      "text": "Every run is logged: the planner, here an offline stand-in for Nova Lite, its latency, and the exact cases it retrieved.",
+      "speed": 1.1
+    },
+    {
+      "id": "s10-loop",
+      "scene": "loop",
+      "text": "This loop is the heart of the product. Each disruption becomes a summary and an embedding. Similar resolved cases are retrieved, the agent proposes, and a person decides.",
+      "speed": 1.1
+    },
+    {
+      "id": "s11-close",
+      "scene": "loop",
+      "text": "Record the outcome, and it's written with its embedding in the same transaction that turns the case into precedent. Search for a similar weather disruption now, and ZZ1137 comes back.",
+      "speed": 1.1
+    },
+    {
+      "id": "s12-chatbot",
+      "scene": "loop",
+      "text": "Even rejected proposals are kept. Unlike a chatbot, what it recommends tomorrow depends on what it recorded today.",
+      "speed": 1.05
+    },
+    {
+      "id": "s13-analyst",
+      "scene": "analyst",
+      "text": "You can also question the memory in plain English: the model writes SQL and runs it through CockroachDB's managed MCP server, read-only by the app's own guardrails.",
+      "speed": 1.05
+    },
+    {
+      "id": "s14-db",
+      "scene": "engineering",
+      "text": "Under the hood, records and embeddings live in one CockroachDB database and commit in the same transaction: no sync job, no drift.",
+      "speed": 1.1
+    },
+    {
+      "id": "s15-index",
+      "scene": "engineering",
+      "text": "A case-status prefix on the vector index filters to resolved cases inside the index itself.",
+      "speed": 1.05
+    },
+    {
+      "id": "s16-aws",
+      "scene": "engineering",
+      "text": "On AWS, Bedrock provides Titan embeddings and Nova Lite reasoning, Lambda runs the agent, and S3 serves the console, scaling to zero when idle.",
+      "speed": 1.1
+    },
+    {
+      "id": "s17-close",
+      "scene": "close",
+      "text": "Every disruption handled today makes the next one easier to handle.",
+      "speed": 1.0
+    }
+  ]
+}
