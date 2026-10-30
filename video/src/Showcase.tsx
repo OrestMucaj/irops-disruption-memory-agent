@@ -80,14 +80,27 @@ export const Showcase: React.FC = () => (
   </AbsoluteFill>
 );
 
-/** Music bed, ducked under the narration with short ramps either side of each line. */
+/**
+ * Spans of narration the music ducks under. Lines less than HOLD apart share
+ * one span, so the bed holds through a short pause instead of swelling and
+ * dipping again between them.
+ */
+const HOLD = 1.1;
+const DUCK_SPANS = sections.reduce<[number, number][]>((spans, s) => {
+  const a = s.at + s.speechStart;
+  const b = s.at + s.speechEnd;
+  const last = spans[spans.length - 1];
+  if (last && a - last[1] < HOLD) last[1] = b;
+  else spans.push([a, b]);
+  return spans;
+}, []);
+
+/** Music bed, ducked under the narration with short ramps either side of each span. */
 const Music: React.FC = () => {
   const frame = useCurrentFrame();
   const t = frame / FPS;
   let duck = 0;
-  for (const s of sections) {
-    const a = s.at + s.speechStart;
-    const b = s.at + s.speechEnd;
+  for (const [a, b] of DUCK_SPANS) {
     duck = Math.max(duck, interpolate(t, [a - 0.3, a, b, b + 0.45], [0, 1, 1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }));
   }
   const ends = interpolate(frame, [0, 6, TOTAL_FRAMES - 75, TOTAL_FRAMES - 4], [0.6, 1, 1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
