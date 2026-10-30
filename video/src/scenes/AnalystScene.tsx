@@ -47,11 +47,12 @@ export const AnalystScene: React.FC = () => {
   ];
 
   const chatView = frameRect(box('21-chat', 'chatwin'), 0.94);
-  // Answer at the top, returned rows well clear of the captions.
-  const closeView = { x: 640, y: 203, w: 800, h: 450 };
+  // The question, answer, SQL and rows, clear of the captions; wide enough to
+  // keep the memory page beside the chat.
+  const closeView = { x: 480, y: 150, w: 960, h: 540 };
   const cams: CamKey[] = [
     { at: 0, view: chatView },
-    { at: s13b - 10, view: closeView, dur: 26 },
+    { at: s13b - 10, view: closeView, dur: 36 },
   ];
 
   const sugg = centre(box('21-chat', 'sugg'));
@@ -116,7 +117,7 @@ export const AnalystScene: React.FC = () => {
         </AbsoluteFill>
       )}
 
-      <Kicker n="03" title="Ask the memory" from={0} />
+      <Kicker n="03" title="Ask the memory" from={0} to={click + 20} />
       <Sequence from={click - 1} durationInFrames={10}>
         <Audio src={staticFile('sfx/click.wav')} volume={0.55} />
       </Sequence>

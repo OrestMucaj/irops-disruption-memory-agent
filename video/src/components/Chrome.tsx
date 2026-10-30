@@ -64,10 +64,19 @@ export const LogoChip: React.FC<{ size?: number }> = ({ size = 120 }) => (
   </div>
 );
 
-/** Chapter kicker, top left. */
-export const Kicker: React.FC<{ n: string; title: string; from?: number }> = ({ n, title, from = 0 }) => {
+const clamp = { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' } as const;
+
+/** Fades in after `from`; with `to`, fades out again from there. */
+const presence = (frame: number, inAt: number, to?: number) =>
+  Math.min(interpolate(frame, [inAt, inAt + 14], [0, 1], clamp), to === undefined ? 1 : interpolate(frame, [to, to + 14], [1, 0], clamp));
+
+/**
+ * Chapter kicker, top left. Over the console it takes a `to`, so it doesn't sit
+ * on the app's own header for the whole chapter.
+ */
+export const Kicker: React.FC<{ n: string; title: string; from?: number; to?: number }> = ({ n, title, from = 0, to }) => {
   const frame = useCurrentFrame();
-  const o = interpolate(frame, [from + 6, from + 20], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+  const o = presence(frame, from + 6, to);
   return (
     <div
       style={{
@@ -92,11 +101,11 @@ export const Kicker: React.FC<{ n: string; title: string; from?: number }> = ({ 
   );
 };
 
-/** Disclosure badge, top right. */
-export const Disclosure: React.FC<{ text: string; from?: number }> = ({ text, from = 0 }) => {
+/** Disclosure badge, top right; `to` as for the kicker. */
+export const Disclosure: React.FC<{ text: string; from?: number; to?: number }> = ({ text, from = 0, to }) => {
   const frame = useCurrentFrame();
   const { width } = useVideoConfig();
-  const o = interpolate(frame, [from + 10, from + 24], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+  const o = presence(frame, from + 10, to);
   return (
     <div
       style={{

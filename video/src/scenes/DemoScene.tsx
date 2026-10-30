@@ -2,7 +2,7 @@ import React from 'react';
 import { AbsoluteFill, Easing, interpolate, Sequence, staticFile, useCurrentFrame } from 'remotion';
 import { Audio } from '@remotion/media';
 
-import { box, centre, FULL, frameRect, Rect } from '../captures';
+import { box, centre, FULL, Rect, VIEW_H, VIEW_W } from '../captures';
 import { Backdrop, Disclosure, Kicker } from '../components/Chrome';
 import { CamKey, ScreenCamera, ShotKey, Spot } from '../components/ScreenCamera';
 import { cue, cueSection } from '../timeline';
@@ -43,7 +43,6 @@ export const DemoScene: React.FC = () => {
   const s6 = sec('s06-guardrail');
   const e6 = sec('s06-guardrail', 'end');
 
-  const s7 = sec('s07-precedent');
   const open = c('s07-precedent', 'Open');
   const clickChip = c('s07-precedent', 'precedent') + 3;
   const desk = c('s07-precedent', 'desk');
@@ -69,7 +68,8 @@ export const DemoScene: React.FC = () => {
   const shots: ShotKey[] = [
     { from: 0, shot: '01-caseload' },
     { from: ninety - 4, shot: '02-caseload-hover', fade: 5 },
-    { from: clickRow + 3, shot: '03-detail-empty' },
+    // A page change: a near-cut, so the two dense pages don't blend.
+    { from: clickRow + 3, shot: '03-detail-empty', fade: 3 },
     { from: one + 4, shot: '04-detail-empty-hover', fade: 5 },
     { from: clickRecs + 3, shot: '05-running', fade: 5 },
     { from: proposes, shot: '06-plan', fade: 10 },
@@ -86,25 +86,20 @@ export const DemoScene: React.FC = () => {
   ];
 
   // --- camera ----------------------------------------------------------------
-  const rowView = frameRect({ x: 258, y: 300, w: 800, h: 230 }, 0.92);
+  // Wide and steady, so the cursor can always be placed on the dashboard: the
+  // whole console while the case is picked, then the full content column
+  // (about 1.2x, the sidebar just out of frame) with only short vertical
+  // drifts between beats. Spotlights do the pointing, not zooms.
+  const column = (y: number): Rect => ({ x: 236, y, w: 1204, h: (1204 * VIEW_H) / VIEW_W });
   const cams: CamKey[] = [
     { at: 0, view: FULL },
-    { at: zz - 8, view: rowView, dur: 30 },
-    // Holds while the plan arrives (it is already fully in view), keeping the
-    // case bar clear of the pipeline chips above it.
-    { at: clickRow + 2, view: frameRect({ x: 258, y: 120, w: 1160, h: 420 }, 0.98), dur: 22 },
-    { at: cites - 6, view: frameRect({ x: 274, y: 262, w: 720, h: 190 }, 0.95), dur: 24 },
-    { at: s6 - 2, view: frameRect({ x: 274, y: 236, w: 820, h: 130 }, 0.95), dur: 22 },
-    { at: s7 - 2, view: frameRect({ x: 274, y: 250, w: 900, h: 220 }, 0.95), dur: 18 },
-    // The whole dialog, clear of the kicker above and the captions below.
-    { at: clickChip + 2, view: frameRect(box('09-precedent', 'dialog'), 0.8), dur: 22 },
-    { at: mixed - 2, view: frameRect({ x: 274, y: 420, w: 960, h: 220 }, 0.96), dur: 20 },
-    // The sticky decision bar is the last strip of the capture, so these views
-    // sit on the image's bottom edge; captions lift for this beat (Captions.tsx).
-    { at: s8 - 4, view: { x: 300, y: 191, w: 1100, h: 619 }, dur: 22 },
-    { at: every - 8, view: { x: 360, y: 135, w: 1200, h: 675 }, dur: 24 },
-    { at: s9 - 4, view: frameRect({ x: 274, y: 300, w: 1128, h: 150 }, 0.97), dur: 22 },
-    { at: exact - 2, view: frameRect({ x: 274, y: 60, w: 1128, h: 560 }, 0.98), dur: 22 },
+    { at: clickRow + 4, view: column(0), dur: 50 },
+    // The dialog sits mid-viewport; drift down so its footer clears the captions.
+    { at: clickChip + 2, view: column(56), dur: 30 },
+    // The sticky decision bar is the last strip of the capture, so this view
+    // sits on the image's bottom edge; captions lift for this beat (Captions.tsx).
+    { at: s8 - 4, view: column(121), dur: 30 },
+    { at: s9 - 4, view: column(0), dur: 30 },
   ];
 
   // --- cursor ----------------------------------------------------------------
@@ -148,10 +143,16 @@ export const DemoScene: React.FC = () => {
   const prompt = box('16-agent-run', 'promptTok');
   const completion = box('16-agent-run', 'completionTok');
   const tokenRect: Rect = { x: prompt.x, y: prompt.y, w: completion.x + completion.w - prompt.x, h: prompt.h };
+  // All five retrieved cases; the list runs on below the fold. (The tab bar is
+  // hidden under the sticky case header in this capture, so it can't be the target.)
+  const first = box('10b-retrieved-after', 'prec0');
+  const fifth = box('10b-retrieved-after', 'prec4');
+  const retrievedList: Rect = { x: first.x, y: first.y, w: first.w, h: fifth.y + fifth.h - first.y };
   const spots: Spot[] = [
     { from: zz + 4, to: ninety - 2, rect: box('01-caseload', 'row'), pad: 4 },
     { from: ninety, to: twentyThree - 2, rect: box('01-caseload', 'delay'), label: '190 min late', tone: C.red, side: 'bottom', pad: 4 },
-    { from: twentyThree, to: e4 + 2, rect: box('01-caseload', 'misconnects'), label: '23 misconnecting', tone: C.orange, side: 'bottom', pad: 4 },
+    // Gone before the click opens the case, so it never sits on the next page.
+    { from: twentyThree, to: e4 - 6, rect: box('01-caseload', 'misconnects'), label: '23 misconnecting', tone: C.orange, side: 'bottom', pad: 4 },
     {
       from: cites,
       to: e5 + 6,
@@ -193,7 +194,7 @@ export const DemoScene: React.FC = () => {
       pad: 6,
     },
     // Raised above the lifted captions, which sit between it and the bar.
-    { from: recorded + 4, to: e8 + 16, rect: box('15-approved', 'decisionbar'), label: 'All 21 decisions recorded', side: 'top', pad: 4, dim: 0.42, labelDy: -120 },
+    { from: recorded + 4, to: e8 + 16, rect: box('15-approved', 'decisionbar'), label: 'All 21 decisions recorded', side: 'top', pad: 4, dim: 0.42, labelDy: -130 },
     {
       from: model,
       to: tokens - 2,
@@ -204,7 +205,7 @@ export const DemoScene: React.FC = () => {
     },
     { from: tokens, to: latency - 2, rect: tokenRect, label: 'Real token counts, every run', side: 'bottom', pad: 4 },
     { from: latency, to: exact - 6, rect: box('16-agent-run', 'latency'), pad: 4 },
-    { from: exact + 6, to: e9 + 22, rect: box('10b-retrieved-after', 'tabPrec'), label: 'The 5 cases this plan was built from', side: 'bottom', pad: 4, dim: 0.3 },
+    { from: exact + 6, to: e9 + 22, rect: retrievedList, label: 'The 5 cases this plan was built from', side: 'top', pad: 6, dim: 0.45 },
   ];
 
   // --- window framing at the start --------------------------------------------
@@ -259,8 +260,9 @@ export const DemoScene: React.FC = () => {
         </div>
       </AbsoluteFill>
 
-      <Kicker n="01" title="Product walkthrough" from={0} />
-      <Disclosure text="Recorded on the live demo · all data synthetic" from={zz} />
+      {/* Both clear once the console is flat, off the app's own header. */}
+      <Kicker n="01" title="Product walkthrough" from={0} to={zz + 45} />
+      <Disclosure text="Recorded on the live demo · all data synthetic" from={zz} to={zz + 150} />
 
       {[clickRow, clickRecs, clickChip, clickApprove].map((at) => (
         <Sequence key={at} from={at - 1} durationInFrames={10}>
