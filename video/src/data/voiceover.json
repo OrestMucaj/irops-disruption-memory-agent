@@ -6,7 +6,7 @@
   "file": "voiceover/s01-hook.mp3",
   "tempo": 1,
   "speechStart": 0,
-  "speechEnd": 7.988,
+  "speechEnd": 6.966,
   "audioDuration": 8.019592,
   "words": [
    {
@@ -32,7 +32,7 @@
    {
     "text": "disrupted,",
     "start": 0.708,
-    "end": 1.37
+    "end": 1.254
    },
    {
     "text": "every",
@@ -47,7 +47,7 @@
    {
     "text": "counts.",
     "start": 2.241,
-    "end": 2.775
+    "end": 2.659
    },
    {
     "text": "What",
@@ -112,114 +112,114 @@
    {
     "text": "one?",
     "start": 6.757,
-    "end": 7.988
+    "end": 6.966
    }
   ]
  },
  {
   "id": "s02-problem",
   "scene": "intro",
-  "text": "Ops desks handle disruptions every day. Systems keep the records, but not the judgement: what actually worked last time.",
+  "text": "Operations desks handle disruptions every day. Systems keep the records, but not the judgement: what actually worked last time.",
   "file": "voiceover/s02-problem.mp3",
-  "tempo": 1,
+  "tempo": 1.1,
   "speechStart": 0,
-  "speechEnd": 7.57,
-  "audioDuration": 7.601633,
+  "speechEnd": 7.979090909090908,
+  "audioDuration": 9.038367,
   "words": [
    {
-    "text": "Ops",
+    "text": "Operations",
     "start": 0,
-    "end": 0.325
+    "end": 0.6018181818181818
    },
    {
     "text": "desks",
-    "start": 0.372,
-    "end": 0.685
+    "start": 0.6545454545454544,
+    "end": 0.9499999999999998
    },
    {
     "text": "handle",
-    "start": 0.743,
-    "end": 1.033
+    "start": 1.0136363636363634,
+    "end": 1.319090909090909
    },
    {
     "text": "disruptions",
-    "start": 1.08,
-    "end": 1.66
+    "start": 1.3509090909090908,
+    "end": 1.9318181818181817
    },
    {
     "text": "every",
-    "start": 1.776,
-    "end": 2.09
+    "start": 2.037272727272727,
+    "end": 2.3645454545454543
    },
    {
     "text": "day.",
-    "start": 2.159,
-    "end": 2.519
+    "start": 2.417272727272727,
+    "end": 2.6809090909090907
    },
    {
     "text": "Systems",
-    "start": 2.752,
-    "end": 3.158
+    "start": 3.2509090909090905,
+    "end": 3.693636363636363
    },
    {
     "text": "keep",
-    "start": 3.204,
-    "end": 3.367
+    "start": 3.757272727272727,
+    "end": 3.9372727272727275
    },
    {
     "text": "the",
-    "start": 3.425,
-    "end": 3.495
+    "start": 3.9790909090909086,
+    "end": 4.042727272727272
    },
    {
     "text": "records,",
-    "start": 3.553,
-    "end": 4.04
+    "start": 4.095454545454545,
+    "end": 4.506363636363636
    },
    {
     "text": "but",
-    "start": 4.156,
-    "end": 4.331
+    "start": 4.812727272727272,
+    "end": 4.9818181818181815
    },
    {
     "text": "not",
-    "start": 4.412,
-    "end": 4.644
+    "start": 5.055454545454545,
+    "end": 5.298181818181818
    },
    {
     "text": "the",
-    "start": 4.702,
-    "end": 4.783
+    "start": 5.350909090909091,
+    "end": 5.4354545454545455
    },
    {
     "text": "judgement:",
-    "start": 4.853,
-    "end": 5.433
+    "start": 5.499090909090909,
+    "end": 5.952727272727272
    },
    {
     "text": "what",
-    "start": 5.666,
-    "end": 5.863
+    "start": 6.364545454545454,
+    "end": 6.554545454545454
    },
    {
     "text": "actually",
-    "start": 5.909,
-    "end": 6.351
+    "start": 6.6072727272727265,
+    "end": 7.019090909090909
    },
    {
     "text": "worked",
-    "start": 6.397,
-    "end": 6.641
+    "start": 7.060909090909091,
+    "end": 7.303636363636364
    },
    {
     "text": "last",
-    "start": 6.699,
-    "end": 6.931
+    "start": 7.377272727272727,
+    "end": 7.609999999999999
    },
    {
     "text": "time.",
-    "start": 6.966,
-    "end": 7.57
+    "start": 7.641818181818182,
+    "end": 7.979090909090908
    }
   ]
  },
@@ -230,7 +230,7 @@
   "file": "voiceover/s03-reveal.mp3",
   "tempo": 1.1,
   "speechStart": 0,
-  "speechEnd": 6.248181818181818,
+  "speechEnd": 5.952727272727272,
   "audioDuration": 6.29551,
   "words": [
    {
@@ -261,7 +261,7 @@
    {
     "text": "Agent.",
     "start": 2.0054545454545454,
-    "end": 2.5018181818181815
+    "end": 2.395454545454545
    },
    {
     "text": "Every",
@@ -306,7 +306,7 @@
    {
     "text": "one.",
     "start": 5.7309090909090905,
-    "end": 6.248181818181818
+    "end": 5.952727272727272
    }
   ]
  },
@@ -317,7 +317,7 @@
   "file": "voiceover/s04-console.mp3",
   "tempo": 1.1,
   "speechStart": 0,
-  "speechEnd": 7.557272727272728,
+  "speechEnd": 6.733636363636363,
   "audioDuration": 7.57551,
   "words": [
    {
@@ -333,7 +333,7 @@
    {
     "text": "console.",
     "start": 0.37999999999999995,
-    "end": 0.9290909090909091
+    "end": 0.8336363636363636
    },
    {
     "text": "Flight",
@@ -343,7 +343,7 @@
    {
     "text": "ZZ1137:",
     "start": 2.0263636363636364,
-    "end": 3.4509090909090903
+    "end": 3.3454545454545452
    },
    {
     "text": "a",
@@ -373,7 +373,7 @@
    {
     "text": "late,",
     "start": 4.633636363636364,
-    "end": 5.0236363636363635
+    "end": 4.929090909090909
    },
    {
     "text": "twenty-three",
@@ -388,7 +388,7 @@
    {
     "text": "misconnecting.",
     "start": 6.163636363636363,
-    "end": 7.557272727272728
+    "end": 6.733636363636363
    }
   ]
  },
@@ -399,7 +399,7 @@
   "file": "voiceover/s05-plan.mp3",
   "tempo": 1,
   "speechStart": 0,
-  "speechEnd": 8.034,
+  "speechEnd": 7.546,
   "audioDuration": 8.071837,
   "words": [
    {
@@ -410,7 +410,7 @@
    {
     "text": "click:",
     "start": 0.255,
-    "end": 0.662
+    "end": 0.522
    },
    {
     "text": "the",
@@ -435,7 +435,7 @@
    {
     "text": "case,",
     "start": 1.846,
-    "end": 2.252
+    "end": 2.229
    },
    {
     "text": "finds",
@@ -455,7 +455,7 @@
    {
     "text": "disruptions,",
     "start": 3.518,
-    "end": 4.238
+    "end": 4.133
    },
    {
     "text": "and",
@@ -505,7 +505,7 @@
    {
     "text": "precedents.",
     "start": 7.001,
-    "end": 8.034
+    "end": 7.546
    }
   ]
  },
@@ -516,7 +516,7 @@
   "file": "voiceover/s06-guardrail.mp3",
   "tempo": 1.1,
   "speechStart": 0,
-  "speechEnd": 5.783636363636363,
+  "speechEnd": 5.15090909090909,
   "audioDuration": 5.825306,
   "words": [
    {
@@ -542,7 +542,7 @@
    {
     "text": "too:",
     "start": 0.9818181818181818,
-    "end": 1.3618181818181818
+    "end": 1.2136363636363634
    },
    {
     "text": "stranded",
@@ -587,7 +587,7 @@
    {
     "text": "approves.",
     "start": 4.675454545454545,
-    "end": 5.783636363636363
+    "end": 5.15090909090909
    }
   ]
  },
@@ -598,7 +598,7 @@
   "file": "voiceover/s07-precedent.mp3",
   "tempo": 1,
   "speechStart": 0,
-  "speechEnd": 8.591,
+  "speechEnd": 7.465,
   "audioDuration": 8.620408,
   "words": [
    {
@@ -654,7 +654,7 @@
    {
     "text": "time,",
     "start": 2.392,
-    "end": 2.786
+    "end": 2.74
    },
    {
     "text": "and",
@@ -679,7 +679,7 @@
    {
     "text": "out.",
     "start": 3.727,
-    "end": 4.075
+    "end": 3.959
    },
    {
     "text": "Mixed",
@@ -704,7 +704,7 @@
    {
     "text": "too,",
     "start": 5.863,
-    "end": 6.304
+    "end": 6.13
    },
    {
     "text": "with",
@@ -724,7 +724,7 @@
    {
     "text": "wrong.",
     "start": 7.117,
-    "end": 8.591
+    "end": 7.465
    }
   ]
  },
@@ -735,7 +735,7 @@
   "file": "voiceover/s08-approve.mp3",
   "tempo": 1.1,
   "speechStart": 0,
-  "speechEnd": 8.021818181818182,
+  "speechEnd": 7.504545454545455,
   "audioDuration": 8.071837,
   "words": [
    {
@@ -751,7 +751,7 @@
    {
     "text": "automatically.",
     "start": 0.9290909090909091,
-    "end": 1.6363636363636362
+    "end": 1.5409090909090908
    },
    {
     "text": "Each",
@@ -791,7 +791,7 @@
    {
     "text": "approves,",
     "start": 3.8099999999999996,
-    "end": 4.422727272727273
+    "end": 4.327272727272727
    },
    {
     "text": "edits",
@@ -806,7 +806,7 @@
    {
     "text": "rejects,",
     "start": 5.15090909090909,
-    "end": 5.804545454545454
+    "end": 5.678181818181818
    },
    {
     "text": "and",
@@ -831,7 +831,7 @@
    {
     "text": "recorded.",
     "start": 7.113636363636363,
-    "end": 8.021818181818182
+    "end": 7.504545454545455
    }
   ]
  },
@@ -842,7 +842,7 @@
   "file": "voiceover/s09-audit.mp3",
   "tempo": 1.1,
   "speechStart": 0,
-  "speechEnd": 9.329999999999998,
+  "speechEnd": 8.295454545454545,
   "audioDuration": 9.377959,
   "words": [
    {
@@ -863,7 +863,7 @@
    {
     "text": "logged:",
     "start": 0.9290909090909091,
-    "end": 1.4354545454545453
+    "end": 1.3399999999999999
    },
    {
     "text": "the",
@@ -873,7 +873,7 @@
    {
     "text": "model,",
     "start": 1.8263636363636362,
-    "end": 2.29
+    "end": 2.1218181818181816
    },
    {
     "text": "here",
@@ -893,7 +893,7 @@
    {
     "text": "Lite,",
     "start": 3.820909090909091,
-    "end": 4.221818181818182
+    "end": 4.169090909090909
    },
    {
     "text": "its",
@@ -918,7 +918,7 @@
    {
     "text": "latency,",
     "start": 5.636363636363636,
-    "end": 6.28
+    "end": 6.131818181818182
    },
    {
     "text": "and",
@@ -948,7 +948,7 @@
    {
     "text": "retrieved.",
     "start": 7.831818181818181,
-    "end": 9.329999999999998
+    "end": 8.295454545454545
    }
   ]
  },
@@ -959,7 +959,7 @@
   "file": "voiceover/s10-loop.mp3",
   "tempo": 1.1,
   "speechStart": 0,
-  "speechEnd": 11.483636363636363,
+  "speechEnd": 10.543636363636363,
   "audioDuration": 11.52,
   "words": [
    {
@@ -1000,7 +1000,7 @@
    {
     "text": "product.",
     "start": 1.3718181818181816,
-    "end": 1.8572727272727272
+    "end": 1.7627272727272727
    },
    {
     "text": "Each",
@@ -1040,7 +1040,7 @@
    {
     "text": "embedding.",
     "start": 4.411818181818181,
-    "end": 4.96090909090909
+    "end": 4.812727272727272
    },
    {
     "text": "Similar",
@@ -1065,7 +1065,7 @@
    {
     "text": "retrieved,",
     "start": 7.1036363636363635,
-    "end": 7.736363636363635
+    "end": 7.641818181818182
    },
    {
     "text": "the",
@@ -1080,7 +1080,7 @@
    {
     "text": "proposes,",
     "start": 8.317272727272726,
-    "end": 8.95
+    "end": 8.823636363636362
    },
    {
     "text": "and",
@@ -1100,7 +1100,7 @@
    {
     "text": "decides.",
     "start": 9.942727272727272,
-    "end": 11.483636363636363
+    "end": 10.543636363636363
    }
   ]
  },
@@ -1111,7 +1111,7 @@
   "file": "voiceover/s11-close.mp3",
   "tempo": 1.05,
   "speechStart": 0,
-  "speechEnd": 12.251428571428571,
+  "speechEnd": 11.532380952380953,
   "audioDuration": 12.277551,
   "words": [
    {
@@ -1127,7 +1127,7 @@
    {
     "text": "outcome,",
     "start": 0.6523809523809524,
-    "end": 1.2276190476190474
+    "end": 1.1723809523809525
    },
    {
     "text": "and",
@@ -1207,7 +1207,7 @@
    {
     "text": "precedent.",
     "start": 5.373333333333333,
-    "end": 6.003809523809524
+    "end": 5.871428571428571
    },
    {
     "text": "Search",
@@ -1242,7 +1242,7 @@
    {
     "text": "now,",
     "start": 8.713333333333333,
-    "end": 9.1
+    "end": 8.944761904761904
    },
    {
     "text": "and",
@@ -1262,7 +1262,7 @@
    {
     "text": "back.",
     "start": 11.256190476190476,
-    "end": 12.251428571428571
+    "end": 11.532380952380953
    }
   ]
  },
@@ -1273,7 +1273,7 @@
   "file": "voiceover/s12-chatbot.mp3",
   "tempo": 1.1,
   "speechStart": 0,
-  "speechEnd": 7.7263636363636365,
+  "speechEnd": 7.049999999999999,
   "audioDuration": 7.758367,
   "words": [
    {
@@ -1299,7 +1299,7 @@
    {
     "text": "kept.",
     "start": 1.6463636363636363,
-    "end": 2.09
+    "end": 1.9845454545454542
    },
    {
     "text": "Unlike",
@@ -1314,7 +1314,7 @@
    {
     "text": "chatbot,",
     "start": 2.828181818181818,
-    "end": 3.5045454545454544
+    "end": 3.398181818181818
    },
    {
     "text": "what",
@@ -1364,7 +1364,7 @@
    {
     "text": "today.",
     "start": 6.6072727272727265,
-    "end": 7.7263636363636365
+    "end": 7.049999999999999
    }
   ]
  },
@@ -1375,7 +1375,7 @@
   "file": "voiceover/s13-analyst.mp3",
   "tempo": 1.01,
   "speechStart": 0,
-  "speechEnd": 11.402970297029702,
+  "speechEnd": 11.023762376237624,
   "audioDuration": 11.441633,
   "words": [
    {
@@ -1421,7 +1421,7 @@
    {
     "text": "English.",
     "start": 2.149504950495049,
-    "end": 2.6782178217821784
+    "end": 2.586138613861386
    },
    {
     "text": "Nova",
@@ -1486,7 +1486,7 @@
    {
     "text": "server,",
     "start": 7.954455445544555,
-    "end": 8.437623762376237
+    "end": 8.322772277227724
    },
    {
     "text": "read-only",
@@ -1516,7 +1516,7 @@
    {
     "text": "guardrails.",
     "start": 10.3,
-    "end": 11.402970297029702
+    "end": 11.023762376237624
    }
   ]
  },
@@ -1527,7 +1527,7 @@
   "file": "voiceover/s13b-answer.mp3",
   "tempo": 1.1,
   "speechStart": 0,
-  "speechEnd": 5.699090909090908,
+  "speechEnd": 4.95,
   "audioDuration": 5.720816,
   "words": [
    {
@@ -1583,12 +1583,12 @@
    {
     "text": "it:",
     "start": 2.7227272727272727,
-    "end": 2.997272727272727
+    "end": 2.86
    },
    {
     "text": "weather,",
     "start": 3.3454545454545452,
-    "end": 3.789090909090909
+    "end": 3.6727272727272724
    },
    {
     "text": "at",
@@ -1598,7 +1598,7 @@
    {
     "text": "3.45.",
     "start": 4.200909090909091,
-    "end": 5.699090909090908
+    "end": 4.95
    }
   ]
  },
@@ -1609,7 +1609,7 @@
   "file": "voiceover/s14-db.mp3",
   "tempo": 1.1,
   "speechStart": 0,
-  "speechEnd": 9.077272727272726,
+  "speechEnd": 8.401818181818182,
   "audioDuration": 9.116735,
   "words": [
    {
@@ -1625,7 +1625,7 @@
    {
     "text": "hood,",
     "start": 0.4218181818181818,
-    "end": 0.8018181818181818
+    "end": 0.6545454545454544
    },
    {
     "text": "records",
@@ -1695,7 +1695,7 @@
    {
     "text": "transaction:",
     "start": 5.54090909090909,
-    "end": 6.343636363636363
+    "end": 6.216363636363636
    },
    {
     "text": "no",
@@ -1710,7 +1710,7 @@
    {
     "text": "job,",
     "start": 7.209090909090908,
-    "end": 7.63090909090909
+    "end": 7.504545454545455
    },
    {
     "text": "no",
@@ -1720,7 +1720,7 @@
    {
     "text": "drift.",
     "start": 8,
-    "end": 9.077272727272726
+    "end": 8.401818181818182
    }
   ]
  },
@@ -1731,7 +1731,7 @@
   "file": "voiceover/s15-index.mp3",
   "tempo": 1.1,
   "speechStart": 0,
-  "speechEnd": 6.206363636363636,
+  "speechEnd": 5.235454545454545,
   "audioDuration": 6.243265,
   "words": [
    {
@@ -1807,7 +1807,7 @@
    {
     "text": "itself.",
     "start": 4.823636363636363,
-    "end": 6.206363636363636
+    "end": 5.235454545454545
    }
   ]
  },
@@ -1818,8 +1818,8 @@
   "file": "voiceover/s16-aws.mp3",
   "tempo": 1.1,
   "speechStart": 0,
-  "speechEnd": 9.92090909090909,
-  "audioDuration": 9.952653,
+  "speechEnd": 8.622727272727271,
+  "audioDuration": 9.978776,
   "words": [
    {
     "text": "On",
@@ -1829,7 +1829,7 @@
    {
     "text": "AWS,",
     "start": 0.18999999999999997,
-    "end": 0.8863636363636362
+    "end": 0.739090909090909
    },
    {
     "text": "Bedrock",
@@ -1869,7 +1869,7 @@
    {
     "text": "reasoning,",
     "start": 3.5572727272727267,
-    "end": 4.1054545454545455
+    "end": 3.958181818181818
    },
    {
     "text": "Lambda",
@@ -1889,7 +1889,7 @@
    {
     "text": "agent,",
     "start": 5.013636363636363,
-    "end": 5.382727272727273
+    "end": 5.309090909090909
    },
    {
     "text": "and",
@@ -1914,7 +1914,7 @@
    {
     "text": "console,",
     "start": 6.586363636363636,
-    "end": 7.092727272727272
+    "end": 7.071818181818181
    },
    {
     "text": "scaling",
@@ -1939,7 +1939,7 @@
    {
     "text": "idle.",
     "start": 8.327272727272726,
-    "end": 9.92090909090909
+    "end": 8.622727272727271
    }
   ]
  },
@@ -1950,7 +1950,7 @@
   "file": "voiceover/s17-close.mp3",
   "tempo": 1,
   "speechStart": 0,
-  "speechEnd": 3.947,
+  "speechEnd": 3.669,
   "audioDuration": 3.970612,
   "words": [
    {
@@ -2006,7 +2006,7 @@
    {
     "text": "handle.",
     "start": 3.286,
-    "end": 3.947
+    "end": 3.669
    }
   ]
  }

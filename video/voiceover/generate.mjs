@@ -18,9 +18,16 @@
  * Raw takes are kept in voiceover/raw/. The files the video plays are those
  * takes time-stretched with ffmpeg's pitch-preserving atempo toward
  * TARGET_WPM (never beyond MAX_TEMPO), with the word timings scaled to match.
+ *
+ * Each processed take is also cleaned and levelled:
+ *  - everything after the voice has decayed is faded to silence. ElevenLabs
+ *    sometimes starts on the next text at the very end of a take, a short
+ *    burst after the silence; the file keeps its length, so no timing moves;
+ *  - 10 ms fades at both ends, so no take starts or stops with a click;
+ *  - levelled to TARGET_LUFS with a peak limiter, so takes match each other.
  */
-import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { execFileSync, spawnSync } from 'node:child_process';
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -33,6 +40,7 @@ const ALIGN_DIR = join(ROOT, 'voiceover/alignment');
 /** Target speaking rate. Hale's natural read is ~130 wpm; ~147 suits a feed. */
 const TARGET_WPM = 147;
 const MAX_TEMPO = 1.1;
+const TARGET_LUFS = -19;
 const OUT_JSON = join(ROOT, 'src/data/voiceover.json');
 
 const key = process.env.ELEVENLABS_API_KEY;
@@ -75,7 +83,13 @@ async function tts(text, previousText, nextText, speed) {
   return res.json();
 }
 
-/** Spoken words with start/end seconds, from character alignment. */
+/**
+ * Spoken words with start/end seconds, from character alignment.
+ *
+ * `end` is where the word's last letter ends. A trailing full stop's
+ * alignment spans the pause after it, which would hold captions and the
+ * music duck too long; `endAny` keeps that span for the pacing calculation.
+ */
 function spokenWords(alignment) {
   const chars = alignment.characters;
   const starts = alignment.character_start_times_seconds;
@@ -88,9 +102,10 @@ function spokenWords(alignment) {
       current = null;
       continue;
     }
-    if (!current) current = { text: '', start: starts[i], end: ends[i] };
+    if (!current) current = { text: '', start: starts[i], end: ends[i], endAny: ends[i] };
     current.text += chars[i];
-    current.end = ends[i];
+    current.endAny = ends[i];
+    if (/[A-Za-z0-9]/.test(chars[i])) current.end = ends[i];
   }
   if (current) words.push(current);
   return words;
@@ -104,7 +119,7 @@ function displayWords(text, spoken) {
     const n = speakToken(token).split(/\s+/).length;
     const span = spoken.slice(k, k + n);
     if (span.length !== n) throw new Error(`alignment ran out at "${token}"`);
-    out.push({ text: token, start: span[0].start, end: span[n - 1].end });
+    out.push({ text: token, start: span[0].start, end: span[n - 1].end, endAny: span[n - 1].endAny });
     k += n;
   }
   if (k !== spoken.length) throw new Error(`${spoken.length - k} spoken words left unmapped`);
@@ -113,6 +128,35 @@ function displayWords(text, spoken) {
 
 const audioSeconds = (file) =>
   Number(execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', file]).toString().trim());
+
+/** Mono samples of a file, for finding where the voice stops. */
+function samples(file, sr = 16000) {
+  const buf = execFileSync('ffmpeg', ['-v', 'error', '-i', file, '-f', 'f32le', '-ac', '1', '-ar', String(sr), '-'], { maxBuffer: 1 << 28 });
+  return { x: new Float32Array(buf.buffer, buf.byteOffset, buf.length / 4), sr };
+}
+
+/** First point after `from` where the next 30 ms all sit below -50 dBFS. */
+function decayEnd({ x, sr }, from, cap) {
+  const win = Math.round(sr * 0.01);
+  const db = (i) => {
+    let sum = 0;
+    for (let k = i; k < i + win && k < x.length; k += 1) sum += x[k] * x[k];
+    return 10 * Math.log10(sum / win + 1e-12);
+  };
+  for (let t = from; t < cap; t += 0.01) {
+    const i = Math.round(t * sr);
+    if (db(i) < -50 && db(i + win) < -50 && db(i + 2 * win) < -50) return t;
+  }
+  return cap;
+}
+
+/** Integrated loudness of a file, in LUFS. */
+function loudness(file) {
+  const err = spawnSync('ffmpeg', ['-hide_banner', '-nostats', '-i', file, '-af', 'ebur128', '-f', 'null', '-'], { encoding: 'utf8' }).stderr;
+  const m = /I:\s+(-?[\d.]+) LUFS/.exec(err.slice(err.lastIndexOf('Summary')));
+  if (!m) throw new Error(`could not measure loudness of ${file}`);
+  return Number(m[1]);
+}
 
 // --- audition ---------------------------------------------------------------
 if (flag('--test')) {
@@ -156,11 +200,21 @@ const combined = sections.map((s) => {
   if (!existsSync(raw) || !existsSync(align)) return null;
   const { alignment } = JSON.parse(readFileSync(align, 'utf8'));
   const rawWords = displayWords(s.text, spokenWords(alignment));
-  const rawSpeech = rawWords[rawWords.length - 1].end - rawWords[0].start;
+  const rawSpeech = rawWords[rawWords.length - 1].endAny - rawWords[0].start;
   const wpm = (rawWords.length / rawSpeech) * 60;
   const tempo = Math.round(Math.min(MAX_TEMPO, Math.max(1, TARGET_WPM / wpm)) * 100) / 100;
-  execFileSync('ffmpeg', ['-v', 'error', '-y', '-i', raw, '-filter:a', `atempo=${tempo}`, '-c:a', 'libmp3lame', '-b:a', '192k', audio]);
-  const words = rawWords.map((w) => ({ ...w, start: w.start / tempo, end: w.end / tempo }));
+
+  // Silence anything after the voice has decayed, in the stretched timeline.
+  const lastLetter = rawWords[rawWords.length - 1].end;
+  const silentFrom = (decayEnd(samples(raw), lastLetter, lastLetter + 0.45) + 0.04) / tempo;
+  const shaped = join(ALIGN_DIR, `${s.id}.shaped.wav`);
+  execFileSync('ffmpeg', ['-v', 'error', '-y', '-i', raw, '-af',
+    `atempo=${tempo},afade=t=in:st=0:d=0.01,afade=t=out:st=${silentFrom.toFixed(3)}:d=0.04`, shaped]);
+  const gain = TARGET_LUFS - loudness(shaped);
+  execFileSync('ffmpeg', ['-v', 'error', '-y', '-i', shaped, '-af',
+    `volume=${gain.toFixed(2)}dB,alimiter=limit=0.84:level=0:latency=1`, '-c:a', 'libmp3lame', '-b:a', '192k', audio]);
+  rmSync(shaped);
+  const words = rawWords.map(({ endAny: _endAny, ...w }) => ({ ...w, start: w.start / tempo, end: w.end / tempo }));
   return {
     id: s.id,
     scene: s.scene,

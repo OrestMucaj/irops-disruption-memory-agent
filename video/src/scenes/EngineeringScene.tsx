@@ -33,9 +33,10 @@ export const EngineeringScene: React.FC = () => {
   const s3 = c('s16-aws', 'S3');
   const zero = c('s16-aws', 'zero');
 
-  const beat1 = interpolate(frame, [prefix - 22, prefix - 8], [1, 0], clamp);
-  const beat2 = interpolate(frame, [prefix - 14, prefix, aws - 18, aws - 4], [0, 1, 1, 0], clamp);
-  const beat3 = interpolate(frame, [aws - 10, aws + 4], [0, 1], clamp);
+  // Each beat is out before the next comes in, so titles never overlap.
+  const beat1 = interpolate(frame, [prefix - 22, prefix - 12], [1, 0], clamp);
+  const beat2 = interpolate(frame, [prefix - 12, prefix, aws - 22, aws - 12], [0, 1, 1, 0], clamp);
+  const beat3 = interpolate(frame, [aws - 12, aws + 2], [0, 1], clamp);
 
   return (
     <AbsoluteFill>
@@ -85,15 +86,18 @@ const OneDatabase: React.FC<{ one: number; commit: number; noSync: number }> = (
       <div style={{ display: 'flex', gap: 60, alignItems: 'stretch' }}>
         <div style={{ width: 560, position: 'relative', opacity: typical * (1 - cross * 0.45) }}>
           <div style={{ fontSize: 24, fontWeight: 700, letterSpacing: 2, color: C.dim, marginBottom: 16 }}>THE USUAL SHAPE</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: 14 }}>
             <MiniBox icon={<Database size={30} color={C.muted} />} t="Operational database" />
             <div style={{ textAlign: 'center', fontSize: 26, color: C.amber, fontWeight: 600 }}>⇅ sync job · drift window</div>
             <MiniBox icon={<Box size={30} color={C.muted} />} t="Separate vector database" />
+            {/* Corner to corner over exactly this stack, whatever its rendered size. */}
+            {cross > 0 && (
+              <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible' }}>
+                <line x1="4%" y1="6%" x2={`${4 + 92 * cross}%`} y2={`${6 + 88 * cross}%`} stroke={C.red} strokeWidth={8} strokeLinecap="round" />
+                <line x1="96%" y1="6%" x2={`${96 - 92 * cross}%`} y2={`${6 + 88 * cross}%`} stroke={C.red} strokeWidth={8} strokeLinecap="round" />
+              </svg>
+            )}
           </div>
-          <svg width={560} height={300} style={{ position: 'absolute', left: 0, top: 50 }}>
-            <line x1={30} y1={30} x2={30 + 500 * cross} y2={30 + 240 * cross} stroke={C.red} strokeWidth={8} strokeLinecap="round" />
-            <line x1={530} y1={30} x2={530 - 500 * cross} y2={30 + 240 * cross} stroke={C.red} strokeWidth={8} strokeLinecap="round" />
-          </svg>
         </div>
 
         <div
@@ -143,10 +147,11 @@ const PrefixIndex: React.FC<{ start: number; inside: number }> = ({ start, insid
   const frame = useCurrentFrame();
   const beam = interpolate(frame, [start + 6, inside], [0, 1], { ...clamp, easing: Easing.inOut(Easing.cubic) });
   const hit = interpolate(frame, [inside - 4, inside + 8], [0, 1], clamp);
+  // The live caseload once ZZ1137 is resolved (captures/data/cases.json, then the recording).
   const parts = [
-    { k: "'open'", n: 2, on: false },
+    { k: "'open'", n: 1, on: false },
     { k: "'planned'", n: 2, on: false },
-    { k: "'resolved'", n: 80, on: true },
+    { k: "'resolved'", n: 81, on: true },
   ];
   return (
     <AbsoluteFill style={{ padding: '150px 120px 190px', fontFamily: FONT }}>
@@ -171,16 +176,18 @@ const PrefixIndex: React.FC<{ start: number; inside: number }> = ({ start, insid
               >
                 <span style={{ fontFamily: MONO, fontSize: 30, fontWeight: 700, color: p.on ? C.emerald : C.muted, width: 200 }}>{p.k}</span>
                 <div style={{ flex: 1, display: 'flex', gap: 5, flexWrap: 'wrap' }}>
-                  {Array.from({ length: Math.min(p.n, 40) }, (_, i) => (
+                  {/* Two full rows at most: the dots stand for the partition, not a count. */}
+                  {Array.from({ length: Math.min(p.n, 38) }, (_, i) => (
                     <span key={i} style={{ width: 14, height: 14, borderRadius: 4, background: p.on ? C.emerald : C.dim, opacity: 0.75 }} />
                   ))}
                 </div>
-                <span style={{ fontSize: 24, color: C.muted, width: 110, textAlign: 'right' }}>{p.n} cases</span>
+                <span style={{ fontSize: 24, color: C.muted, width: 110, textAlign: 'right' }}>{p.n} {p.n === 1 ? 'case' : 'cases'}</span>
               </div>
             ))}
           </div>
-          <div style={{ marginTop: 20, fontSize: 24, color: C.muted }}>
-            Query vector goes straight to the <span style={{ color: C.emerald, fontWeight: 700 }}>resolved</span> partition: no ANN-then-filter.
+          <div style={{ marginTop: 20, fontSize: 24, color: C.muted, textWrap: 'balance' }}>
+            Query vector goes straight to the <span style={{ color: C.emerald, fontWeight: 700 }}>resolved</span> partition:{' '}
+            <span style={{ whiteSpace: 'nowrap' }}>no ANN-then-filter.</span>
           </div>
         </div>
         <div style={{ flex: 1 }}>
@@ -208,27 +215,26 @@ const AwsShape: React.FC<{ start: number; bedrock: number; lambda: number; s3: n
   const flow = (frame - start) / 30;
 
   const nodes = [
-    { id: 's3', x: 120, y: 470, icon: Globe, t: 'Amazon S3', s: 'static console', at: s3, tone: C.orange },
-    { id: 'lambda', x: 690, y: 470, icon: Zap, t: 'AWS Lambda', s: 'Function URL · agent + API', at: lambda, tone: C.orange },
-    { id: 'bedrock', x: 1260, y: 330, icon: Cpu, t: 'Amazon Bedrock', s: 'Titan Text Embeddings V2 · Nova Lite', at: bedrock, tone: C.violet },
-    { id: 'crdb', x: 1260, y: 620, icon: Database, t: 'CockroachDB Cloud', s: 'rows + vectors · Managed MCP', at: start, tone: C.emerald },
+    { id: 's3', x: 100, y: 470, w: 520, icon: Globe, t: 'Amazon S3', s: 'static console', at: s3, tone: C.orange },
+    { id: 'lambda', x: 680, y: 470, w: 520, icon: Zap, t: 'AWS Lambda', s: 'Function URL · agent + API', at: lambda, tone: C.orange },
+    { id: 'bedrock', x: 1260, y: 330, w: 600, icon: Cpu, t: 'Amazon Bedrock', s: 'Titan Text Embeddings V2 · Nova Lite', at: bedrock, tone: C.violet },
+    { id: 'crdb', x: 1260, y: 620, w: 600, icon: Database, t: 'CockroachDB Cloud', s: 'rows + vectors · Managed MCP', at: start, tone: C.emerald },
   ];
   const links: [number, number][] = [
     [0, 1],
     [1, 2],
     [1, 3],
   ];
-  const W = 540;
   const H = 130;
 
   return (
     <AbsoluteFill style={{ padding: '150px 120px 190px', fontFamily: FONT }}>
-      <Title text="Built on AWS, idle costs nothing" sub="no API Gateway, no load balancer, no VPC" />
+      <Title text="Built on AWS, scaling to zero" sub="no API Gateway, no load balancer, no VPC" />
       <svg width={1920} height={1080} style={{ position: 'absolute', inset: 0 }}>
         {links.map(([a, b], i) => {
           const A = nodes[a];
           const B = nodes[b];
-          const x1 = A.x + W;
+          const x1 = A.x + A.w;
           const y1 = A.y + H / 2;
           const x2 = B.x;
           const y2 = B.y + H / 2;
@@ -252,7 +258,7 @@ const AwsShape: React.FC<{ start: number; bedrock: number; lambda: number; s3: n
               position: 'absolute',
               left: n.x,
               top: n.y,
-              width: W,
+              width: n.w,
               height: H,
               display: 'flex',
               alignItems: 'center',
@@ -270,7 +276,7 @@ const AwsShape: React.FC<{ start: number; bedrock: number; lambda: number; s3: n
             </span>
             <span style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               <span style={{ fontSize: 34, fontWeight: 700, color: C.text }}>{n.t}</span>
-              <span style={{ fontSize: 23, color: C.muted }}>{n.s}</span>
+              <span style={{ fontSize: 23, color: C.muted, whiteSpace: 'nowrap' }}>{n.s}</span>
             </span>
           </div>
         );
@@ -278,9 +284,9 @@ const AwsShape: React.FC<{ start: number; bedrock: number; lambda: number; s3: n
       <div
         style={{
           position: 'absolute',
-          left: 690,
+          left: 680,
           top: 660,
-          width: W,
+          width: 520,
           display: 'flex',
           alignItems: 'center',
           gap: 14,

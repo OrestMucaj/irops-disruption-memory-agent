@@ -80,11 +80,13 @@ const FlapText: React.FC<{ text: string; row: number; col0: number; color: strin
 export const HookScene: React.FC = () => {
   const frame = useCurrentFrame();
   const qStart = cue('hook', 's01-hook', 'What');
+  const qEnd = cue('hook', 's01-hook', 'one?', 'end');
   const countsEnd = cue('hook', 's01-hook', 'counts.', 'end');
   const s = section('s01-hook');
   const qWords = s.abs.slice(s.abs.findIndex((w) => w.text === 'What'));
 
-  const recede = interpolate(frame, [qStart - 6, qStart + 18], [0, 1], {
+  // The board is already softening when the first word lands on it.
+  const recede = interpolate(frame, [qStart - 14, qStart + 6], [0, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
     easing: Easing.bezier(0.65, 0, 0.35, 1),
@@ -92,7 +94,7 @@ export const HookScene: React.FC = () => {
   const push = interpolate(frame, [0, qStart], [0.9, 1.0], { extrapolateRight: 'clamp', easing: Easing.out(Easing.quad) });
   const heroGlow = interpolate(frame, [52, 62], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
   const statsIn = (d: number) =>
-    interpolate(frame, [countsEnd - 26 + d, countsEnd - 12 + d], [0, 1], {
+    interpolate(frame, [countsEnd - 30 + d, countsEnd - 16 + d], [0, 1], {
       extrapolateLeft: 'clamp',
       extrapolateRight: 'clamp',
       easing: Easing.out(Easing.cubic),
@@ -169,7 +171,7 @@ export const HookScene: React.FC = () => {
         <div style={{ display: 'flex', gap: 22, marginTop: 6, translate: '0 -10px' }}>
           {[
             { big: '190 min', small: 'late', tone: C.red, d: 0 },
-            { big: '23', small: 'passengers misconnecting', tone: C.orange, d: 6 },
+            { big: '23', small: 'passengers misconnecting', tone: C.orange, d: 4 },
           ].map((s) => (
             <div
               key={s.big}
@@ -193,10 +195,11 @@ export const HookScene: React.FC = () => {
         </div>
       </AbsoluteFill>
 
-      <AbsoluteFill style={{ alignItems: 'center', justifyContent: 'center', padding: '0 160px' }}>
-        <div style={{ fontFamily: FONT, fontSize: 86, fontWeight: 800, letterSpacing: -2, lineHeight: 1.12, textAlign: 'center', maxWidth: 1500 }}>
+      {/* Out before the crossfade, so it never sits on the intro's cards. */}
+      <AbsoluteFill style={{ alignItems: 'center', justifyContent: 'center', padding: '0 160px', opacity: interpolate(frame, [qEnd + 16, qEnd + 30], [1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }) }}>
+        <div style={{ fontFamily: FONT, fontSize: 86, fontWeight: 800, letterSpacing: -2, lineHeight: 1.12, textAlign: 'center', maxWidth: 1500, textWrap: 'balance' }}>
           {qWords.map((w, i) => {
-            const at = cue('hook', 's01-hook', 'What') + Math.round((w.start - qWords[0].start) * 30);
+            const at = qStart + Math.round((w.start - qWords[0].start) * 30);
             const o = interpolate(frame, [at - 3, at + 7], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
             const accent = i >= qWords.length - 2;
             return (

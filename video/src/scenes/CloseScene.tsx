@@ -46,7 +46,7 @@ export const CloseScene: React.FC = () => {
         <div
           style={{
             position: 'absolute',
-            top: interpolate(lift, [0, 1], [400, 92]),
+            top: interpolate(lift, [0, 1], [400, 140]),
             width: 1700,
             textAlign: 'center',
             fontSize: interpolate(lift, [0, 1], [84, 46]),
@@ -59,7 +59,7 @@ export const CloseScene: React.FC = () => {
           <div>{line2.map((w, i) => word(w, i, i >= 3))}</div>
         </div>
 
-        <div style={{ position: 'absolute', top: 282, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <div style={{ position: 'absolute', top: 330, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 30, opacity: card(0), translate: `0 ${(1 - card(0)) * 24}px` }}>
             <LogoChip size={110} />
             <span style={{ fontSize: 76, fontWeight: 800, color: C.text, letterSpacing: -2 }}>IROPS Disruption Memory Agent</span>
@@ -67,9 +67,9 @@ export const CloseScene: React.FC = () => {
           <div style={{ marginTop: 22, fontSize: 36, color: C.muted, opacity: card(4) }}>
             An operational-memory agent for airline disruption desks
           </div>
-          <div style={{ marginTop: 40, display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center', maxWidth: 1500, opacity: card(8) }}>
+          <div style={{ marginTop: 40, display: 'flex', gap: 12, justifyContent: 'center', opacity: card(8) }}>
             {STACK.map((t) => (
-              <span key={t} style={{ padding: '10px 20px', borderRadius: 12, background: C.surface, border: `1px solid ${C.line}`, fontSize: 26, fontWeight: 600, color: C.text }}>
+              <span key={t} style={{ padding: '10px 18px', borderRadius: 12, background: C.surface, border: `1px solid ${C.line}`, fontSize: 24, fontWeight: 600, color: C.text, whiteSpace: 'nowrap' }}>
                 {t}
               </span>
             ))}

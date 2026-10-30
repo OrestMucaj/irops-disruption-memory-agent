@@ -90,12 +90,14 @@ export const DemoScene: React.FC = () => {
   const cams: CamKey[] = [
     { at: 0, view: FULL },
     { at: zz - 8, view: rowView, dur: 30 },
+    // Holds while the plan arrives (it is already fully in view), keeping the
+    // case bar clear of the pipeline chips above it.
     { at: clickRow + 2, view: frameRect({ x: 258, y: 120, w: 1160, h: 420 }, 0.98), dur: 22 },
-    { at: proposes + 2, view: frameRect({ x: 258, y: 180, w: 1160, h: 470 }, 0.98), dur: 22 },
     { at: cites - 6, view: frameRect({ x: 274, y: 262, w: 720, h: 190 }, 0.95), dur: 24 },
     { at: s6 - 2, view: frameRect({ x: 274, y: 236, w: 820, h: 130 }, 0.95), dur: 22 },
     { at: s7 - 2, view: frameRect({ x: 274, y: 250, w: 900, h: 220 }, 0.95), dur: 18 },
-    { at: clickChip + 2, view: frameRect(box('09-precedent', 'dialog'), 0.96), dur: 22 },
+    // The whole dialog, clear of the kicker above and the captions below.
+    { at: clickChip + 2, view: frameRect(box('09-precedent', 'dialog'), 0.8), dur: 22 },
     { at: mixed - 2, view: frameRect({ x: 274, y: 420, w: 960, h: 220 }, 0.96), dur: 20 },
     // The sticky decision bar is the last strip of the capture, so these views
     // sit on the image's bottom edge; captions lift for this beat (Captions.tsx).
@@ -113,14 +115,20 @@ export const DemoScene: React.FC = () => {
   const cursors = [
     {
       from: zz - 6,
-      to: clickChip + 12,
+      to: clickRecs + 14,
       keys: [
         { at: zz, x: 760, y: 640 },
         { at: ninety, x: row.x - 280, y: row.y, dur: 22 },
         { at: clickRow, x: row.x - 280, y: row.y, dur: 1, click: true },
         { at: one + 6, x: recs.x, y: recs.y, dur: 22 },
         { at: clickRecs, x: recs.x, y: recs.y, dur: 1, click: true },
-        { at: proposes + 10, x: recs.x + 120, y: recs.y + 120, dur: 20 },
+      ],
+    },
+    {
+      from: open - 6,
+      to: clickChip + 12,
+      keys: [
+        { at: open - 6, x: chip.x + 260, y: chip.y + 150 },
         { at: open + 4, x: chip.x, y: chip.y, dur: 20 },
         { at: clickChip, x: chip.x, y: chip.y, dur: 1, click: true },
       ],
@@ -165,7 +173,7 @@ export const DemoScene: React.FC = () => {
       dim: 0.5,
     },
     { from: desk, to: turned - 2, rect: box('09-precedent', 'did'), pad: 6 },
-    { from: turned, to: mixed - 6, rect: box('09-precedent', 'outcome'), label: 'How it turned out', side: 'bottom', pad: 6 },
+    { from: turned, to: mixed - 6, rect: box('09-precedent', 'outcome'), pad: 6 },
     {
       from: mixed + 8,
       to: e7 + 8,
@@ -184,7 +192,8 @@ export const DemoScene: React.FC = () => {
       side: 'left',
       pad: 6,
     },
-    { from: recorded + 4, to: e8 + 16, rect: box('15-approved', 'decisionbar'), label: 'All 21 decisions recorded', side: 'top', pad: 4, dim: 0.42 },
+    // Raised above the lifted captions, which sit between it and the bar.
+    { from: recorded + 4, to: e8 + 16, rect: box('15-approved', 'decisionbar'), label: 'All 21 decisions recorded', side: 'top', pad: 4, dim: 0.42, labelDy: -120 },
     {
       from: model,
       to: tokens - 2,
@@ -239,7 +248,7 @@ export const DemoScene: React.FC = () => {
             ))}
             <span style={{ marginLeft: 22, fontFamily: FONT, fontSize: 22, color: C.muted }}>IROPS Memory · Operations Console</span>
             <span style={{ marginLeft: 'auto', fontFamily: MONO, fontSize: 19, color: C.dim, background: C.bg, borderRadius: 8, padding: '6px 14px' }}>
-              local build · localhost:3000
+              irops-memory-demo-21.s3.us-east-1.amazonaws.com
             </span>
           </div>
           <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', borderRadius: 22 * (1 - flat) }}>
@@ -279,33 +288,33 @@ const Pipeline: React.FC<{ embeds: number; finds: number; proposes: number; unti
   ];
   const out = interpolate(frame, [until, until + 12], [1, 0], clamp);
   return (
-    <AbsoluteFill style={{ alignItems: 'center', paddingTop: 128, opacity: out }}>
-      <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+    <AbsoluteFill style={{ alignItems: 'center', paddingTop: 122, opacity: out }}>
+      <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
         {steps.map((s, i) => {
           const o = interpolate(frame, [s.at - 4, s.at + 8], [0, 1], clamp);
           const active = frame >= s.at && (i === steps.length - 1 || frame < steps[i + 1].at);
           return (
             <React.Fragment key={s.n}>
-              {i > 0 && <span style={{ opacity: o, color: C.dim, fontSize: 34, fontFamily: FONT }}>→</span>}
+              {i > 0 && <span style={{ opacity: o, color: C.dim, fontSize: 24, fontFamily: FONT }}>→</span>}
               <div
                 style={{
                   opacity: o,
                   translate: `0 ${(1 - o) * 14}px`,
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 14,
-                  padding: '14px 22px',
-                  borderRadius: 14,
+                  gap: 10,
+                  padding: '8px 16px',
+                  borderRadius: 12,
                   background: 'rgba(14,14,17,0.94)',
                   border: `1px solid ${active ? C.emerald : C.line}`,
                   boxShadow: active ? `0 0 30px ${C.emerald}44` : '0 12px 30px rgba(0,0,0,0.5)',
                   fontFamily: FONT,
                 }}
               >
-                <span style={{ fontFamily: MONO, fontWeight: 700, fontSize: 22, color: C.bg, background: active ? C.emerald : C.muted, borderRadius: 7, padding: '2px 9px' }}>
+                <span style={{ fontFamily: MONO, fontWeight: 700, fontSize: 18, color: C.bg, background: active ? C.emerald : C.muted, borderRadius: 6, padding: '1px 7px' }}>
                   {s.n}
                 </span>
-                <span style={{ fontSize: 30, fontWeight: 600, color: C.text }}>{s.t}</span>
+                <span style={{ fontSize: 23, fontWeight: 600, color: C.text }}>{s.t}</span>
               </div>
             </React.Fragment>
           );

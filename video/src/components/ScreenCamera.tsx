@@ -27,6 +27,8 @@ export type Spot = {
   tone?: string;
   pad?: number;
   dim?: number;
+  /** Nudges the label vertically, in output pixels (e.g. clear of lifted captions). */
+  labelDy?: number;
 };
 
 const EASE = Easing.bezier(0.65, 0, 0.35, 1);
@@ -137,13 +139,15 @@ const SpotLayer: React.FC<{ spot: Spot; view: Rect }> = ({ spot, view }) => {
   });
   const side = spot.side ?? (r.y + r.h / 2 > height * 0.55 ? 'top' : 'bottom');
 
-  // Labels hug the rect's left edge but never leave the frame.
+  // Labels hug the rect's left edge but never leave the frame. A label on the
+  // left is anchored by its right edge, so it has the whole width to lay out in.
   const labelX = Math.max(60, Math.min(r.x, width - 820));
+  const dy = spot.labelDy ?? 0;
   const labelStyle: React.CSSProperties = { position: 'absolute' };
-  if (side === 'bottom') Object.assign(labelStyle, { left: labelX, top: r.y + r.h + 22 });
-  if (side === 'top') Object.assign(labelStyle, { left: labelX, top: r.y - 22, translate: '0 -100%' });
-  if (side === 'right') Object.assign(labelStyle, { left: r.x + r.w + 26, top: r.y + r.h / 2, translate: '0 -50%' });
-  if (side === 'left') Object.assign(labelStyle, { left: r.x - 26, top: r.y + r.h / 2, translate: '-100% -50%' });
+  if (side === 'bottom') Object.assign(labelStyle, { left: labelX, top: r.y + r.h + 22 + dy });
+  if (side === 'top') Object.assign(labelStyle, { left: labelX, top: r.y - 22 + dy, translate: '0 -100%' });
+  if (side === 'right') Object.assign(labelStyle, { left: r.x + r.w + 26, top: r.y + r.h / 2 + dy, translate: '0 -50%' });
+  if (side === 'left') Object.assign(labelStyle, { right: width - (r.x - 26), top: r.y + r.h / 2 + dy, translate: '0 -50%' });
 
   return (
     <AbsoluteFill style={{ opacity: o }}>
@@ -182,8 +186,8 @@ export const Callout: React.FC<{ label: string; sub?: string; tone?: string }> =
       fontFamily: FONT,
     }}
   >
-    <span style={{ fontSize: 36, fontWeight: 700, color: C.text, letterSpacing: -0.4, lineHeight: 1.15 }}>{label}</span>
-    {sub && <span style={{ fontSize: 25, fontWeight: 500, color: C.muted, lineHeight: 1.3 }}>{sub}</span>}
+    <span style={{ fontSize: 36, fontWeight: 700, color: C.text, letterSpacing: -0.4, lineHeight: 1.15, textWrap: 'balance' }}>{label}</span>
+    {sub && <span style={{ fontSize: 25, fontWeight: 500, color: C.muted, lineHeight: 1.3, textWrap: 'balance' }}>{sub}</span>}
   </div>
 );
 

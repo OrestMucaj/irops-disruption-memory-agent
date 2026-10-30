@@ -160,12 +160,17 @@ export const LoopScene: React.FC = () => {
         {loopBack > 0 && (
           <div
             style={{
+              // On a pill, so the loop-back curve passes under the words rather than through them.
               position: 'absolute',
-              left: CX - 260,
-              top: CY - 40,
-              width: 520,
-              textAlign: 'center',
+              left: CX,
+              top: CY - 20,
+              translate: '-50% -50%',
               opacity: loopBack,
+              padding: '10px 22px',
+              borderRadius: 14,
+              background: 'rgba(9,9,11,0.92)',
+              border: `1px solid ${C.emerald}55`,
+              whiteSpace: 'nowrap',
               fontFamily: FONT,
               fontSize: 32,
               fontWeight: 700,
@@ -185,16 +190,17 @@ export const LoopScene: React.FC = () => {
             <div
               key={n.t}
               style={{
+                // Sized to its content with equal padding either side, centred on its point on the ring.
                 position: 'absolute',
-                left: p.x - 170,
-                top: p.y - 50,
-                width: 340,
-                height: 100,
+                left: p.x,
+                top: p.y,
+                translate: '-50% -50%',
                 borderRadius: 18,
                 display: 'flex',
                 alignItems: 'center',
                 gap: 16,
-                padding: '0 18px',
+                padding: '18px 24px',
+                whiteSpace: 'nowrap',
                 background: on ? 'rgba(24,24,27,0.97)' : 'rgba(24,24,27,0.75)',
                 border: `2px solid ${on ? n.tone : C.surface2}`,
                 boxShadow: on ? `0 0 34px ${n.tone}40` : 'none',
@@ -214,8 +220,8 @@ export const LoopScene: React.FC = () => {
                 <div
                   style={{
                     position: 'absolute',
-                    left: 20,
-                    top: -70,
+                    left: 0,
+                    top: -68,
                     opacity: rejectGlow,
                     padding: '12px 18px',
                     borderRadius: 12,
@@ -227,7 +233,7 @@ export const LoopScene: React.FC = () => {
                     whiteSpace: 'nowrap',
                   }}
                 >
-                  Rejections are recorded, not discarded
+                  Rejections are kept too
                 </div>
               )}
             </div>
@@ -247,7 +253,7 @@ export const LoopScene: React.FC = () => {
       <Kicker n="02" title="The memory loop" from={0} />
       <Disclosure text="Recorded on the live demo · all data synthetic" from={T[6]} />
 
-      <Sequence from={back - 2} durationInFrames={24}>
+      <Sequence from={back + 4} durationInFrames={24}>
         <Audio src={staticFile('sfx/confirm.wav')} volume={0.28} />
       </Sequence>
     </AbsoluteFill>
@@ -367,9 +373,10 @@ type Neighbour = { flight_no: string; cause: string; delay_minutes: number | str
 
 const InsetSequence: React.FC<{ record: number; transaction: number; search: number; back: number }> = ({ record, transaction, search, back }) => {
   const frame = useCurrentFrame();
-  const formIn = interpolate(frame, [record - 6, record + 8, transaction - 4, transaction + 6], [0, 1, 1, 0], clamp);
-  const doneIn = interpolate(frame, [transaction - 4, transaction + 6, search - 8, search + 2], [0, 1, 1, 0], clamp);
-  const listIn = interpolate(frame, [search - 6, search + 8], [0, 1], clamp);
+  // One after another, so two titles are never on screen together.
+  const formIn = interpolate(frame, [record - 6, record + 8, transaction - 9, transaction - 1], [0, 1, 1, 0], clamp);
+  const doneIn = interpolate(frame, [transaction - 1, transaction + 9, search - 12, search - 4], [0, 1, 1, 0], clamp);
+  const listIn = interpolate(frame, [search - 4, search + 10], [0, 1], clamp);
 
   return (
     <div style={{ position: 'relative', width: 1760, height: 700, fontFamily: FONT }}>
@@ -396,7 +403,9 @@ const ROW_H = 84;
 
 const NeighbourList: React.FC<{ back: number }> = ({ back }) => {
   const frame = useCurrentFrame();
-  const t = interpolate(frame, [back - 6, back + 14], [0, 1], { ...clamp, easing: Easing.inOut(Easing.cubic) });
+  // The list makes room first; ZZ1137 then slides into the slot it opened.
+  const t = interpolate(frame, [back - 8, back + 8], [0, 1], { ...clamp, easing: Easing.inOut(Easing.cubic) });
+  const heroIn = interpolate(frame, [back + 4, back + 18], [0, 1], { ...clamp, easing: Easing.out(Easing.cubic) });
   const beforeRows = neighbours.before as Neighbour[];
   const afterRows = neighbours.after as Neighbour[];
   const flights = Array.from(new Set([...beforeRows, ...afterRows].map((r) => r.flight_no)));
@@ -410,7 +419,7 @@ const NeighbourList: React.FC<{ back: number }> = ({ back }) => {
         </span>
         <span style={{ fontSize: 28, color: C.muted }}>{neighbours.cause} · {neighbours.delay_minutes}′</span>
       </div>
-      <div style={{ fontFamily: MONO, fontSize: 24, color: C.dim, marginBottom: 20 }}>case_status = 'resolved' · ORDER BY embedding {'<=>'} · LIMIT 5 · read-only via MCP on the live cluster</div>
+      <div style={{ fontFamily: MONO, fontSize: 24, color: C.dim, marginBottom: 20, whiteSpace: 'nowrap' }}>case_status = 'resolved' · ORDER BY embedding {'<=>'} · LIMIT 5 · read-only via MCP</div>
       <div style={{ position: 'relative', height: ROW_H * 5 }}>
         {flights.map((f) => {
           const bi = beforeRows.findIndex((r) => r.flight_no === f);
@@ -420,7 +429,8 @@ const NeighbourList: React.FC<{ back: number }> = ({ back }) => {
           const toY = ai === -1 ? 5 * ROW_H : ai * ROW_H;
           const y = fromY + (toY - fromY) * t;
           const hero = f === 'ZZ1137';
-          const o = hero ? t : ai === -1 ? 1 - t : 1;
+          // The row that drops out is gone before it would leave the panel.
+          const o = hero ? heroIn : ai === -1 ? Math.max(0, 1 - 2 * t) : 1;
           const rating = r.outcome_rating === null ? null : Number(r.outcome_rating);
           return (
             <div
@@ -441,7 +451,7 @@ const NeighbourList: React.FC<{ back: number }> = ({ back }) => {
                 border: `2px solid ${hero ? C.emerald : 'transparent'}`,
                 fontSize: 32,
                 color: C.text,
-                scale: hero ? String(0.94 + 0.06 * t) : '1',
+                translate: hero ? `${(1 - heroIn) * -60}px 0` : undefined,
               }}
             >
               <span style={{ fontFamily: MONO, color: C.dim, width: 40 }}>{Math.min(5, Math.round(y / ROW_H) + 1)}</span>

@@ -133,6 +133,9 @@ async function neighbours(mcp, flightNo) {
   await shot(page, '05-running', { getRecs, casebar: '.casebar' });
   await page.locator('.grp').first().waitFor({ timeout: 120000 });
   await page.unroute('**/api/cases/*/run');
+  // Park the pointer in the right gutter: the plan renders under it, and a
+  // hovered precedent chip would show its tooltip in the next two shots.
+  await page.mouse.move(1434, 420);
   await sleep(700);
 
   // --- 3. The plan -----------------------------------------------------------

@@ -1,7 +1,7 @@
 # Showcase video
 
 The LinkedIn showcase for the IROPS Disruption Memory Agent: one 1920×1080
-MP4, about 2:41, built with [Remotion](https://www.remotion.dev). This folder is
+MP4, about 2:43, built with [Remotion](https://www.remotion.dev). This folder is
 self-contained and does not touch the application.
 
 ## What is real
@@ -49,10 +49,10 @@ npm install
 
 The music bed is **Motivational Day** (Pixabay, royalty-free). It is not
 committed, because the Pixabay licence doesn't allow redistributing the
-standalone file. It is slowed about 5% so its ending lands on the end card:
+standalone file. It is slowed about 6% so its ending lands on the end card:
 
 ```bash
-ffmpeg -i motivational-day-112790.mp3 -filter:a atempo=0.9503 -c:a libmp3lame -b:a 192k public/music.mp3
+ffmpeg -i motivational-day-112790.mp3 -filter:a atempo=0.9417 -c:a libmp3lame -b:a 192k public/music.mp3
 ```
 
 Re-capture (from the repo root, after `npm run build`; `MCP_API_KEY` and
@@ -63,7 +63,10 @@ NODE_USE_ENV_PROXY=1 node --env-file=.env video/capture/capture.cjs
 ```
 
 Narration, only if the script changes (`ELEVENLABS_API_KEY`; voice
-"Hale", `dXtC3XhB9GtPusIpNtQx`; existing takes are reused unless `--force`):
+"Hale", `dXtC3XhB9GtPusIpNtQx`; existing takes are reused unless `--force`).
+Each take is paced toward 147 wpm, cleared of anything after the voice has
+decayed and levelled to −19 LUFS; the header of `voiceover/generate.mjs` has
+the details:
 
 ```bash
 NODE_USE_ENV_PROXY=1 node voiceover/generate.mjs

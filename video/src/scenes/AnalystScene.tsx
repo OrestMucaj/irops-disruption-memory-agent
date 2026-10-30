@@ -37,14 +37,16 @@ export const AnalystScene: React.FC = () => {
   const answer = c('s13b-answer', 'answer');
   const rows = c('s13b-answer', 'rows');
   const end = cueSection('analyst', 's13b-answer', 'end');
+  // About as long as the live run took (2049 ms on the answer).
+  const answerAt = click + 66;
 
   const shots: ShotKey[] = [
     { from: 0, shot: '21-chat' },
     { from: click + 3, shot: '22-chat-thinking', fade: 5 },
-    { from: click + 66, shot: '23-chat-answer', fade: 8 },
+    { from: answerAt, shot: '23-chat-answer', fade: 8 },
   ];
 
-  const chatView = frameRect(box('21-chat', 'chatwin'), 1.0);
+  const chatView = frameRect(box('21-chat', 'chatwin'), 0.94);
   // Answer at the top, returned rows well clear of the captions.
   const closeView = { x: 640, y: 203, w: 800, h: 450 };
   const cams: CamKey[] = [
@@ -66,8 +68,9 @@ export const AnalystScene: React.FC = () => {
   ];
 
   const spots: Spot[] = [
-    { from: sql, to: mcp - 4, rect: box('24-chat-sql', 'sql'), label: 'SQL written by Nova Lite', side: 'left', pad: 6, dim: 0.45 },
-    { from: mcp, to: s13b - 12, rect: box('23-chat-answer', 'qtoggle'), label: '1 query · read-only via MCP', side: 'left', pad: 6, dim: 0.45 },
+    // One at a time, each once its subject is on screen; both clear before the guardrail panel.
+    { from: Math.max(sql, answerAt + 6), to: mcp - 10, rect: box('24-chat-sql', 'sql'), label: 'SQL written by Nova Lite', side: 'left', pad: 6, dim: 0.45 },
+    { from: mcp, to: readOnly - 14, rect: box('23-chat-answer', 'qtoggle'), label: '1 query · read-only via MCP', side: 'left', pad: 6, dim: 0.45 },
     { from: answer, to: rows - 4, rect: box('23-chat-answer', 'answer'), pad: 6 },
     { from: rows, to: end + 20, rect: box('24-chat-sql', 'rows'), label: 'The rows behind the answer', side: 'left', pad: 6, dim: 0.5 },
   ];
@@ -117,7 +120,7 @@ export const AnalystScene: React.FC = () => {
       <Sequence from={click - 1} durationInFrames={10}>
         <Audio src={staticFile('sfx/click.wav')} volume={0.55} />
       </Sequence>
-      <Sequence from={click + 66} durationInFrames={24}>
+      <Sequence from={answerAt} durationInFrames={24}>
         <Audio src={staticFile('sfx/confirm.wav')} volume={0.22} />
       </Sequence>
     </AbsoluteFill>

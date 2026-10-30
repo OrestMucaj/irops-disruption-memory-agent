@@ -42,6 +42,9 @@ export const IntroScene: React.FC = () => {
   const tagAt = cue('intro', 's03-reveal', 'Every');
 
   const part1 = interpolate(frame, [revealAt - 14, revealAt + 4], [1, 0], clamp);
+  // Records hold the centre alone, then slide over to make room for judgement.
+  const makeRoom = interpolate(frame, [judgeAt - 14, judgeAt + 4], [0, 1], { ...clamp, easing: Easing.bezier(0.65, 0, 0.35, 1) });
+  const judgeIn = interpolate(frame, [judgeAt - 4, judgeAt + 10], [0, 1], { ...clamp, easing: Easing.out(Easing.cubic) });
   const logoIn = spring({ frame: frame - revealAt, fps, config: { damping: 14, stiffness: 120 } });
   const nameIn = interpolate(frame, [nameAt - 4, nameAt + 14], [0, 1], { ...clamp, easing: Easing.out(Easing.cubic) });
   const sweep = interpolate(frame, [nameAt + 6, nameAt + 40], [-30, 130], clamp);
@@ -52,7 +55,7 @@ export const IntroScene: React.FC = () => {
 
       {/* records vs judgement */}
       <AbsoluteFill style={{ opacity: part1, padding: '150px 120px 200px', flexDirection: 'row', gap: 70, alignItems: 'center' }}>
-        <div style={{ width: 1060 }}>
+        <div style={{ width: 1060, translate: `${(1 - makeRoom) * 310}px 0` }}>
           <Header icon={<Check size={30} color={C.bg} strokeWidth={3} />} tone={C.emerald} text="Records" at={recordsAt} note="kept" />
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 18, marginTop: 26 }}>
             {CARDS.map((c, i) => {
@@ -84,7 +87,7 @@ export const IntroScene: React.FC = () => {
           </div>
         </div>
 
-        <div style={{ flex: 1, opacity: interpolate(frame, [judgeAt - 6, judgeAt + 8], [0, 1], clamp) }}>
+        <div style={{ flex: 1, opacity: judgeIn, translate: `${(1 - judgeIn) * 40}px 0` }}>
           <Header icon={<HelpCircle size={30} color={C.bg} strokeWidth={3} />} tone={C.amber} text="Judgement" at={judgeAt} note="lost" />
           <div
             style={{
