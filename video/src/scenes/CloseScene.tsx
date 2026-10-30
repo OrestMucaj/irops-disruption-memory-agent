@@ -46,7 +46,7 @@ export const CloseScene: React.FC = () => {
         <div
           style={{
             position: 'absolute',
-            top: interpolate(lift, [0, 1], [400, 140]),
+            top: interpolate(lift, [0, 1], [400, 164]),
             width: 1700,
             textAlign: 'center',
             fontSize: interpolate(lift, [0, 1], [84, 46]),
@@ -59,7 +59,7 @@ export const CloseScene: React.FC = () => {
           <div>{line2.map((w, i) => word(w, i, i >= 3))}</div>
         </div>
 
-        <div style={{ position: 'absolute', top: 330, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <div style={{ position: 'absolute', top: 354, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 30, opacity: card(0), translate: `0 ${(1 - card(0)) * 24}px` }}>
             <LogoChip size={110} />
             <span style={{ fontSize: 76, fontWeight: 800, color: C.text, letterSpacing: -2 }}>IROPS Disruption Memory Agent</span>
@@ -91,11 +91,7 @@ export const CloseScene: React.FC = () => {
             <GitHubMark size={40} />
             <span style={{ fontFamily: MONO, fontSize: 34, fontWeight: 500, color: C.text }}>github.com/OrestMucaj/irops-disruption-memory-agent</span>
           </div>
-          <div style={{ marginTop: 18, display: 'flex', alignItems: 'baseline', gap: 14, opacity: card(14) }}>
-            <span style={{ fontSize: 24, fontWeight: 700, letterSpacing: 2, color: C.emerald }}>LIVE DEMO</span>
-            <span style={{ fontFamily: MONO, fontSize: 25, color: C.muted }}>irops-memory-demo-21.s3.us-east-1.amazonaws.com/index.html</span>
-          </div>
-          <div style={{ marginTop: 30, fontSize: 32, fontWeight: 600, color: C.text, opacity: card(18) }}>Built by Orest Mucaj</div>
+          <div style={{ marginTop: 34, fontSize: 32, fontWeight: 600, color: C.text, opacity: card(16) }}>Built by Orest Mucaj</div>
         </div>
 
         <div style={{ position: 'absolute', bottom: 54, fontSize: 22, color: C.dim, opacity: card(20) }}>

@@ -250,9 +250,6 @@ export const DemoScene: React.FC = () => {
               <span key={col} style={{ width: 15, height: 15, borderRadius: '50%', background: col }} />
             ))}
             <span style={{ marginLeft: 22, fontFamily: FONT, fontSize: 22, color: C.muted }}>IROPS Memory · Operations Console</span>
-            <span style={{ marginLeft: 'auto', fontFamily: MONO, fontSize: 19, color: C.dim, background: C.bg, borderRadius: 8, padding: '6px 14px' }}>
-              irops-memory-demo-21.s3.us-east-1.amazonaws.com
-            </span>
           </div>
           <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', borderRadius: 22 * (1 - flat) }}>
             <ScreenCamera shots={shots} cams={cams} cursors={cursors} spots={spots}>
@@ -269,7 +266,7 @@ export const DemoScene: React.FC = () => {
       {/* A mouse click on each on-screen click, landing with the cursor's press (two frames before its key). */}
       {[clickRow, clickRecs, clickChip, clickApprove].map((at) => (
         <Sequence key={at} from={at - 2} durationInFrames={8}>
-          <Audio src={staticFile('sfx/click.wav')} volume={0.32} />
+          <Audio src={staticFile('sfx/click.wav')} volume={0.42} />
         </Sequence>
       ))}
     </AbsoluteFill>

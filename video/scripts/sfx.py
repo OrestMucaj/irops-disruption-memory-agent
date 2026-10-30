@@ -6,8 +6,11 @@ scene transition, is filtered noise and is not regenerated here.)
     python3 scripts/sfx.py
 
 click.wav   A mouse button: the micro-switch snapping down, then its lighter
-            release 0.11 s later. Modal synthesis: a sharp excitation ringing
-            the switch leaf and the plastic shell, plus a faint body knock.
+            release 0.1 s later. Plastic is lossy, so the button rings with
+            dense, broad, quickly dying resonances, struck by a sharp pulse
+            with a contact bounce 1 ms later and a little grit. A low knock
+            from the shell, a few desk reflections and a mic's gentle top
+            and bottom finish it.
 flaps.wav   The hook's split-flap board, built from the board's own schedule
             (HookScene.tsx). Each of its 196 characters is a module with its
             own pitch, panned by column. Distinct clacks come from the modules
@@ -26,7 +29,6 @@ import numpy as np
 SR = 48_000
 FPS = 30
 OUT = Path(__file__).resolve().parent.parent / 'public' / 'sfx'
-rng = np.random.default_rng(20261030)
 
 
 def write(name: str, stereo: np.ndarray, peak_db: float) -> None:
@@ -49,8 +51,24 @@ def highpass(x: np.ndarray, fc: float) -> np.ndarray:
     return y
 
 
-def impact(n: int, freqs, taus, amps, snap: float, snap_fc: float, body=None) -> np.ndarray:
-    """A struck object: damped modes with a ~0.1 ms rise, a high-passed noise snap, an optional body knock."""
+def lowpass(x: np.ndarray, fc: float) -> np.ndarray:
+    """One-pole low-pass."""
+    a = np.exp(-2 * np.pi * fc / SR)
+    y = np.zeros_like(x)
+    z = 0.0
+    for n, v in enumerate(x):
+        z = (1 - a) * v + a * z
+        y[n] = z
+    return y
+
+
+def convolve(x: np.ndarray, h: np.ndarray) -> np.ndarray:
+    size = len(x) + len(h) - 1
+    return np.fft.irfft(np.fft.rfft(x, size) * np.fft.rfft(h, size), size)[: len(x)]
+
+
+def impact(rng, n: int, freqs, taus, amps, snap: float, snap_fc: float) -> np.ndarray:
+    """A struck object: damped modes with a ~0.1 ms rise and a high-passed noise snap."""
     t = np.arange(n) / SR
     rise = 1 - np.exp(-t / 0.0001)
     y = np.zeros(n)
@@ -59,36 +77,56 @@ def impact(n: int, freqs, taus, amps, snap: float, snap_fc: float, body=None) ->
     y *= rise
     noise = rng.standard_normal(n) * np.exp(-t / 0.0004)
     y += snap * highpass(noise, snap_fc)
-    if body:
-        f, tau, a = body
-        y += a * (1 - np.exp(-t / 0.0006)) * np.exp(-t / tau) * np.sin(2 * np.pi * f * t)
     return y
 
 
 def mouse_click() -> np.ndarray:
-    n = int(0.22 * SR)
+    rng = np.random.default_rng(1)
+
+    def resonators(n: int, freqs, qs, gains) -> np.ndarray:
+        """Impulse response of a bank of resonators; each decays in Q / (pi f) seconds."""
+        t = np.arange(n) / SR
+        h = np.zeros(n)
+        for f, q, g in zip(freqs, qs, gains):
+            h += g * np.exp(-t * np.pi * f / q) * np.sin(2 * np.pi * f * t + rng.uniform(0, 2 * np.pi))
+        return h
+
+    def strike(level: float, tune: float, bounce: float, knock: float) -> np.ndarray:
+        n = int(0.04 * SR)
+        t = np.arange(n) / SR
+        # The switch: a sharp pulse, its contact bounce, and a little grit.
+        pulse = np.hanning(5)
+        hit = np.zeros(n)
+        hit[:5] += pulse
+        hit[int(0.0011 * SR) :][:5] += bounce * pulse
+        hit += 0.35 * rng.standard_normal(n) * np.exp(-t / 0.0006)
+        # The button: dense, broad (Q 5-10), quickly dying plastic resonances centred near 4 kHz.
+        k = 32
+        freqs = np.exp(np.linspace(np.log(1300), np.log(11000), k)) * rng.uniform(0.95, 1.05, k) * tune
+        gains = np.exp(-np.log2(freqs / (4000 * tune)) ** 2 / 2) * rng.uniform(0.6, 1.0, k)
+        plate = resonators(n, freqs, rng.uniform(5, 10, k), gains)
+        # The shell's low knock, and the contact's high tick.
+        shell = resonators(n, [380 * tune, 720 * tune], [4, 5], [1.0, 0.6])
+        tick = 0.4 * highpass(rng.standard_normal(n) * np.exp(-t / 0.00025), 4000)
+        return level * (convolve(hit, plate) + 1.2 * knock * convolve(lowpass(hit, 2000), shell) + tick)
+
+    n = int(0.2 * SR)
     y = np.zeros(n)
-    down = impact(
-        int(0.06 * SR),
-        freqs=[1380, 2240, 3170, 4380, 5900, 8200],
-        taus=[0.007, 0.005, 0.0038, 0.0028, 0.002, 0.0012],
-        amps=[0.30, 0.65, 1.0, 0.75, 0.45, 0.22],
-        snap=0.55,
-        snap_fc=3000,
-        body=(190, 0.005, 0.22),
-    )
-    up = 0.5 * impact(
-        int(0.05 * SR),
-        freqs=[1530, 2490, 3520, 4860, 6550, 9100],
-        taus=[0.0053, 0.0038, 0.0029, 0.0021, 0.0015, 0.0009],
-        amps=[0.30, 0.65, 1.0, 0.75, 0.45, 0.22],
-        snap=0.4,
-        snap_fc=3500,
-        body=(210, 0.005, 0.08),
-    )
-    at_down, at_up = int(0.002 * SR), int(0.114 * SR)
+    down = strike(1.0, 1.0, bounce=0.4, knock=0.35)
+    up = strike(0.5, 1.07, bounce=0.2, knock=0.12)  # the release: lighter, a touch higher
+    at_down, at_up = int(0.002 * SR), int(0.107 * SR)
     y[at_down : at_down + len(down)] += down
     y[at_up : at_up + len(up)] += up
+    # A desk and a room: three early reflections and a faint diffuse tail.
+    ir = np.zeros(int(0.03 * SR))
+    ir[0] = 1.0
+    for ms, db in [(2.3, -16), (4.1, -19), (7.5, -22)]:
+        ir[int(ms * SR / 1000)] += 10 ** (db / 20)
+    t = np.arange(len(ir)) / SR
+    ir += 10 ** (-30 / 20) * rng.standard_normal(len(ir)) * np.exp(-t / 0.006)
+    y = convolve(y, ir)
+    # A microphone's gentle bottom and top, not a perfect digital spectrum.
+    y = lowpass(highpass(y, 120), 13000)
     return np.stack([y, y], axis=1)
 
 
@@ -118,6 +156,7 @@ def board_modules():
 
 
 def flaps() -> np.ndarray:
+    rng = np.random.default_rng(20261030)
     n = int(2.1 * SR)
     out = np.zeros((n, 2))
     clack_n = int(0.03 * SR)
@@ -137,6 +176,7 @@ def flaps() -> np.ndarray:
         d = m['decay'] * ring
         # Thin flaps: little low-mid (that's where the narration sits), a bright tick on top.
         y = impact(
+            rng,
             clack_n,
             freqs=[480 * p, 1500 * p, 2650 * p, 4300 * p, 6900 * p, 9600 * p],
             taus=[0.0035 * d, 0.0032 * d, 0.0028 * d, 0.0021 * d, 0.0015 * d, 0.0010 * d],
