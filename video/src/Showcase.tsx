@@ -69,8 +69,9 @@ export const Showcase: React.FC = () => (
 
     <Music />
 
-    <Sequence name="Flaps" from={2} durationInFrames={60}>
-      <Audio src={staticFile('sfx/flaps.wav')} volume={0.3} />
+    {/* Built from the board's own flip and settle schedule (scripts/sfx.py), so it starts on frame 0. */}
+    <Sequence name="Flaps" from={0} durationInFrames={64}>
+      <Audio src={staticFile('sfx/flaps.wav')} volume={0.33} />
     </Sequence>
     {(['intro', 'demo', 'loop', 'analyst', 'engineering', 'close'] as const).map((id) => (
       <Sequence key={id} name={`Whoosh ${id}`} from={scenes[id].from - 4} durationInFrames={28}>

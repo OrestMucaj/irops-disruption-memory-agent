@@ -33,7 +33,9 @@ export const DemoScene: React.FC = () => {
   const clickRow = e4 + 6;
 
   const one = c('s05-plan', 'One');
-  const clickRecs = c('s05-plan', 'click:') + 4;
+  // In the pause after the spoken "click:": its final "k" bursts right at the
+  // word's aligned end, so the press waits until it has died away.
+  const clickRecs = c('s05-plan', 'click:', 'end') + 5;
   const embeds = c('s05-plan', 'embeds');
   const finds = c('s05-plan', 'finds');
   const proposes = c('s05-plan', 'proposes');
@@ -264,17 +266,12 @@ export const DemoScene: React.FC = () => {
       <Kicker n="01" title="Product walkthrough" from={0} to={zz + 45} />
       <Disclosure text="Recorded on the live demo · all data synthetic" from={zz} to={zz + 150} />
 
+      {/* A mouse click on each on-screen click, landing with the cursor's press (two frames before its key). */}
       {[clickRow, clickRecs, clickChip, clickApprove].map((at) => (
-        <Sequence key={at} from={at - 1} durationInFrames={10}>
-          <Audio src={staticFile('sfx/click.wav')} volume={0.55} />
+        <Sequence key={at} from={at - 2} durationInFrames={8}>
+          <Audio src={staticFile('sfx/click.wav')} volume={0.32} />
         </Sequence>
       ))}
-      <Sequence from={recorded + 2} durationInFrames={24}>
-        <Audio src={staticFile('sfx/confirm.wav')} volume={0.32} />
-      </Sequence>
-      <Sequence from={proposes + 2} durationInFrames={24}>
-        <Audio src={staticFile('sfx/confirm.wav')} volume={0.22} />
-      </Sequence>
     </AbsoluteFill>
   );
 };

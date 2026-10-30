@@ -38,7 +38,8 @@ The capture writes to the live demo. Re-seed afterwards so ZZ1137 is open again.
 | `src/timeline.ts` | Every scene, cue and caption is timed from the narration |
 | `src/scenes/` | Hook, intro, walkthrough, memory loop, analyst, engineering, close |
 | `src/components/ScreenCamera.tsx` | Camera, cursor and spotlights over the captures |
-| `public/sfx/` | Clicks, flaps, whoosh, confirm: synthesised with ffmpeg/numpy |
+| `scripts/sfx.py` | Synthesises the mouse click and the split-flap board from the board's own schedule |
+| `public/sfx/` | Mouse click, split-flap board, transition whoosh: all synthesised, no third-party audio |
 | `public/fonts/` | Inter and JetBrains Mono (SIL OFL), self-hosted |
 
 ## Rebuild
@@ -60,6 +61,12 @@ Re-capture (from the repo root, after `npm run build`; `MCP_API_KEY` and
 
 ```bash
 NODE_USE_ENV_PROXY=1 node --env-file=.env video/capture/capture.cjs
+```
+
+Sound effects, only if `scripts/sfx.py` or the hook's board changes (numpy):
+
+```bash
+python3 scripts/sfx.py
 ```
 
 Narration, only if the script changes (`ELEVENLABS_API_KEY`; voice

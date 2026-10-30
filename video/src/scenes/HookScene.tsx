@@ -13,6 +13,9 @@ import { C, FONT, MONO } from '../theme';
 
 type Row = { time: string; flight: string; from: string; to: string; delay: number; hero?: boolean };
 
+// scripts/sfx.py builds the board's sound from these rows and FlapText's settle
+// schedule; re-run it if either changes.
+
 const ROWS: Row[] = [
   { time: '06:00', flight: 'ZZ1912', from: 'BRU', to: 'AMS', delay: 352 },
   { time: '08:50', flight: 'ZZ2052', from: 'LHR', to: 'ORD', delay: 86 },

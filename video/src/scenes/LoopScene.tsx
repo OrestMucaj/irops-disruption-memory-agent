@@ -1,6 +1,5 @@
 import React from 'react';
-import { AbsoluteFill, Easing, interpolate, Sequence, staticFile, useCurrentFrame } from 'remotion';
-import { Audio } from '@remotion/media';
+import { AbsoluteFill, Easing, interpolate, useCurrentFrame } from 'remotion';
 import {
   AlertTriangle,
   Binary,
@@ -252,10 +251,6 @@ export const LoopScene: React.FC = () => {
 
       <Kicker n="02" title="The memory loop" from={0} />
       <Disclosure text="Recorded on the live demo · all data synthetic" from={T[6]} />
-
-      <Sequence from={back + 4} durationInFrames={24}>
-        <Audio src={staticFile('sfx/confirm.wav')} volume={0.28} />
-      </Sequence>
     </AbsoluteFill>
   );
 };

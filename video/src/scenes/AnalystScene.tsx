@@ -118,11 +118,8 @@ export const AnalystScene: React.FC = () => {
       )}
 
       <Kicker n="03" title="Ask the memory" from={0} to={click + 20} />
-      <Sequence from={click - 1} durationInFrames={10}>
-        <Audio src={staticFile('sfx/click.wav')} volume={0.55} />
-      </Sequence>
-      <Sequence from={answerAt} durationInFrames={24}>
-        <Audio src={staticFile('sfx/confirm.wav')} volume={0.22} />
+      <Sequence from={click - 2} durationInFrames={8}>
+        <Audio src={staticFile('sfx/click.wav')} volume={0.32} />
       </Sequence>
     </AbsoluteFill>
   );
