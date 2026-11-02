@@ -1,0 +1,2013 @@
+[
+ {
+  "id": "s01-hook",
+  "scene": "hook",
+  "text": "When a flight is disrupted, every minute counts. What if every disruption you'd already solved could help solve the next one?",
+  "file": "voiceover/s01-hook.mp3",
+  "tempo": 1,
+  "speechStart": 0,
+  "speechEnd": 6.966,
+  "audioDuration": 8.019592,
+  "words": [
+   {
+    "text": "When",
+    "start": 0,
+    "end": 0.197
+   },
+   {
+    "text": "a",
+    "start": 0.232,
+    "end": 0.255
+   },
+   {
+    "text": "flight",
+    "start": 0.302,
+    "end": 0.546
+   },
+   {
+    "text": "is",
+    "start": 0.592,
+    "end": 0.662
+   },
+   {
+    "text": "disrupted,",
+    "start": 0.708,
+    "end": 1.254
+   },
+   {
+    "text": "every",
+    "start": 1.614,
+    "end": 1.892
+   },
+   {
+    "text": "minute",
+    "start": 1.962,
+    "end": 2.194
+   },
+   {
+    "text": "counts.",
+    "start": 2.241,
+    "end": 2.659
+   },
+   {
+    "text": "What",
+    "start": 3.286,
+    "end": 3.448
+   },
+   {
+    "text": "if",
+    "start": 3.483,
+    "end": 3.553
+   },
+   {
+    "text": "every",
+    "start": 3.634,
+    "end": 3.901
+   },
+   {
+    "text": "disruption",
+    "start": 3.959,
+    "end": 4.435
+   },
+   {
+    "text": "you'd",
+    "start": 4.47,
+    "end": 4.632
+   },
+   {
+    "text": "already",
+    "start": 4.702,
+    "end": 5.108
+   },
+   {
+    "text": "solved",
+    "start": 5.166,
+    "end": 5.561
+   },
+   {
+    "text": "could",
+    "start": 5.608,
+    "end": 5.759
+   },
+   {
+    "text": "help",
+    "start": 5.782,
+    "end": 5.933
+   },
+   {
+    "text": "solve",
+    "start": 6.002,
+    "end": 6.304
+   },
+   {
+    "text": "the",
+    "start": 6.339,
+    "end": 6.409
+   },
+   {
+    "text": "next",
+    "start": 6.455,
+    "end": 6.687
+   },
+   {
+    "text": "one?",
+    "start": 6.757,
+    "end": 6.966
+   }
+  ]
+ },
+ {
+  "id": "s02-problem",
+  "scene": "intro",
+  "text": "Operations desks handle disruptions every day. Systems keep the records, but not the judgement: what actually worked last time.",
+  "file": "voiceover/s02-problem.mp3",
+  "tempo": 1.1,
+  "speechStart": 0,
+  "speechEnd": 7.979090909090908,
+  "audioDuration": 9.038367,
+  "words": [
+   {
+    "text": "Operations",
+    "start": 0,
+    "end": 0.6018181818181818
+   },
+   {
+    "text": "desks",
+    "start": 0.6545454545454544,
+    "end": 0.9499999999999998
+   },
+   {
+    "text": "handle",
+    "start": 1.0136363636363634,
+    "end": 1.319090909090909
+   },
+   {
+    "text": "disruptions",
+    "start": 1.3509090909090908,
+    "end": 1.9318181818181817
+   },
+   {
+    "text": "every",
+    "start": 2.037272727272727,
+    "end": 2.3645454545454543
+   },
+   {
+    "text": "day.",
+    "start": 2.417272727272727,
+    "end": 2.6809090909090907
+   },
+   {
+    "text": "Systems",
+    "start": 3.2509090909090905,
+    "end": 3.693636363636363
+   },
+   {
+    "text": "keep",
+    "start": 3.757272727272727,
+    "end": 3.9372727272727275
+   },
+   {
+    "text": "the",
+    "start": 3.9790909090909086,
+    "end": 4.042727272727272
+   },
+   {
+    "text": "records,",
+    "start": 4.095454545454545,
+    "end": 4.506363636363636
+   },
+   {
+    "text": "but",
+    "start": 4.812727272727272,
+    "end": 4.9818181818181815
+   },
+   {
+    "text": "not",
+    "start": 5.055454545454545,
+    "end": 5.298181818181818
+   },
+   {
+    "text": "the",
+    "start": 5.350909090909091,
+    "end": 5.4354545454545455
+   },
+   {
+    "text": "judgement:",
+    "start": 5.499090909090909,
+    "end": 5.952727272727272
+   },
+   {
+    "text": "what",
+    "start": 6.364545454545454,
+    "end": 6.554545454545454
+   },
+   {
+    "text": "actually",
+    "start": 6.6072727272727265,
+    "end": 7.019090909090909
+   },
+   {
+    "text": "worked",
+    "start": 7.060909090909091,
+    "end": 7.303636363636364
+   },
+   {
+    "text": "last",
+    "start": 7.377272727272727,
+    "end": 7.609999999999999
+   },
+   {
+    "text": "time.",
+    "start": 7.641818181818182,
+    "end": 7.979090909090908
+   }
+  ]
+ },
+ {
+  "id": "s03-reveal",
+  "scene": "intro",
+  "text": "Meet the IROPS Disruption Memory Agent. Every resolved disruption becomes precedent for the next one.",
+  "file": "voiceover/s03-reveal.mp3",
+  "tempo": 1.1,
+  "speechStart": 0,
+  "speechEnd": 5.952727272727272,
+  "audioDuration": 6.29551,
+  "words": [
+   {
+    "text": "Meet",
+    "start": 0,
+    "end": 0.25363636363636366
+   },
+   {
+    "text": "the",
+    "start": 0.30636363636363634,
+    "end": 0.3909090909090909
+   },
+   {
+    "text": "IROPS",
+    "start": 0.47454545454545455,
+    "end": 0.9709090909090908
+   },
+   {
+    "text": "Disruption",
+    "start": 1.0136363636363634,
+    "end": 1.5518181818181818
+   },
+   {
+    "text": "Memory",
+    "start": 1.6363636363636362,
+    "end": 1.9418181818181817
+   },
+   {
+    "text": "Agent.",
+    "start": 2.0054545454545454,
+    "end": 2.395454545454545
+   },
+   {
+    "text": "Every",
+    "start": 2.786363636363636,
+    "end": 3.124545454545454
+   },
+   {
+    "text": "resolved",
+    "start": 3.198181818181818,
+    "end": 3.61
+   },
+   {
+    "text": "disruption",
+    "start": 3.630909090909091,
+    "end": 4.1054545454545455
+   },
+   {
+    "text": "becomes",
+    "start": 4.169090909090909,
+    "end": 4.528181818181817
+   },
+   {
+    "text": "precedent",
+    "start": 4.601818181818182,
+    "end": 5.1081818181818175
+   },
+   {
+    "text": "for",
+    "start": 5.16090909090909,
+    "end": 5.266363636363636
+   },
+   {
+    "text": "the",
+    "start": 5.309090909090909,
+    "end": 5.371818181818181
+   },
+   {
+    "text": "next",
+    "start": 5.4354545454545455,
+    "end": 5.657272727272726
+   },
+   {
+    "text": "one.",
+    "start": 5.7309090909090905,
+    "end": 5.952727272727272
+   }
+  ]
+ },
+ {
+  "id": "s04-console",
+  "scene": "demo",
+  "text": "Here's the console. Flight ZZ1137: a hundred and ninety minutes late, twenty-three passengers misconnecting.",
+  "file": "voiceover/s04-console.mp3",
+  "tempo": 1.1,
+  "speechStart": 0,
+  "speechEnd": 6.733636363636363,
+  "audioDuration": 7.57551,
+  "words": [
+   {
+    "text": "Here's",
+    "start": 0,
+    "end": 0.25363636363636366
+   },
+   {
+    "text": "the",
+    "start": 0.28454545454545455,
+    "end": 0.34818181818181815
+   },
+   {
+    "text": "console.",
+    "start": 0.37999999999999995,
+    "end": 0.8336363636363636
+   },
+   {
+    "text": "Flight",
+    "start": 1.7199999999999998,
+    "end": 1.9736363636363634
+   },
+   {
+    "text": "ZZ1137:",
+    "start": 2.0263636363636364,
+    "end": 3.3454545454545452
+   },
+   {
+    "text": "a",
+    "start": 3.62,
+    "end": 3.6727272727272724
+   },
+   {
+    "text": "hundred",
+    "start": 3.747272727272727,
+    "end": 3.9899999999999998
+   },
+   {
+    "text": "and",
+    "start": 4.010909090909091,
+    "end": 4.073636363636363
+   },
+   {
+    "text": "ninety",
+    "start": 4.116363636363635,
+    "end": 4.327272727272727
+   },
+   {
+    "text": "minutes",
+    "start": 4.37,
+    "end": 4.59090909090909
+   },
+   {
+    "text": "late,",
+    "start": 4.633636363636364,
+    "end": 4.929090909090909
+   },
+   {
+    "text": "twenty-three",
+    "start": 5.119090909090909,
+    "end": 5.583636363636363
+   },
+   {
+    "text": "passengers",
+    "start": 5.625454545454545,
+    "end": 6.11090909090909
+   },
+   {
+    "text": "misconnecting.",
+    "start": 6.163636363636363,
+    "end": 6.733636363636363
+   }
+  ]
+ },
+ {
+  "id": "s05-plan",
+  "scene": "demo",
+  "text": "One click: the agent embeds the case, finds similar past disruptions, and Nova Lite proposes a plan that cites its precedents.",
+  "file": "voiceover/s05-plan.mp3",
+  "tempo": 1,
+  "speechStart": 0,
+  "speechEnd": 7.546,
+  "audioDuration": 8.071837,
+  "words": [
+   {
+    "text": "One",
+    "start": 0,
+    "end": 0.221
+   },
+   {
+    "text": "click:",
+    "start": 0.255,
+    "end": 0.522
+   },
+   {
+    "text": "the",
+    "start": 0.766,
+    "end": 0.882
+   },
+   {
+    "text": "agent",
+    "start": 0.94,
+    "end": 1.242
+   },
+   {
+    "text": "embeds",
+    "start": 1.3,
+    "end": 1.695
+   },
+   {
+    "text": "the",
+    "start": 1.741,
+    "end": 1.811
+   },
+   {
+    "text": "case,",
+    "start": 1.846,
+    "end": 2.229
+   },
+   {
+    "text": "finds",
+    "start": 2.368,
+    "end": 2.74
+   },
+   {
+    "text": "similar",
+    "start": 2.786,
+    "end": 3.146
+   },
+   {
+    "text": "past",
+    "start": 3.204,
+    "end": 3.483
+   },
+   {
+    "text": "disruptions,",
+    "start": 3.518,
+    "end": 4.133
+   },
+   {
+    "text": "and",
+    "start": 4.377,
+    "end": 4.54
+   },
+   {
+    "text": "Nova",
+    "start": 4.644,
+    "end": 4.923
+   },
+   {
+    "text": "Lite",
+    "start": 4.981,
+    "end": 5.236
+   },
+   {
+    "text": "proposes",
+    "start": 5.283,
+    "end": 5.793
+   },
+   {
+    "text": "a",
+    "start": 5.84,
+    "end": 5.863
+   },
+   {
+    "text": "plan",
+    "start": 5.921,
+    "end": 6.235
+   },
+   {
+    "text": "that",
+    "start": 6.293,
+    "end": 6.42
+   },
+   {
+    "text": "cites",
+    "start": 6.478,
+    "end": 6.769
+   },
+   {
+    "text": "its",
+    "start": 6.827,
+    "end": 6.954
+   },
+   {
+    "text": "precedents.",
+    "start": 7.001,
+    "end": 7.546
+   }
+  ]
+ },
+ {
+  "id": "s06-guardrail",
+  "scene": "demo",
+  "text": "Code checks the plan too: stranded passengers left uncovered are flagged before anyone approves.",
+  "file": "voiceover/s06-guardrail.mp3",
+  "tempo": 1.1,
+  "speechStart": 0,
+  "speechEnd": 5.15090909090909,
+  "audioDuration": 5.825306,
+  "words": [
+   {
+    "text": "Code",
+    "start": 0,
+    "end": 0.30636363636363634
+   },
+   {
+    "text": "checks",
+    "start": 0.3272727272727272,
+    "end": 0.5809090909090908
+   },
+   {
+    "text": "the",
+    "start": 0.6118181818181818,
+    "end": 0.6754545454545454
+   },
+   {
+    "text": "plan",
+    "start": 0.7072727272727273,
+    "end": 0.9181818181818181
+   },
+   {
+    "text": "too:",
+    "start": 0.9818181818181818,
+    "end": 1.2136363636363634
+   },
+   {
+    "text": "stranded",
+    "start": 1.6463636363636363,
+    "end": 2.047272727272727
+   },
+   {
+    "text": "passengers",
+    "start": 2.1,
+    "end": 2.585454545454545
+   },
+   {
+    "text": "left",
+    "start": 2.638181818181818,
+    "end": 2.807272727272727
+   },
+   {
+    "text": "uncovered",
+    "start": 2.8709090909090906,
+    "end": 3.3036363636363633
+   },
+   {
+    "text": "are",
+    "start": 3.3454545454545452,
+    "end": 3.4509090909090903
+   },
+   {
+    "text": "flagged",
+    "start": 3.493636363636363,
+    "end": 3.926363636363636
+   },
+   {
+    "text": "before",
+    "start": 3.9790909090909086,
+    "end": 4.263636363636364
+   },
+   {
+    "text": "anyone",
+    "start": 4.316363636363636,
+    "end": 4.654545454545454
+   },
+   {
+    "text": "approves.",
+    "start": 4.675454545454545,
+    "end": 5.15090909090909
+   }
+  ]
+ },
+ {
+  "id": "s07-precedent",
+  "scene": "demo",
+  "text": "Open a precedent to see what the desk did last time, and how it turned out. Mixed results come back too, with what went wrong.",
+  "file": "voiceover/s07-precedent.mp3",
+  "tempo": 1,
+  "speechStart": 0,
+  "speechEnd": 7.465,
+  "audioDuration": 8.620408,
+  "words": [
+   {
+    "text": "Open",
+    "start": 0,
+    "end": 0.279
+   },
+   {
+    "text": "a",
+    "start": 0.325,
+    "end": 0.348
+   },
+   {
+    "text": "precedent",
+    "start": 0.418,
+    "end": 0.906
+   },
+   {
+    "text": "to",
+    "start": 0.94,
+    "end": 0.998
+   },
+   {
+    "text": "see",
+    "start": 1.068,
+    "end": 1.219
+   },
+   {
+    "text": "what",
+    "start": 1.254,
+    "end": 1.382
+   },
+   {
+    "text": "the",
+    "start": 1.416,
+    "end": 1.486
+   },
+   {
+    "text": "desk",
+    "start": 1.533,
+    "end": 1.8
+   },
+   {
+    "text": "did",
+    "start": 1.869,
+    "end": 2.032
+   },
+   {
+    "text": "last",
+    "start": 2.101,
+    "end": 2.345
+   },
+   {
+    "text": "time,",
+    "start": 2.392,
+    "end": 2.74
+   },
+   {
+    "text": "and",
+    "start": 2.937,
+    "end": 3.088
+   },
+   {
+    "text": "how",
+    "start": 3.146,
+    "end": 3.251
+   },
+   {
+    "text": "it",
+    "start": 3.309,
+    "end": 3.379
+   },
+   {
+    "text": "turned",
+    "start": 3.413,
+    "end": 3.669
+   },
+   {
+    "text": "out.",
+    "start": 3.727,
+    "end": 3.959
+   },
+   {
+    "text": "Mixed",
+    "start": 4.679,
+    "end": 4.946
+   },
+   {
+    "text": "results",
+    "start": 4.992,
+    "end": 5.352
+   },
+   {
+    "text": "come",
+    "start": 5.41,
+    "end": 5.573
+   },
+   {
+    "text": "back",
+    "start": 5.608,
+    "end": 5.805
+   },
+   {
+    "text": "too,",
+    "start": 5.863,
+    "end": 6.13
+   },
+   {
+    "text": "with",
+    "start": 6.548,
+    "end": 6.722
+   },
+   {
+    "text": "what",
+    "start": 6.757,
+    "end": 6.885
+   },
+   {
+    "text": "went",
+    "start": 6.931,
+    "end": 7.082
+   },
+   {
+    "text": "wrong.",
+    "start": 7.117,
+    "end": 7.465
+   }
+  ]
+ },
+ {
+  "id": "s08-approve",
+  "scene": "demo",
+  "text": "Nothing executes automatically. Each action is a proposal a person approves, edits or rejects, and every decision is recorded.",
+  "file": "voiceover/s08-approve.mp3",
+  "tempo": 1.1,
+  "speechStart": 0,
+  "speechEnd": 7.504545454545455,
+  "audioDuration": 8.071837,
+  "words": [
+   {
+    "text": "Nothing",
+    "start": 0,
+    "end": 0.33818181818181814
+   },
+   {
+    "text": "executes",
+    "start": 0.4327272727272727,
+    "end": 0.8863636363636362
+   },
+   {
+    "text": "automatically.",
+    "start": 0.9290909090909091,
+    "end": 1.5409090909090908
+   },
+   {
+    "text": "Each",
+    "start": 1.9527272727272726,
+    "end": 2.1527272727272724
+   },
+   {
+    "text": "action",
+    "start": 2.2054545454545456,
+    "end": 2.5118181818181817
+   },
+   {
+    "text": "is",
+    "start": 2.5645454545454545,
+    "end": 2.649090909090909
+   },
+   {
+    "text": "a",
+    "start": 2.6918181818181814,
+    "end": 2.7227272727272727
+   },
+   {
+    "text": "proposal",
+    "start": 2.765454545454545,
+    "end": 3.2827272727272727
+   },
+   {
+    "text": "a",
+    "start": 3.3563636363636364,
+    "end": 3.398181818181818
+   },
+   {
+    "text": "person",
+    "start": 3.472727272727272,
+    "end": 3.757272727272727
+   },
+   {
+    "text": "approves,",
+    "start": 3.8099999999999996,
+    "end": 4.327272727272727
+   },
+   {
+    "text": "edits",
+    "start": 4.549090909090908,
+    "end": 4.8972727272727266
+   },
+   {
+    "text": "or",
+    "start": 4.970909090909091,
+    "end": 5.087272727272727
+   },
+   {
+    "text": "rejects,",
+    "start": 5.15090909090909,
+    "end": 5.678181818181818
+   },
+   {
+    "text": "and",
+    "start": 5.931818181818182,
+    "end": 6.089999999999999
+   },
+   {
+    "text": "every",
+    "start": 6.184545454545454,
+    "end": 6.49090909090909
+   },
+   {
+    "text": "decision",
+    "start": 6.543636363636363,
+    "end": 6.913636363636363
+   },
+   {
+    "text": "is",
+    "start": 6.9763636363636365,
+    "end": 7.060909090909091
+   },
+   {
+    "text": "recorded.",
+    "start": 7.113636363636363,
+    "end": 7.504545454545455
+   }
+  ]
+ },
+ {
+  "id": "s09-audit",
+  "scene": "demo",
+  "text": "Every run is logged: the model, here Amazon Nova Lite, its token counts and latency, and the exact cases it retrieved.",
+  "file": "voiceover/s09-audit.mp3",
+  "tempo": 1.1,
+  "speechStart": 0,
+  "speechEnd": 8.295454545454545,
+  "audioDuration": 9.377959,
+  "words": [
+   {
+    "text": "Every",
+    "start": 0,
+    "end": 0.33818181818181814
+   },
+   {
+    "text": "run",
+    "start": 0.4118181818181818,
+    "end": 0.6545454545454544
+   },
+   {
+    "text": "is",
+    "start": 0.7172727272727273,
+    "end": 0.8545454545454544
+   },
+   {
+    "text": "logged:",
+    "start": 0.9290909090909091,
+    "end": 1.3399999999999999
+   },
+   {
+    "text": "the",
+    "start": 1.699090909090909,
+    "end": 1.7727272727272725
+   },
+   {
+    "text": "model,",
+    "start": 1.8263636363636362,
+    "end": 2.1218181818181816
+   },
+   {
+    "text": "here",
+    "start": 2.5227272727272725,
+    "end": 2.839090909090909
+   },
+   {
+    "text": "Amazon",
+    "start": 3.102727272727272,
+    "end": 3.5045454545454544
+   },
+   {
+    "text": "Nova",
+    "start": 3.5572727272727267,
+    "end": 3.7681818181818176
+   },
+   {
+    "text": "Lite,",
+    "start": 3.820909090909091,
+    "end": 4.169090909090909
+   },
+   {
+    "text": "its",
+    "start": 4.453636363636363,
+    "end": 4.622727272727272
+   },
+   {
+    "text": "token",
+    "start": 4.675454545454545,
+    "end": 4.970909090909091
+   },
+   {
+    "text": "counts",
+    "start": 5.0236363636363635,
+    "end": 5.350909090909091
+   },
+   {
+    "text": "and",
+    "start": 5.393636363636363,
+    "end": 5.54090909090909
+   },
+   {
+    "text": "latency,",
+    "start": 5.636363636363636,
+    "end": 6.131818181818182
+   },
+   {
+    "text": "and",
+    "start": 6.449090909090909,
+    "end": 6.586363636363636
+   },
+   {
+    "text": "the",
+    "start": 6.639090909090909,
+    "end": 6.712727272727273
+   },
+   {
+    "text": "exact",
+    "start": 6.7763636363636355,
+    "end": 7.187272727272727
+   },
+   {
+    "text": "cases",
+    "start": 7.24,
+    "end": 7.609999999999999
+   },
+   {
+    "text": "it",
+    "start": 7.683636363636363,
+    "end": 7.779090909090908
+   },
+   {
+    "text": "retrieved.",
+    "start": 7.831818181818181,
+    "end": 8.295454545454545
+   }
+  ]
+ },
+ {
+  "id": "s10-loop",
+  "scene": "loop",
+  "text": "This loop is the heart of the product. Each disruption becomes a summary and an embedding. Similar resolved cases are retrieved, the agent proposes, and a person decides.",
+  "file": "voiceover/s10-loop.mp3",
+  "tempo": 1.1,
+  "speechStart": 0,
+  "speechEnd": 10.543636363636363,
+  "audioDuration": 11.52,
+  "words": [
+   {
+    "text": "This",
+    "start": 0,
+    "end": 0.2109090909090909
+   },
+   {
+    "text": "loop",
+    "start": 0.2636363636363636,
+    "end": 0.4536363636363636
+   },
+   {
+    "text": "is",
+    "start": 0.5063636363636363,
+    "end": 0.6018181818181818
+   },
+   {
+    "text": "the",
+    "start": 0.6436363636363636,
+    "end": 0.7072727272727273
+   },
+   {
+    "text": "heart",
+    "start": 0.7809090909090909,
+    "end": 1.0763636363636362
+   },
+   {
+    "text": "of",
+    "start": 1.129090909090909,
+    "end": 1.2245454545454544
+   },
+   {
+    "text": "the",
+    "start": 1.2663636363636364,
+    "end": 1.33
+   },
+   {
+    "text": "product.",
+    "start": 1.3718181818181816,
+    "end": 1.7627272727272727
+   },
+   {
+    "text": "Each",
+    "start": 2.227272727272727,
+    "end": 2.4490909090909088
+   },
+   {
+    "text": "disruption",
+    "start": 2.5018181818181815,
+    "end": 2.9654545454545453
+   },
+   {
+    "text": "becomes",
+    "start": 3.0181818181818176,
+    "end": 3.377272727272727
+   },
+   {
+    "text": "a",
+    "start": 3.4299999999999997,
+    "end": 3.4618181818181815
+   },
+   {
+    "text": "summary",
+    "start": 3.5254545454545454,
+    "end": 3.894545454545454
+   },
+   {
+    "text": "and",
+    "start": 3.9899999999999998,
+    "end": 4.253636363636364
+   },
+   {
+    "text": "an",
+    "start": 4.306363636363636,
+    "end": 4.37
+   },
+   {
+    "text": "embedding.",
+    "start": 4.411818181818181,
+    "end": 4.812727272727272
+   },
+   {
+    "text": "Similar",
+    "start": 5.751818181818181,
+    "end": 6.079090909090909
+   },
+   {
+    "text": "resolved",
+    "start": 6.131818181818182,
+    "end": 6.459090909090909
+   },
+   {
+    "text": "cases",
+    "start": 6.49090909090909,
+    "end": 6.839090909090908
+   },
+   {
+    "text": "are",
+    "start": 6.891818181818182,
+    "end": 7.060909090909091
+   },
+   {
+    "text": "retrieved,",
+    "start": 7.1036363636363635,
+    "end": 7.641818181818182
+   },
+   {
+    "text": "the",
+    "start": 7.831818181818181,
+    "end": 7.926363636363635
+   },
+   {
+    "text": "agent",
+    "start": 7.989999999999999,
+    "end": 8.264545454545454
+   },
+   {
+    "text": "proposes,",
+    "start": 8.317272727272726,
+    "end": 8.823636363636362
+   },
+   {
+    "text": "and",
+    "start": 9.15090909090909,
+    "end": 9.298181818181817
+   },
+   {
+    "text": "a",
+    "start": 9.34090909090909,
+    "end": 9.372727272727273
+   },
+   {
+    "text": "person",
+    "start": 9.425454545454546,
+    "end": 9.773636363636362
+   },
+   {
+    "text": "decides.",
+    "start": 9.942727272727272,
+    "end": 10.543636363636363
+   }
+  ]
+ },
+ {
+  "id": "s11-close",
+  "scene": "loop",
+  "text": "Record the outcome, and it's written with its embedding in the same transaction that turns the case into precedent. Search for a similar weather disruption now, and ZZ1137 comes back.",
+  "file": "voiceover/s11-close.mp3",
+  "tempo": 1.05,
+  "speechStart": 0,
+  "speechEnd": 11.532380952380953,
+  "audioDuration": 12.277551,
+  "words": [
+   {
+    "text": "Record",
+    "start": 0,
+    "end": 0.4533333333333333
+   },
+   {
+    "text": "the",
+    "start": 0.5085714285714286,
+    "end": 0.5857142857142856
+   },
+   {
+    "text": "outcome,",
+    "start": 0.6523809523809524,
+    "end": 1.1723809523809525
+   },
+   {
+    "text": "and",
+    "start": 1.3599999999999999,
+    "end": 1.5038095238095237
+   },
+   {
+    "text": "it's",
+    "start": 1.559047619047619,
+    "end": 1.6809523809523808
+   },
+   {
+    "text": "written",
+    "start": 1.7142857142857142,
+    "end": 1.9904761904761903
+   },
+   {
+    "text": "with",
+    "start": 2.045714285714286,
+    "end": 2.2
+   },
+   {
+    "text": "its",
+    "start": 2.244761904761905,
+    "end": 2.3666666666666663
+   },
+   {
+    "text": "embedding",
+    "start": 2.4104761904761904,
+    "end": 2.8304761904761904
+   },
+   {
+    "text": "in",
+    "start": 2.875238095238095,
+    "end": 2.9304761904761905
+   },
+   {
+    "text": "the",
+    "start": 2.974285714285714,
+    "end": 3.040952380952381
+   },
+   {
+    "text": "same",
+    "start": 3.096190476190476,
+    "end": 3.35047619047619
+   },
+   {
+    "text": "transaction",
+    "start": 3.394285714285714,
+    "end": 4.0685714285714285
+   },
+   {
+    "text": "that",
+    "start": 4.1466666666666665,
+    "end": 4.312380952380952
+   },
+   {
+    "text": "turns",
+    "start": 4.356190476190476,
+    "end": 4.643809523809524
+   },
+   {
+    "text": "the",
+    "start": 4.699047619047619,
+    "end": 4.765714285714285
+   },
+   {
+    "text": "case",
+    "start": 4.809523809523809,
+    "end": 5.086666666666667
+   },
+   {
+    "text": "into",
+    "start": 5.13047619047619,
+    "end": 5.307619047619048
+   },
+   {
+    "text": "precedent.",
+    "start": 5.373333333333333,
+    "end": 5.871428571428571
+   },
+   {
+    "text": "Search",
+    "start": 6.965714285714285,
+    "end": 7.231428571428571
+   },
+   {
+    "text": "for",
+    "start": 7.2752380952380955,
+    "end": 7.385714285714285
+   },
+   {
+    "text": "a",
+    "start": 7.441904761904762,
+    "end": 7.463809523809523
+   },
+   {
+    "text": "similar",
+    "start": 7.519047619047618,
+    "end": 7.8723809523809525
+   },
+   {
+    "text": "weather",
+    "start": 7.917142857142857,
+    "end": 8.138095238095238
+   },
+   {
+    "text": "disruption",
+    "start": 8.181904761904761,
+    "end": 8.658095238095237
+   },
+   {
+    "text": "now,",
+    "start": 8.713333333333333,
+    "end": 8.944761904761904
+   },
+   {
+    "text": "and",
+    "start": 9.255238095238095,
+    "end": 9.40952380952381
+   },
+   {
+    "text": "ZZ1137",
+    "start": 9.476190476190474,
+    "end": 10.924761904761905
+   },
+   {
+    "text": "comes",
+    "start": 10.979999999999999,
+    "end": 11.20095238095238
+   },
+   {
+    "text": "back.",
+    "start": 11.256190476190476,
+    "end": 11.532380952380953
+   }
+  ]
+ },
+ {
+  "id": "s12-chatbot",
+  "scene": "loop",
+  "text": "Even rejected proposals are kept. Unlike a chatbot, what it recommends tomorrow depends on what it recorded today.",
+  "file": "voiceover/s12-chatbot.mp3",
+  "tempo": 1.1,
+  "speechStart": 0,
+  "speechEnd": 7.049999999999999,
+  "audioDuration": 7.758367,
+  "words": [
+   {
+    "text": "Even",
+    "start": 0,
+    "end": 0.27454545454545454
+   },
+   {
+    "text": "rejected",
+    "start": 0.33818181818181814,
+    "end": 0.8336363636363636
+   },
+   {
+    "text": "proposals",
+    "start": 0.8863636363636362,
+    "end": 1.4563636363636363
+   },
+   {
+    "text": "are",
+    "start": 1.5090909090909088,
+    "end": 1.6045454545454543
+   },
+   {
+    "text": "kept.",
+    "start": 1.6463636363636363,
+    "end": 1.9845454545454542
+   },
+   {
+    "text": "Unlike",
+    "start": 2.3745454545454545,
+    "end": 2.7227272727272727
+   },
+   {
+    "text": "a",
+    "start": 2.754545454545454,
+    "end": 2.775454545454545
+   },
+   {
+    "text": "chatbot,",
+    "start": 2.828181818181818,
+    "end": 3.398181818181818
+   },
+   {
+    "text": "what",
+    "start": 3.630909090909091,
+    "end": 3.8099999999999996
+   },
+   {
+    "text": "it",
+    "start": 3.852727272727273,
+    "end": 3.9154545454545455
+   },
+   {
+    "text": "recommends",
+    "start": 3.958181818181818,
+    "end": 4.464545454545454
+   },
+   {
+    "text": "tomorrow",
+    "start": 4.5172727272727276,
+    "end": 5.013636363636363
+   },
+   {
+    "text": "depends",
+    "start": 5.14,
+    "end": 5.6045454545454545
+   },
+   {
+    "text": "on",
+    "start": 5.657272727272726,
+    "end": 5.751818181818181
+   },
+   {
+    "text": "what",
+    "start": 5.794545454545454,
+    "end": 5.931818181818182
+   },
+   {
+    "text": "it",
+    "start": 5.973636363636363,
+    "end": 6.037272727272727
+   },
+   {
+    "text": "recorded",
+    "start": 6.089999999999999,
+    "end": 6.543636363636363
+   },
+   {
+    "text": "today.",
+    "start": 6.6072727272727265,
+    "end": 7.049999999999999
+   }
+  ]
+ },
+ {
+  "id": "s13-analyst",
+  "scene": "analyst",
+  "text": "You can also question the memory in plain English. Nova Lite writes the SQL and runs it through CockroachDB's managed MCP server, read-only by the app's own guardrails.",
+  "file": "voiceover/s13-analyst.mp3",
+  "tempo": 1.01,
+  "speechStart": 0,
+  "speechEnd": 11.023762376237624,
+  "audioDuration": 11.441633,
+  "words": [
+   {
+    "text": "You",
+    "start": 0,
+    "end": 0.1495049504950495
+   },
+   {
+    "text": "can",
+    "start": 0.19504950495049506,
+    "end": 0.3099009900990099
+   },
+   {
+    "text": "also",
+    "start": 0.3445544554455445,
+    "end": 0.5742574257425742
+   },
+   {
+    "text": "question",
+    "start": 0.6435643564356436,
+    "end": 1
+   },
+   {
+    "text": "the",
+    "start": 1.0574257425742575,
+    "end": 1.1267326732673266
+   },
+   {
+    "text": "memory",
+    "start": 1.195049504950495,
+    "end": 1.5633663366336634
+   },
+   {
+    "text": "in",
+    "start": 1.620792079207921,
+    "end": 1.700990099009901
+   },
+   {
+    "text": "plain",
+    "start": 1.7821782178217822,
+    "end": 2.0574257425742575
+   },
+   {
+    "text": "English.",
+    "start": 2.149504950495049,
+    "end": 2.586138613861386
+   },
+   {
+    "text": "Nova",
+    "start": 2.9425742574257425,
+    "end": 3.2534653465346532
+   },
+   {
+    "text": "Lite",
+    "start": 3.3336633663366335,
+    "end": 3.60990099009901
+   },
+   {
+    "text": "writes",
+    "start": 3.6554455445544556,
+    "end": 4
+   },
+   {
+    "text": "the",
+    "start": 4.0574257425742575,
+    "end": 4.138613861386139
+   },
+   {
+    "text": "SQL",
+    "start": 4.184158415841584,
+    "end": 4.598019801980198
+   },
+   {
+    "text": "and",
+    "start": 4.667326732673268,
+    "end": 4.804950495049504
+   },
+   {
+    "text": "runs",
+    "start": 4.897029702970297,
+    "end": 5.149504950495049
+   },
+   {
+    "text": "it",
+    "start": 5.196039603960396,
+    "end": 5.264356435643564
+   },
+   {
+    "text": "through",
+    "start": 5.299009900990099,
+    "end": 5.54059405940594
+   },
+   {
+    "text": "CockroachDB's",
+    "start": 5.586138613861387,
+    "end": 6.632673267326733
+   },
+   {
+    "text": "managed",
+    "start": 6.7247524752475245,
+    "end": 7.196039603960396
+   },
+   {
+    "text": "MCP",
+    "start": 7.253465346534653,
+    "end": 7.794059405940594
+   },
+   {
+    "text": "server,",
+    "start": 7.954455445544555,
+    "end": 8.322772277227724
+   },
+   {
+    "text": "read-only",
+    "start": 8.701980198019802,
+    "end": 9.218811881188119
+   },
+   {
+    "text": "by",
+    "start": 9.276237623762375,
+    "end": 9.39108910891089
+   },
+   {
+    "text": "the",
+    "start": 9.448514851485148,
+    "end": 9.529702970297029
+   },
+   {
+    "text": "app's",
+    "start": 9.598019801980199,
+    "end": 9.886138613861386
+   },
+   {
+    "text": "own",
+    "start": 9.966336633663367,
+    "end": 10.218811881188119
+   },
+   {
+    "text": "guardrails.",
+    "start": 10.3,
+    "end": 11.023762376237624
+   }
+  ]
+ },
+ {
+  "id": "s13b-answer",
+  "scene": "analyst",
+  "text": "The answer arrives with the query and the rows behind it: weather, at 3.45.",
+  "file": "voiceover/s13b-answer.mp3",
+  "tempo": 1.1,
+  "speechStart": 0,
+  "speechEnd": 4.95,
+  "audioDuration": 5.720816,
+  "words": [
+   {
+    "text": "The",
+    "start": 0,
+    "end": 0.14818181818181816
+   },
+   {
+    "text": "answer",
+    "start": 0.2218181818181818,
+    "end": 0.5172727272727272
+   },
+   {
+    "text": "arrives",
+    "start": 0.5809090909090908,
+    "end": 1.0027272727272727
+   },
+   {
+    "text": "with",
+    "start": 1.0445454545454544,
+    "end": 1.1927272727272726
+   },
+   {
+    "text": "the",
+    "start": 1.2245454545454544,
+    "end": 1.2872727272727271
+   },
+   {
+    "text": "query",
+    "start": 1.33,
+    "end": 1.689090909090909
+   },
+   {
+    "text": "and",
+    "start": 1.7627272727272727,
+    "end": 1.8999999999999997
+   },
+   {
+    "text": "the",
+    "start": 1.9418181818181817,
+    "end": 2.0054545454545454
+   },
+   {
+    "text": "rows",
+    "start": 2.0581818181818177,
+    "end": 2.3118181818181816
+   },
+   {
+    "text": "behind",
+    "start": 2.3645454545454543,
+    "end": 2.66
+   },
+   {
+    "text": "it:",
+    "start": 2.7227272727272727,
+    "end": 2.86
+   },
+   {
+    "text": "weather,",
+    "start": 3.3454545454545452,
+    "end": 3.6727272727272724
+   },
+   {
+    "text": "at",
+    "start": 3.9790909090909086,
+    "end": 4.127272727272727
+   },
+   {
+    "text": "3.45.",
+    "start": 4.200909090909091,
+    "end": 4.95
+   }
+  ]
+ },
+ {
+  "id": "s14-db",
+  "scene": "engineering",
+  "text": "Under the hood, records and embeddings live in one CockroachDB database and commit in the same transaction: no sync job, no drift.",
+  "file": "voiceover/s14-db.mp3",
+  "tempo": 1.1,
+  "speechStart": 0,
+  "speechEnd": 8.401818181818182,
+  "audioDuration": 9.116735,
+  "words": [
+   {
+    "text": "Under",
+    "start": 0,
+    "end": 0.2636363636363636
+   },
+   {
+    "text": "the",
+    "start": 0.30636363636363634,
+    "end": 0.3690909090909091
+   },
+   {
+    "text": "hood,",
+    "start": 0.4218181818181818,
+    "end": 0.6545454545454544
+   },
+   {
+    "text": "records",
+    "start": 0.9709090909090908,
+    "end": 1.33
+   },
+   {
+    "text": "and",
+    "start": 1.3827272727272726,
+    "end": 1.53
+   },
+   {
+    "text": "embeddings",
+    "start": 1.5827272727272728,
+    "end": 2.09
+   },
+   {
+    "text": "live",
+    "start": 2.1427272727272726,
+    "end": 2.3218181818181813
+   },
+   {
+    "text": "in",
+    "start": 2.3536363636363635,
+    "end": 2.417272727272727
+   },
+   {
+    "text": "one",
+    "start": 2.5118181818181817,
+    "end": 2.7227272727272727
+   },
+   {
+    "text": "CockroachDB",
+    "start": 2.775454545454545,
+    "end": 3.5781818181818177
+   },
+   {
+    "text": "database",
+    "start": 3.725454545454545,
+    "end": 4.338181818181818
+   },
+   {
+    "text": "and",
+    "start": 4.432727272727273,
+    "end": 4.612727272727272
+   },
+   {
+    "text": "commit",
+    "start": 4.665454545454545,
+    "end": 4.9818181818181815
+   },
+   {
+    "text": "in",
+    "start": 5.034545454545454,
+    "end": 5.098181818181818
+   },
+   {
+    "text": "the",
+    "start": 5.14,
+    "end": 5.203636363636363
+   },
+   {
+    "text": "same",
+    "start": 5.256363636363636,
+    "end": 5.499090909090909
+   },
+   {
+    "text": "transaction:",
+    "start": 5.54090909090909,
+    "end": 6.216363636363636
+   },
+   {
+    "text": "no",
+    "start": 6.712727272727273,
+    "end": 6.839090909090908
+   },
+   {
+    "text": "sync",
+    "start": 6.934545454545454,
+    "end": 7.156363636363635
+   },
+   {
+    "text": "job,",
+    "start": 7.209090909090908,
+    "end": 7.504545454545455
+   },
+   {
+    "text": "no",
+    "start": 7.8,
+    "end": 7.926363636363635
+   },
+   {
+    "text": "drift.",
+    "start": 8,
+    "end": 8.401818181818182
+   }
+  ]
+ },
+ {
+  "id": "s15-index",
+  "scene": "engineering",
+  "text": "A case-status prefix on the vector index filters to resolved cases inside the index itself.",
+  "file": "voiceover/s15-index.mp3",
+  "tempo": 1.1,
+  "speechStart": 0,
+  "speechEnd": 5.235454545454545,
+  "audioDuration": 6.243265,
+  "words": [
+   {
+    "text": "A",
+    "start": 0,
+    "end": 0.09454545454545453
+   },
+   {
+    "text": "case-status",
+    "start": 0.17909090909090908,
+    "end": 0.739090909090909
+   },
+   {
+    "text": "prefix",
+    "start": 0.7918181818181818,
+    "end": 1.2245454545454544
+   },
+   {
+    "text": "on",
+    "start": 1.2872727272727271,
+    "end": 1.3827272727272726
+   },
+   {
+    "text": "the",
+    "start": 1.4245454545454543,
+    "end": 1.488181818181818
+   },
+   {
+    "text": "vector",
+    "start": 1.53,
+    "end": 1.8154545454545454
+   },
+   {
+    "text": "index",
+    "start": 1.8890909090909087,
+    "end": 2.2163636363636363
+   },
+   {
+    "text": "filters",
+    "start": 2.28,
+    "end": 2.649090909090909
+   },
+   {
+    "text": "to",
+    "start": 2.6918181818181814,
+    "end": 2.754545454545454
+   },
+   {
+    "text": "resolved",
+    "start": 2.818181818181818,
+    "end": 3.219090909090909
+   },
+   {
+    "text": "cases",
+    "start": 3.2609090909090908,
+    "end": 3.6409090909090907
+   },
+   {
+    "text": "inside",
+    "start": 3.747272727272727,
+    "end": 4.1899999999999995
+   },
+   {
+    "text": "the",
+    "start": 4.221818181818182,
+    "end": 4.285454545454545
+   },
+   {
+    "text": "index",
+    "start": 4.348181818181819,
+    "end": 4.749090909090909
+   },
+   {
+    "text": "itself.",
+    "start": 4.823636363636363,
+    "end": 5.235454545454545
+   }
+  ]
+ },
+ {
+  "id": "s16-aws",
+  "scene": "engineering",
+  "text": "On AWS, Bedrock provides Titan embeddings and Nova Lite reasoning, Lambda runs the agent, and S3 serves the console, scaling to zero when idle.",
+  "file": "voiceover/s16-aws.mp3",
+  "tempo": 1.1,
+  "speechStart": 0,
+  "speechEnd": 8.622727272727271,
+  "audioDuration": 9.978776,
+  "words": [
+   {
+    "text": "On",
+    "start": 0,
+    "end": 0.13727272727272727
+   },
+   {
+    "text": "AWS,",
+    "start": 0.18999999999999997,
+    "end": 0.739090909090909
+   },
+   {
+    "text": "Bedrock",
+    "start": 0.9818181818181818,
+    "end": 1.3718181818181816
+   },
+   {
+    "text": "provides",
+    "start": 1.4245454545454543,
+    "end": 1.8472727272727272
+   },
+   {
+    "text": "Titan",
+    "start": 1.8999999999999997,
+    "end": 2.1845454545454546
+   },
+   {
+    "text": "embeddings",
+    "start": 2.227272727272727,
+    "end": 2.6918181818181814
+   },
+   {
+    "text": "and",
+    "start": 2.7445454545454546,
+    "end": 2.9027272727272724
+   },
+   {
+    "text": "Nova",
+    "start": 2.997272727272727,
+    "end": 3.2299999999999995
+   },
+   {
+    "text": "Lite",
+    "start": 3.2827272727272727,
+    "end": 3.5045454545454544
+   },
+   {
+    "text": "reasoning,",
+    "start": 3.5572727272727267,
+    "end": 3.958181818181818
+   },
+   {
+    "text": "Lambda",
+    "start": 4.274545454545454,
+    "end": 4.601818181818182
+   },
+   {
+    "text": "runs",
+    "start": 4.654545454545454,
+    "end": 4.8554545454545455
+   },
+   {
+    "text": "the",
+    "start": 4.8972727272727266,
+    "end": 4.96090909090909
+   },
+   {
+    "text": "agent,",
+    "start": 5.013636363636363,
+    "end": 5.309090909090909
+   },
+   {
+    "text": "and",
+    "start": 5.478181818181818,
+    "end": 5.625454545454545
+   },
+   {
+    "text": "S3",
+    "start": 5.720909090909091,
+    "end": 6.11090909090909
+   },
+   {
+    "text": "serves",
+    "start": 6.163636363636363,
+    "end": 6.438181818181818
+   },
+   {
+    "text": "the",
+    "start": 6.48090909090909,
+    "end": 6.543636363636363
+   },
+   {
+    "text": "console,",
+    "start": 6.586363636363636,
+    "end": 7.071818181818181
+   },
+   {
+    "text": "scaling",
+    "start": 7.219090909090909,
+    "end": 7.536363636363635
+   },
+   {
+    "text": "to",
+    "start": 7.578181818181818,
+    "end": 7.63090909090909
+   },
+   {
+    "text": "zero",
+    "start": 7.683636363636363,
+    "end": 8.01090909090909
+   },
+   {
+    "text": "when",
+    "start": 8.105454545454545,
+    "end": 8.274545454545454
+   },
+   {
+    "text": "idle.",
+    "start": 8.327272727272726,
+    "end": 8.622727272727271
+   }
+  ]
+ },
+ {
+  "id": "s17-close",
+  "scene": "close",
+  "text": "Every disruption handled today makes the next one easier to handle.",
+  "file": "voiceover/s17-close.mp3",
+  "tempo": 1,
+  "speechStart": 0,
+  "speechEnd": 3.669,
+  "audioDuration": 3.970612,
+  "words": [
+   {
+    "text": "Every",
+    "start": 0,
+    "end": 0.325
+   },
+   {
+    "text": "disruption",
+    "start": 0.372,
+    "end": 0.859
+   },
+   {
+    "text": "handled",
+    "start": 0.929,
+    "end": 1.265
+   },
+   {
+    "text": "today",
+    "start": 1.3,
+    "end": 1.66
+   },
+   {
+    "text": "makes",
+    "start": 1.753,
+    "end": 2.009
+   },
+   {
+    "text": "the",
+    "start": 2.055,
+    "end": 2.125
+   },
+   {
+    "text": "next",
+    "start": 2.183,
+    "end": 2.415
+   },
+   {
+    "text": "one",
+    "start": 2.473,
+    "end": 2.647
+   },
+   {
+    "text": "easier",
+    "start": 2.705,
+    "end": 3.1
+   },
+   {
+    "text": "to",
+    "start": 3.158,
+    "end": 3.216
+   },
+   {
+    "text": "handle.",
+    "start": 3.286,
+    "end": 3.669
+   }
+  ]
+ }
+]

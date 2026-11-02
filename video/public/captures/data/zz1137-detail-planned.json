@@ -1,0 +1,742 @@
+{
+  "case": {
+    "id": "f2cc7ca4-1530-4705-a1ba-940d5d7dc72e",
+    "flightNo": "ZZ1137",
+    "origin": "CDG",
+    "destination": "OSL",
+    "scheduledDep": "2026-07-26T14:15:00.000Z",
+    "actualDep": null,
+    "delayMinutes": 190,
+    "cause": "weather",
+    "aircraftClass": "narrow_body",
+    "paxCount": 147,
+    "misconnectCount": 23,
+    "priorityPaxCount": 11,
+    "status": "open",
+    "createdAt": "2026-07-26T11:19:00.000Z"
+  },
+  "passengers": [
+    {
+      "paxRef": "SYNPAX-293389",
+      "priorityTier": "standard",
+      "onwardFlight": "ZZ296",
+      "connectionMinutes": 25,
+      "connectionStatus": "missed",
+      "rebookedTo": null,
+      "specialHandling": []
+    },
+    {
+      "paxRef": "SYNPAX-454779",
+      "priorityTier": "standard",
+      "onwardFlight": "ZZ2211",
+      "connectionMinutes": 26,
+      "connectionStatus": "missed",
+      "rebookedTo": null,
+      "specialHandling": []
+    },
+    {
+      "paxRef": "SYNPAX-620954",
+      "priorityTier": "standard",
+      "onwardFlight": "ZZ3034",
+      "connectionMinutes": 29,
+      "connectionStatus": "missed",
+      "rebookedTo": null,
+      "specialHandling": []
+    },
+    {
+      "paxRef": "SYNPAX-173518",
+      "priorityTier": "standard",
+      "onwardFlight": "ZZ3624",
+      "connectionMinutes": 30,
+      "connectionStatus": "missed",
+      "rebookedTo": null,
+      "specialHandling": []
+    },
+    {
+      "paxRef": "SYNPAX-358839",
+      "priorityTier": "standard",
+      "onwardFlight": "ZZ150",
+      "connectionMinutes": 31,
+      "connectionStatus": "missed",
+      "rebookedTo": null,
+      "specialHandling": [
+        "unaccompanied_minor"
+      ]
+    },
+    {
+      "paxRef": "SYNPAX-036079",
+      "priorityTier": "standard",
+      "onwardFlight": "ZZ2252",
+      "connectionMinutes": 32,
+      "connectionStatus": "missed",
+      "rebookedTo": null,
+      "specialHandling": []
+    },
+    {
+      "paxRef": "SYNPAX-378259",
+      "priorityTier": "standard",
+      "onwardFlight": "ZZ3887",
+      "connectionMinutes": 34,
+      "connectionStatus": "missed",
+      "rebookedTo": null,
+      "specialHandling": []
+    },
+    {
+      "paxRef": "SYNPAX-911910",
+      "priorityTier": "priority",
+      "onwardFlight": "ZZ311",
+      "connectionMinutes": 36,
+      "connectionStatus": "missed",
+      "rebookedTo": null,
+      "specialHandling": []
+    },
+    {
+      "paxRef": "SYNPAX-134438",
+      "priorityTier": "standard",
+      "onwardFlight": "ZZ1591",
+      "connectionMinutes": 37,
+      "connectionStatus": "missed",
+      "rebookedTo": null,
+      "specialHandling": []
+    },
+    {
+      "paxRef": "SYNPAX-959926",
+      "priorityTier": "standard",
+      "onwardFlight": "ZZ3197",
+      "connectionMinutes": 37,
+      "connectionStatus": "missed",
+      "rebookedTo": null,
+      "specialHandling": []
+    },
+    {
+      "paxRef": "SYNPAX-022200",
+      "priorityTier": "standard",
+      "onwardFlight": "ZZ1445",
+      "connectionMinutes": 38,
+      "connectionStatus": "missed",
+      "rebookedTo": null,
+      "specialHandling": []
+    },
+    {
+      "paxRef": "SYNPAX-294527",
+      "priorityTier": "standard",
+      "onwardFlight": "ZZ4894",
+      "connectionMinutes": 39,
+      "connectionStatus": "missed",
+      "rebookedTo": null,
+      "specialHandling": []
+    },
+    {
+      "paxRef": "SYNPAX-519448",
+      "priorityTier": "standard",
+      "onwardFlight": "ZZ1963",
+      "connectionMinutes": 43,
+      "connectionStatus": "missed",
+      "rebookedTo": null,
+      "specialHandling": []
+    },
+    {
+      "paxRef": "SYNPAX-333973",
+      "priorityTier": "standard",
+      "onwardFlight": "ZZ513",
+      "connectionMinutes": 45,
+      "connectionStatus": "missed",
+      "rebookedTo": null,
+      "specialHandling": []
+    },
+    {
+      "paxRef": "SYNPAX-345688",
+      "priorityTier": "standard",
+      "onwardFlight": "ZZ3223",
+      "connectionMinutes": 49,
+      "connectionStatus": "missed",
+      "rebookedTo": null,
+      "specialHandling": []
+    },
+    {
+      "paxRef": "SYNPAX-429065",
+      "priorityTier": "standard",
+      "onwardFlight": "ZZ4306",
+      "connectionMinutes": 52,
+      "connectionStatus": "missed",
+      "rebookedTo": null,
+      "specialHandling": []
+    },
+    {
+      "paxRef": "SYNPAX-196894",
+      "priorityTier": "standard",
+      "onwardFlight": "ZZ2587",
+      "connectionMinutes": 56,
+      "connectionStatus": "missed",
+      "rebookedTo": null,
+      "specialHandling": []
+    },
+    {
+      "paxRef": "SYNPAX-553914",
+      "priorityTier": "standard",
+      "onwardFlight": "ZZ4530",
+      "connectionMinutes": 56,
+      "connectionStatus": "missed",
+      "rebookedTo": null,
+      "specialHandling": []
+    },
+    {
+      "paxRef": "SYNPAX-353864",
+      "priorityTier": "standard",
+      "onwardFlight": "ZZ4039",
+      "connectionMinutes": 57,
+      "connectionStatus": "missed",
+      "rebookedTo": null,
+      "specialHandling": [
+        "wheelchair"
+      ]
+    },
+    {
+      "paxRef": "SYNPAX-228168",
+      "priorityTier": "standard",
+      "onwardFlight": "ZZ1288",
+      "connectionMinutes": 67,
+      "connectionStatus": "missed",
+      "rebookedTo": null,
+      "specialHandling": []
+    },
+    {
+      "paxRef": "SYNPAX-847052",
+      "priorityTier": "standard",
+      "onwardFlight": "ZZ4731",
+      "connectionMinutes": 68,
+      "connectionStatus": "missed",
+      "rebookedTo": null,
+      "specialHandling": []
+    },
+    {
+      "paxRef": "SYNPAX-429122",
+      "priorityTier": "standard",
+      "onwardFlight": "ZZ1930",
+      "connectionMinutes": 47,
+      "connectionStatus": "at_risk",
+      "rebookedTo": null,
+      "specialHandling": []
+    },
+    {
+      "paxRef": "SYNPAX-604442",
+      "priorityTier": "premium",
+      "onwardFlight": "ZZ2788",
+      "connectionMinutes": 56,
+      "connectionStatus": "at_risk",
+      "rebookedTo": null,
+      "specialHandling": [
+        "unaccompanied_minor"
+      ]
+    },
+    {
+      "paxRef": "SYNPAX-958015",
+      "priorityTier": "standard",
+      "onwardFlight": "ZZ1186",
+      "connectionMinutes": 161,
+      "connectionStatus": "safe",
+      "rebookedTo": null,
+      "specialHandling": []
+    },
+    {
+      "paxRef": "SYNPAX-780409",
+      "priorityTier": "standard",
+      "onwardFlight": null,
+      "connectionMinutes": 268,
+      "connectionStatus": "safe",
+      "rebookedTo": null,
+      "specialHandling": []
+    }
+  ],
+  "actions": [
+    {
+      "id": "e5d3b01e-693d-4eef-a96b-408449ac0ab3",
+      "action_type": "notify",
+      "target_pax_ref": null,
+      "payload": {},
+      "edited_payload": null,
+      "rationale": "Inform all passengers of the delay and potential impact on their onward connections.",
+      "precedent_case_ids": [
+        "ee75da89-6805-4558-8024-bb9b861871f2",
+        "f1b7b6cf-b3de-49c8-8bd3-4b41f1bb325e",
+        "1c3d3ae7-9116-4a5c-afbd-b828805de718"
+      ],
+      "confidence": 0.95,
+      "status": "approved",
+      "created_at": "2026-10-30T12:14:17.275Z",
+      "decided_at": "2026-10-30T12:14:34.336Z"
+    },
+    {
+      "id": "7a6266ed-9a57-4263-b788-c4856f002d67",
+      "action_type": "rebook",
+      "target_pax_ref": "SYNPAX-228168",
+      "payload": {},
+      "edited_payload": null,
+      "rationale": "Passenger has already missed their connection, as per precedents where similar delays resulted in missed connections being rebooked.",
+      "precedent_case_ids": [
+        "ee75da89-6805-4558-8024-bb9b861871f2"
+      ],
+      "confidence": 0.9,
+      "status": "approved",
+      "created_at": "2026-10-30T12:14:17.275Z",
+      "decided_at": "2026-10-30T12:14:34.355Z"
+    },
+    {
+      "id": "06847f30-0a6f-4cf7-9179-7030b026ff7b",
+      "action_type": "rebook",
+      "target_pax_ref": "SYNPAX-959926",
+      "payload": {},
+      "edited_payload": null,
+      "rationale": "Passenger has already missed their connection, as per precedents where similar delays resulted in missed connections being rebooked.",
+      "precedent_case_ids": [
+        "ee75da89-6805-4558-8024-bb9b861871f2"
+      ],
+      "confidence": 0.9,
+      "status": "approved",
+      "created_at": "2026-10-30T12:14:17.275Z",
+      "decided_at": "2026-10-30T12:14:34.373Z"
+    },
+    {
+      "id": "0ca3ca2e-6605-49c0-8fe5-561cc5418bed",
+      "action_type": "rebook",
+      "target_pax_ref": "SYNPAX-353864",
+      "payload": {},
+      "edited_payload": null,
+      "rationale": "Passenger has already missed their connection and requires special handling, as per precedents where similar delays resulted in missed connections being rebooked.",
+      "precedent_case_ids": [
+        "ee75da89-6805-4558-8024-bb9b861871f2"
+      ],
+      "confidence": 0.9,
+      "status": "approved",
+      "created_at": "2026-10-30T12:14:17.275Z",
+      "decided_at": "2026-10-30T12:14:34.389Z"
+    },
+    {
+      "id": "0ff02f17-204d-41bd-8e0a-53aa20b946d7",
+      "action_type": "rebook",
+      "target_pax_ref": "SYNPAX-333973",
+      "payload": {},
+      "edited_payload": null,
+      "rationale": "Passenger has already missed their connection, as per precedents where similar delays resulted in missed connections being rebooked.",
+      "precedent_case_ids": [
+        "ee75da89-6805-4558-8024-bb9b861871f2"
+      ],
+      "confidence": 0.9,
+      "status": "approved",
+      "created_at": "2026-10-30T12:14:17.275Z",
+      "decided_at": "2026-10-30T12:14:35.299Z"
+    },
+    {
+      "id": "3f984923-14d7-44fb-9399-a310fd702d06",
+      "action_type": "rebook",
+      "target_pax_ref": "SYNPAX-911910",
+      "payload": {},
+      "edited_payload": null,
+      "rationale": "Passenger has already missed their connection, as per precedents where similar delays resulted in missed connections being rebooked.",
+      "precedent_case_ids": [
+        "ee75da89-6805-4558-8024-bb9b861871f2"
+      ],
+      "confidence": 0.9,
+      "status": "approved",
+      "created_at": "2026-10-30T12:14:17.275Z",
+      "decided_at": "2026-10-30T12:14:35.526Z"
+    },
+    {
+      "id": "4781b4b3-67e7-4406-a4d8-b3bf901b7947",
+      "action_type": "rebook",
+      "target_pax_ref": "SYNPAX-294527",
+      "payload": {},
+      "edited_payload": null,
+      "rationale": "Passenger has already missed their connection, as per precedents where similar delays resulted in missed connections being rebooked.",
+      "precedent_case_ids": [
+        "ee75da89-6805-4558-8024-bb9b861871f2"
+      ],
+      "confidence": 0.9,
+      "status": "approved",
+      "created_at": "2026-10-30T12:14:17.275Z",
+      "decided_at": "2026-10-30T12:14:35.319Z"
+    },
+    {
+      "id": "5c3e825e-af09-42ba-aa6d-9c78ba7b4035",
+      "action_type": "rebook",
+      "target_pax_ref": "SYNPAX-519448",
+      "payload": {},
+      "edited_payload": null,
+      "rationale": "Passenger has already missed their connection, as per precedents where similar delays resulted in missed connections being rebooked.",
+      "precedent_case_ids": [
+        "ee75da89-6805-4558-8024-bb9b861871f2"
+      ],
+      "confidence": 0.9,
+      "status": "approved",
+      "created_at": "2026-10-30T12:14:17.275Z",
+      "decided_at": "2026-10-30T12:14:35.723Z"
+    },
+    {
+      "id": "7aef345e-d180-413c-ab6f-22c334312028",
+      "action_type": "rebook",
+      "target_pax_ref": "SYNPAX-378259",
+      "payload": {},
+      "edited_payload": null,
+      "rationale": "Passenger has already missed their connection, as per precedents where similar delays resulted in missed connections being rebooked.",
+      "precedent_case_ids": [
+        "ee75da89-6805-4558-8024-bb9b861871f2"
+      ],
+      "confidence": 0.9,
+      "status": "approved",
+      "created_at": "2026-10-30T12:14:17.275Z",
+      "decided_at": "2026-10-30T12:14:36.157Z"
+    },
+    {
+      "id": "faffdbef-df88-4130-8646-86fed4681232",
+      "action_type": "rebook",
+      "target_pax_ref": "SYNPAX-022200",
+      "payload": {},
+      "edited_payload": null,
+      "rationale": "Passenger has already missed their connection, as per precedents where similar delays resulted in missed connections being rebooked.",
+      "precedent_case_ids": [
+        "ee75da89-6805-4558-8024-bb9b861871f2"
+      ],
+      "confidence": 0.9,
+      "status": "approved",
+      "created_at": "2026-10-30T12:14:17.275Z",
+      "decided_at": "2026-10-30T12:14:36.193Z"
+    },
+    {
+      "id": "0b2321c0-7bbd-44bb-ac5a-72923556fdca",
+      "action_type": "rebook",
+      "target_pax_ref": "SYNPAX-553914",
+      "payload": {},
+      "edited_payload": null,
+      "rationale": "Passenger has already missed their connection, as per precedents where similar delays resulted in missed connections being rebooked.",
+      "precedent_case_ids": [
+        "ee75da89-6805-4558-8024-bb9b861871f2"
+      ],
+      "confidence": 0.9,
+      "status": "approved",
+      "created_at": "2026-10-30T12:14:17.275Z",
+      "decided_at": "2026-10-30T12:14:36.397Z"
+    },
+    {
+      "id": "65d305f0-635e-4f6e-a950-cba665bd5b6d",
+      "action_type": "rebook",
+      "target_pax_ref": "SYNPAX-293389",
+      "payload": {},
+      "edited_payload": null,
+      "rationale": "Passenger has already missed their connection, as per precedents where similar delays resulted in missed connections being rebooked.",
+      "precedent_case_ids": [
+        "ee75da89-6805-4558-8024-bb9b861871f2"
+      ],
+      "confidence": 0.9,
+      "status": "approved",
+      "created_at": "2026-10-30T12:14:17.275Z",
+      "decided_at": "2026-10-30T12:14:36.583Z"
+    },
+    {
+      "id": "8ec63977-fabe-4730-9c79-d50ffc3c9ed1",
+      "action_type": "rebook",
+      "target_pax_ref": "SYNPAX-196894",
+      "payload": {},
+      "edited_payload": null,
+      "rationale": "Passenger has already missed their connection, as per precedents where similar delays resulted in missed connections being rebooked.",
+      "precedent_case_ids": [
+        "ee75da89-6805-4558-8024-bb9b861871f2"
+      ],
+      "confidence": 0.9,
+      "status": "approved",
+      "created_at": "2026-10-30T12:14:17.275Z",
+      "decided_at": "2026-10-30T12:14:37.007Z"
+    },
+    {
+      "id": "95798a92-3920-4527-bbfd-20dedde9959d",
+      "action_type": "rebook",
+      "target_pax_ref": "SYNPAX-454779",
+      "payload": {},
+      "edited_payload": null,
+      "rationale": "Passenger has already missed their connection, as per precedents where similar delays resulted in missed connections being rebooked.",
+      "precedent_case_ids": [
+        "ee75da89-6805-4558-8024-bb9b861871f2"
+      ],
+      "confidence": 0.9,
+      "status": "approved",
+      "created_at": "2026-10-30T12:14:17.275Z",
+      "decided_at": "2026-10-30T12:14:37.075Z"
+    },
+    {
+      "id": "c14e1e0c-32e5-4783-a2de-9def1651e72e",
+      "action_type": "rebook",
+      "target_pax_ref": "SYNPAX-429065",
+      "payload": {},
+      "edited_payload": null,
+      "rationale": "Passenger has already missed their connection, as per precedents where similar delays resulted in missed connections being rebooked.",
+      "precedent_case_ids": [
+        "ee75da89-6805-4558-8024-bb9b861871f2"
+      ],
+      "confidence": 0.9,
+      "status": "approved",
+      "created_at": "2026-10-30T12:14:17.275Z",
+      "decided_at": "2026-10-30T12:14:37.270Z"
+    },
+    {
+      "id": "c5fb7c2a-25ee-4292-a55c-712967abec1e",
+      "action_type": "rebook",
+      "target_pax_ref": "SYNPAX-173518",
+      "payload": {},
+      "edited_payload": null,
+      "rationale": "Passenger has already missed their connection, as per precedents where similar delays resulted in missed connections being rebooked.",
+      "precedent_case_ids": [
+        "ee75da89-6805-4558-8024-bb9b861871f2"
+      ],
+      "confidence": 0.9,
+      "status": "approved",
+      "created_at": "2026-10-30T12:14:17.275Z",
+      "decided_at": "2026-10-30T12:14:37.444Z"
+    },
+    {
+      "id": "d5f1236d-a5ad-48c4-a702-4f2710e47713",
+      "action_type": "rebook",
+      "target_pax_ref": "SYNPAX-036079",
+      "payload": {},
+      "edited_payload": null,
+      "rationale": "Passenger has already missed their connection, as per precedents where similar delays resulted in missed connections being rebooked.",
+      "precedent_case_ids": [
+        "ee75da89-6805-4558-8024-bb9b861871f2"
+      ],
+      "confidence": 0.9,
+      "status": "approved",
+      "created_at": "2026-10-30T12:14:17.275Z",
+      "decided_at": "2026-10-30T12:14:37.868Z"
+    },
+    {
+      "id": "e4affe46-adf4-4040-aaa7-f7ce5546720e",
+      "action_type": "rebook",
+      "target_pax_ref": "SYNPAX-620954",
+      "payload": {},
+      "edited_payload": null,
+      "rationale": "Passenger has already missed their connection, as per precedents where similar delays resulted in missed connections being rebooked.",
+      "precedent_case_ids": [
+        "ee75da89-6805-4558-8024-bb9b861871f2"
+      ],
+      "confidence": 0.9,
+      "status": "approved",
+      "created_at": "2026-10-30T12:14:17.275Z",
+      "decided_at": "2026-10-30T12:14:37.923Z"
+    },
+    {
+      "id": "03e20d22-4438-48a0-8660-9537db140729",
+      "action_type": "rebook",
+      "target_pax_ref": "SYNPAX-358839",
+      "payload": {},
+      "edited_payload": null,
+      "rationale": "Passenger has already missed their connection, as per precedents where similar delays resulted in missed connections being rebooked.",
+      "precedent_case_ids": [
+        "ee75da89-6805-4558-8024-bb9b861871f2"
+      ],
+      "confidence": 0.9,
+      "status": "approved",
+      "created_at": "2026-10-30T12:14:17.275Z",
+      "decided_at": "2026-10-30T12:14:38.117Z"
+    },
+    {
+      "id": "f6227455-4adf-488f-a9ba-0a37925d1efc",
+      "action_type": "rebook",
+      "target_pax_ref": "SYNPAX-134438",
+      "payload": {},
+      "edited_payload": null,
+      "rationale": "Passenger has already missed their connection, as per precedents where similar delays resulted in missed connections being rebooked.",
+      "precedent_case_ids": [
+        "ee75da89-6805-4558-8024-bb9b861871f2"
+      ],
+      "confidence": 0.9,
+      "status": "approved",
+      "created_at": "2026-10-30T12:14:17.275Z",
+      "decided_at": "2026-10-30T12:14:38.337Z"
+    },
+    {
+      "id": "7670fa02-a6b2-474d-b152-ddc3a4f7e8b2",
+      "action_type": "rebook",
+      "target_pax_ref": "SYNPAX-345688",
+      "payload": {},
+      "edited_payload": null,
+      "rationale": "Passenger has already missed their connection, as per precedents where similar delays resulted in missed connections being rebooked.",
+      "precedent_case_ids": [
+        "ee75da89-6805-4558-8024-bb9b861871f2"
+      ],
+      "confidence": 0.9,
+      "status": "approved",
+      "created_at": "2026-10-30T12:14:17.275Z",
+      "decided_at": "2026-10-30T12:14:38.734Z"
+    }
+  ],
+  "precedents": [
+    {
+      "id": "ee75da89-6805-4558-8024-bb9b861871f2",
+      "flight_no": "ZZ4381",
+      "cause": "weather",
+      "delay_minutes": "128",
+      "scheduled_dep": "2025-04-15T07:30:00.000Z",
+      "origin": "CDG",
+      "destination": "ORD",
+      "summary_text": "Early morning departure with same-day recovery options available. Weather disruption causing a severe delay. Significant misconnections at a major hub. Delayed 128 minutes. Very large passenger load of 258 passengers, 23 misconnecting, 19 already missed and 4 at risk. 10 priority passengers affected. Passengers can be reaccommodated the same day. 3 passengers require special handling assistance. Wide-body aircraft. Flight ZZ4381 CDG to ORD.",
+      "actions_taken": [
+        {
+          "action_type": "notify",
+          "affected_pax": 258,
+          "detail": "Proactive disruption notification issued to all booked passengers."
+        },
+        {
+          "action_type": "rebook",
+          "affected_pax": 19,
+          "detail": "Misconnecting passengers reaccommodated onto later ZZ services."
+        },
+        {
+          "action_type": "prioritise",
+          "affected_pax": 23,
+          "detail": "Affected passengers triaged by connection risk and priority tier."
+        }
+      ],
+      "outcome_notes": "Pushed all 23 misconnections onto the next available wave after 128 minutes lost to de-icing and slot loss. The recovery closed out clean.",
+      "outcome_rating": 5,
+      "resolved_at": "2025-04-17T06:41:00.000Z"
+    },
+    {
+      "id": "f1b7b6cf-b3de-49c8-8bd3-4b41f1bb325e",
+      "flight_no": "ZZ4137",
+      "cause": "weather",
+      "delay_minutes": "130",
+      "scheduled_dep": "2025-05-09T06:40:00.000Z",
+      "origin": "OSL",
+      "destination": "AMS",
+      "summary_text": "Early morning departure with same-day recovery options available. Weather disruption causing a severe delay. Widespread misconnections at a outstation. Delayed 130 minutes. Medium passenger load of 146 passengers, 62 misconnecting, 27 already missed and 3 at risk. 9 priority passengers affected. Passengers can be reaccommodated the same day. 3 passengers require special handling assistance. Narrow-body aircraft. Flight ZZ4137 OSL to AMS.",
+      "actions_taken": [
+        {
+          "action_type": "notify",
+          "affected_pax": 146,
+          "detail": "Proactive disruption notification issued to all booked passengers."
+        },
+        {
+          "action_type": "rebook",
+          "affected_pax": 27,
+          "detail": "Misconnecting passengers reaccommodated onto later ZZ services."
+        },
+        {
+          "action_type": "prioritise",
+          "affected_pax": 30,
+          "detail": "Affected passengers triaged by connection risk and priority tier."
+        }
+      ],
+      "outcome_notes": "Reaccommodated 62 passengers before they reached the transfer desk after a 130-minute wait for the front to clear. Acceptable outcome; the queue built before it cleared.",
+      "outcome_rating": 3,
+      "resolved_at": "2025-05-11T07:55:00.000Z"
+    },
+    {
+      "id": "3997b164-6391-49fa-93b6-a27724cef83e",
+      "flight_no": "ZZ264",
+      "cause": "atc",
+      "delay_minutes": "44",
+      "scheduled_dep": "2025-05-07T09:35:00.000Z",
+      "origin": "CDG",
+      "destination": "OSL",
+      "summary_text": "Midday departure with limited same-day recovery options. Air traffic control restriction causing a minor delay. No misconnections at a major hub. Delayed 44 minutes. Medium passenger load of 106 passengers, 0 misconnecting, 0 already missed and 0 at risk. 3 priority passengers affected. Same-day reaccommodation is still possible but options are thinning. Regional jet. Flight ZZ264 CDG to OSL.",
+      "actions_taken": [
+        {
+          "action_type": "notify",
+          "affected_pax": 106,
+          "detail": "Proactive disruption notification issued to all booked passengers."
+        },
+        {
+          "action_type": "hotel",
+          "affected_pax": 1,
+          "detail": "Overnight accommodation and transfers arranged for stranded passengers."
+        }
+      ],
+      "outcome_notes": "Overnight accommodation was booked although same-day recovery options existed, at avoidable cost.",
+      "outcome_rating": 3,
+      "resolved_at": "2025-05-08T15:16:00.000Z"
+    },
+    {
+      "id": "e22c313b-7b74-46de-a4df-8db40b110a08",
+      "flight_no": "ZZ4913",
+      "cause": "weather",
+      "delay_minutes": "153",
+      "scheduled_dep": "2025-03-15T17:20:00.000Z",
+      "origin": "OTP",
+      "destination": "CDG",
+      "summary_text": "Evening departure with very few same-day recovery options. Weather disruption causing a severe delay. Widespread misconnections at a outstation. Delayed 153 minutes. Large passenger load of 194 passengers, 57 misconnecting, 26 already missed and 4 at risk. 14 priority passengers affected. Few same-day options remain and overnight accommodation may be needed. 5 passengers require special handling assistance. Narrow-body aircraft. Flight ZZ4913 OTP to CDG.",
+      "actions_taken": [
+        {
+          "action_type": "notify",
+          "affected_pax": 194,
+          "detail": "Proactive disruption notification issued to all booked passengers."
+        },
+        {
+          "action_type": "rebook",
+          "affected_pax": 26,
+          "detail": "Misconnecting passengers reaccommodated onto later ZZ services."
+        },
+        {
+          "action_type": "hotel",
+          "affected_pax": 26,
+          "detail": "Overnight accommodation and transfers arranged for stranded passengers."
+        },
+        {
+          "action_type": "prioritise",
+          "affected_pax": 30,
+          "detail": "Affected passengers triaged by connection risk and priority tier."
+        },
+        {
+          "action_type": "escalate",
+          "affected_pax": 0,
+          "detail": "Referred to the duty operations controller for a decision on the narrow-body."
+        }
+      ],
+      "outcome_notes": "The case was escalated to the duty controller although it was within normal handling limits.",
+      "outcome_rating": 3,
+      "resolved_at": "2025-03-17T05:53:00.000Z"
+    },
+    {
+      "id": "1c3d3ae7-9116-4a5c-afbd-b828805de718",
+      "flight_no": "ZZ1467",
+      "cause": "weather",
+      "delay_minutes": "122",
+      "scheduled_dep": "2025-04-26T09:15:00.000Z",
+      "origin": "BUD",
+      "destination": "CDG",
+      "summary_text": "Midday departure with limited same-day recovery options. Weather disruption causing a severe delay. Widespread misconnections at a outstation. Delayed 122 minutes. Large passenger load of 197 passengers, 54 misconnecting, 23 already missed and 7 at risk. 14 priority passengers affected. Same-day reaccommodation is still possible but options are thinning. 5 passengers require special handling assistance. Narrow-body aircraft. Flight ZZ1467 BUD to CDG.",
+      "actions_taken": [
+        {
+          "action_type": "notify",
+          "affected_pax": 197,
+          "detail": "Proactive disruption notification issued to all booked passengers."
+        },
+        {
+          "action_type": "rebook",
+          "affected_pax": 23,
+          "detail": "Misconnecting passengers reaccommodated onto later ZZ services."
+        }
+      ],
+      "outcome_notes": "No triage was applied, so passengers were handled first-come-first-served and several priority passengers missed onward options.",
+      "outcome_rating": 3,
+      "resolved_at": "2025-04-28T03:10:00.000Z"
+    }
+  ],
+  "coverageGaps": [
+    "SYNPAX-847052"
+  ],
+  "lastRun": {
+    "id": "77e1ac61-2fc7-4a6b-93ff-c72d1bf12eef",
+    "model_id": "amazon.nova-lite-v1:0",
+    "prompt_tokens": "2565",
+    "completion_tokens": "2521",
+    "latency_ms": "6834",
+    "retrieved_case_ids": [
+      "ee75da89-6805-4558-8024-bb9b861871f2",
+      "f1b7b6cf-b3de-49c8-8bd3-4b41f1bb325e",
+      "3997b164-6391-49fa-93b6-a27724cef83e",
+      "e22c313b-7b74-46de-a4df-8db40b110a08",
+      "1c3d3ae7-9116-4a5c-afbd-b828805de718"
+    ],
+    "error": null,
+    "created_at": "2026-10-30T12:14:10.640Z"
+  },
+  "resolution": null
+}

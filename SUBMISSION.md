@@ -13,8 +13,8 @@ Everything needed to submit, in one place. Deadline **18 Aug 2026**.
 | **API health check** | `https://7p2mkku36rbgbj2chqcsers5qy0gkccu.lambda-url.us-east-1.on.aws/api/health` |
 | **Video** | https://www.youtube.com/watch?v=9s4SiUE9Bvw |
 
-> The `/index.html` suffix is required — see the [Live demo](README.md#live-demo)
-> note. Test the exact string you paste, in a private window, before submitting.
+> The `/index.html` suffix is required — see the note under
+> [Deploying](README.md#deploying). Test the exact string you paste, in a private window, before submitting.
 
 ---
 

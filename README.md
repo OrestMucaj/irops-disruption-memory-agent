@@ -6,34 +6,16 @@ handling of the next one.
 
 Built for the **CockroachDB × AWS Hackathon — "Build with Agentic Memory."**
 
-### ▶ [Open the live demo](https://irops-memory-demo-21.s3.us-east-1.amazonaws.com/index.html) · 🎬 [Watch the 3-minute demo](https://www.youtube.com/watch?v=9s4SiUE9Bvw)
+<img src="video/poster.jpg" alt="What if every disruption you'd already solved could help solve the next one? The opening of the showcase video." width="100%">
 
-Nothing to install, no login. All data is synthetic.
-
-<table>
-<tr><td><b>Judging in 5 minutes?</b> Do this:</td></tr>
-<tr><td>
-
-1. **Open flight ZZ1137** from the caseload — 190′ late, 23 misconnecting.
-2. Look at **Recommended plan**. Each group cites past disruptions as chips like
-   `ZZ4381 · 5/5 · worked`. **Click one.** That is a real case the agent
-   retrieved by vector similarity, with the outcome it actually produced.
-3. Hit **Approve all** in the bar at the bottom, then open **Evidence → Agent run** to see the model,
-   token counts and the exact case ids the plan was built from.
-4. Click the **chat bubble, bottom right**, and ask *"which cause had the worst
-   average outcome rating?"* The answer arrives with the SQL it ran, executed
-   read-only through CockroachDB's Managed MCP Server.
-5. Resolve a case with an outcome note — it is embedded and becomes retrievable
-   precedent for the next disruption. That is the loop closing.
-
-</td></tr>
-</table>
+**The 2:43 showcase.** A disruption desk works flight ZZ1137 with the agent: the
+plan cites the past cases it was built from, a person approves, and the run is
+logged. Then the memory loop that turns every resolved case into precedent,
+asking the memory in plain English through CockroachDB's Managed MCP Server,
+and what it all runs on. All data is synthetic.
 
 | | |
 |---|---|
-| **Demo video** | https://www.youtube.com/watch?v=9s4SiUE9Bvw |
-| **Live demo** | https://irops-memory-demo-21.s3.us-east-1.amazonaws.com/index.html |
-| **API health** | https://7p2mkku36rbgbj2chqcsers5qy0gkccu.lambda-url.us-east-1.on.aws/api/health |
 | **CockroachDB** | Vector index (C-SPANN) with a **prefix column**, SERIALIZABLE txns, Managed MCP Server, Agent Skills |
 | **AWS** | Lambda Function URL, Bedrock (Titan Embeddings V2 + Nova Lite), S3 |
 | **Stack** | TypeScript / Node 22, Vue 3 + PrimeVue, no bundler |
@@ -391,27 +373,22 @@ failure surfaces.
 
 ---
 
-## Live demo
+## Deploying
 
-**<https://irops-memory-demo-21.s3.us-east-1.amazonaws.com/index.html>**
+The demo is a Lambda Function URL plus an S3 static site.
 
-> The `/index.html` is required. S3 offers two endpoints for the same objects
-> and neither does both things: the **website** endpoint
+> The console is served from the bucket's HTTPS **REST** endpoint, so its
+> address must end in `/index.html`. S3 offers two endpoints for the same
+> objects and neither does both things: the **website** endpoint
 > (`s3-website-…`) handles index-document routing but is **HTTP-only** — it has
 > no TLS listener, so `https://` fails with a connection reset. The **REST**
 > endpoint (`s3.…`) serves HTTPS but has no index-document concept, so the path
 > must be spelled out and the bare root returns 403.
 >
-> The HTTPS one is what gets shared, because any browser configured to upgrade
+> The HTTPS one is the one to share, because any browser configured to upgrade
 > HTTP to HTTPS would otherwise show a connection error and nothing else.
 > CloudFront in front of the bucket would give both at once, at the cost of
 > another moving part to keep alive through judging.
-
----
-
-## Deploying
-
-The demo is a Lambda Function URL plus an S3 static site.
 
 You need an IAM **execution role** for the Lambda (trusted by
 `lambda.amazonaws.com`) with `AWSLambdaBasicExecutionRole` and one inline
