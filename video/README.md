@@ -109,4 +109,5 @@ ffmpeg -y -i out/irops-showcase.mp4 -c:v libx264 -preset veryslow -b:v 395k -pas
 ffmpeg -i out/irops-showcase.mp4 -c:v libx264 -preset veryslow -b:v 395k -pass 2 -c:a aac -b:a 64k -movflags +faststart out/irops-showcase-github.mp4
 ```
 
-`poster.jpg` is the hook's question at 7.6 s, shown in its place until it is.
+Until the video is uploaded, `poster.jpg` (the hook's question at 7.6 s) stands
+in its place.
