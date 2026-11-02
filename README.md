@@ -247,7 +247,7 @@ STATISTICS` confirms it — the recorded row count really was `0`.
 **Honest note:** at 84 rows none of these changes are measurable in wall-clock
 time. The index/query mismatch was a genuine defect regardless of scale, and the
 retry gap is a correctness issue that only appears under concurrency — which is
-exactly what a month of judging traffic provides.
+exactly what a public demo provides.
 
 ## AWS services used
 
@@ -377,18 +377,9 @@ failure surfaces.
 
 The demo is a Lambda Function URL plus an S3 static site.
 
-> The console is served from the bucket's HTTPS **REST** endpoint, so its
-> address must end in `/index.html`. S3 offers two endpoints for the same
-> objects and neither does both things: the **website** endpoint
-> (`s3-website-…`) handles index-document routing but is **HTTP-only** — it has
-> no TLS listener, so `https://` fails with a connection reset. The **REST**
-> endpoint (`s3.…`) serves HTTPS but has no index-document concept, so the path
-> must be spelled out and the bare root returns 403.
->
-> The HTTPS one is the one to share, because any browser configured to upgrade
-> HTTP to HTTPS would otherwise show a connection error and nothing else.
-> CloudFront in front of the bucket would give both at once, at the cost of
-> another moving part to keep alive through judging.
+> Open the deployed console at its `/index.html` path: it is served from the
+> bucket's HTTPS REST endpoint, which has no index document. Why S3 forces that
+> choice is under [Tool feedback](#aws--what-cost-time).
 
 You need an IAM **execution role** for the Lambda (trusted by
 `lambda.amazonaws.com`) with `AWSLambdaBasicExecutionRole` and one inline
@@ -399,11 +390,6 @@ script deliberately does **not** create it, so the deploying user never needs
 ```powershell
 powershell -ExecutionPolicy Bypass -File ".\scripts\deploy.ps1" -RoleArn "<role-arn>" -BucketName "<globally-unique-bucket>"
 ```
-
-> In this deployment the role happens to be named `bedrock-invoke` and its
-> Bedrock policy `irops-lambda-execution-role`. IAM names are immutable and
-> purely labels; the script takes the ARN as a parameter, so the names do not
-> matter.
 
 ### Secrets
 
@@ -423,7 +409,7 @@ encrypted at rest are proportionate. Documented here rather than left implicit.
 
 The API allows any origin. This is deliberate: the frontend is on S3 and the
 API on a Lambda Function URL, so they are always cross-origin, and the API is
-intentionally public so judges can use the demo without credentials. CORS is
+intentionally public so anyone can use the demo without credentials. CORS is
 not an authorization mechanism and restricting it would protect nothing. The
 real controls are that no action is ever auto-executed, every write is
 parameterised and schema-validated, and model output is grounded before it can
@@ -433,11 +419,11 @@ touch the database.
 
 ## Cost
 
-The demo must stay live for a month of judging on no budget, so the
-architecture is chosen to scale to zero:
+The demo has to run on no budget, so the architecture is chosen to scale to
+zero:
 
 - **Lambda Function URL**, not API Gateway or an ALB — no hourly charge, and
-  idle costs nothing. An ALB alone would be ~$30–50 for the judging window.
+  idle costs nothing. An ALB alone would be ~$30–50 a month.
 - **No VPC** — CockroachDB Cloud is publicly reachable, and a VPC would need a
   NAT gateway (~$32/month) just to reach Bedrock.
 - **No embedding on page load.** Reading a case returns the precedents from its
@@ -445,7 +431,7 @@ architecture is chosen to scale to zero:
 - **CockroachDB Basic**: 10 GiB and 50M Request Units free per month.
 
 Measured Bedrock pricing at this volume: **under $1 total** for the whole build
-plus judging window. Full workings in [NOTES.md](NOTES.md) §6.
+and a month live. Full workings in [NOTES.md](NOTES.md) §6.
 
 ---
 
@@ -505,8 +491,8 @@ Things that are true but easy to overstate, recorded plainly:
 
 ## Tool feedback
 
-Written for the sponsors. Everything here was hit during this build and is
-recorded with the evidence in [NOTES.md](NOTES.md); nothing is second-hand.
+Everything here was hit during this build and is recorded with the evidence in
+[NOTES.md](NOTES.md); nothing is second-hand.
 
 ### CockroachDB — what earned its place
 
@@ -642,6 +628,7 @@ and name the BOM in the error. Our side now writes with
 | `src/api/` | Transport-agnostic HTTP router + Lambda and local adapters |
 | `web/` | Ops console — Vue 3 + PrimeVue from vendored UMD, no bundler, no build step |
 | `scripts/` | Provisioning, migration, verification, deployment |
+| [`video/`](video/) | The showcase video: a Remotion project built from captures of the console — see its [README](video/README.md) |
 
 ## License
 
