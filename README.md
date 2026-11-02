@@ -6,7 +6,7 @@ handling of the next one.
 
 Built for the **CockroachDB × AWS Hackathon — "Build with Agentic Memory."**
 
-<img src="video/poster.jpg" alt="What if every disruption you'd already solved could help solve the next one? The opening of the showcase video." width="100%">
+https://github.com/user-attachments/assets/fb03f8f3-bdf4-427d-a4b7-1754c0edcea5
 
 **The 2:43 showcase.** A disruption desk works flight ZZ1137 with the agent: the
 plan cites the past cases it was built from, a person approves, and the run is
