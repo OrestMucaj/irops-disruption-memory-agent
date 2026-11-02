@@ -96,3 +96,17 @@ normalises audio to −14 LUFS:
 ```bash
 ffmpeg -i out/irops-showcase-raw.mp4 -vf "scale=in_range=full:out_range=tv,format=yuv420p" -c:v libx264 -preset slow -crf 16 -af loudnorm=I=-14:TP=-1.5:LRA=11 -c:a aac -b:a 256k -movflags +faststart out/irops-showcase.mp4
 ```
+
+The copy in the repository README is uploaded through GitHub's editor, which
+plays videos of up to 10 MB on free accounts. It is the same cut at 395 kbps,
+two-pass, still 1080p (the picture is mostly still UI, so it holds up):
+
+```bash
+ffmpeg -y -i out/irops-showcase.mp4 -c:v libx264 -preset veryslow -b:v 395k -pass 1 -an -f null /dev/null
+```
+
+```bash
+ffmpeg -i out/irops-showcase.mp4 -c:v libx264 -preset veryslow -b:v 395k -pass 2 -c:a aac -b:a 64k -movflags +faststart out/irops-showcase-github.mp4
+```
+
+`poster.jpg` is the hook's question at 7.6 s, shown in its place until it is.
